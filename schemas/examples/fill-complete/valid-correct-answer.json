@@ -1,0 +1,6 @@
+{
+  "answers": [
+    { "blankId": "b1", "type": "text", "accepted": ["leaf", "leaves"] },
+    { "blankId": "b2", "type": "text", "accepted": ["stem"] }
+  ]
+}

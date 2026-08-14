@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "Hypothesis" },
+    { "id": "i2", "label": "Experiment" },
+    { "id": "i3", "label": "Analysis" },
+    { "id": "i4", "label": "Conclusion" }
+  ],
+  "anchors": [ { "position": 0, "itemId": "i1" } ],
+  "shuffle": true
+}

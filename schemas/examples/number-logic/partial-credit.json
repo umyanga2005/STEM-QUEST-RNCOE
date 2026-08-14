@@ -1,0 +1,8 @@
+{
+  "type": "exact",
+  "value": 18,
+  "parts": [
+    { "partId": "p1", "type": "exact", "value": 18 },
+    { "partId": "p2", "type": "tolerance", "value": 18, "tolerance": 0.01 }
+  ]
+}

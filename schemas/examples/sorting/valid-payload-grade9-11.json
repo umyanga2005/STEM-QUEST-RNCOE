@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "Carbon (C)" },
+    { "id": "i2", "label": "Oxygen (O)" },
+    { "id": "i3", "label": "Hydrogen (H)" },
+    { "id": "i4", "label": "Nitrogen (N)" },
+    { "id": "i5", "label": "Iron (Fe)" },
+    { "id": "i6", "label": "Gold (Au)" }
+  ],
+  "categories": [
+    { "id": "c1", "label": "Non-metal" },
+    { "id": "c2", "label": "Metal" }
+  ],
+  "shuffle": true
+}

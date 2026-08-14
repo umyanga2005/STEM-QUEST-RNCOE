@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "Dog" },
+    { "id": "i2", "label": "Cat" },
+    { "id": "i3", "label": "Eagle" }
+  ],
+  "categories": [
+    { "id": "c1", "label": "Mammal" },
+    { "id": "c2", "label": "Bird" }
+  ],
+  "shuffle": true
+}

@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "1.0",
+  "items": [ { "id": "i1", "label": "Apple" }, { "id": "i2", "label": "Orange" } ],
+  "zones": [ { "id": "z1", "label": "Fruit" } ]
+}

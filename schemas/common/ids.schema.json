@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/common/ids.schema.json",
+  "$comment": "STEM QUEST reusable entity ID (Task 3.2). Lowercase slug; max 32 chars; unambiguous.",
+  "type": "string",
+  "pattern": "^[a-z][a-z0-9_]{0,31}$",
+  "maxLength": 32
+}

@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "cards": [
+    { "id": "c1", "text": "2x + 4" },
+    { "id": "c2", "text": "4x + 8" },
+    { "id": "c3", "text": "2(x + 2)" },
+    { "id": "c4", "text": "2(2x + 4)" },
+    { "id": "c5", "text": "x + 3 = 5" },
+    { "id": "c6", "text": "x = 2" }
+  ],
+  "revealSeconds": 20,
+  "recallPrompt": "Match each expression to its equivalent form.",
+  "deckType": "pairs",
+  "shuffle": true,
+  "maxAttempts": 2
+}

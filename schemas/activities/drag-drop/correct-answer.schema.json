@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/drag-drop/correct-answer.schema.json",
+  "$comment": "STEM QUEST Drag & Drop correct answer (Task 3.2). Expected placement of every item. Server-only.",
+  "type": "object",
+  "required": ["mappings"],
+  "properties": {
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["itemId", "zoneId"],
+        "properties": {
+          "itemId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "zoneId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

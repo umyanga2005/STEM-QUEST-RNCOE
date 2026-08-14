@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "scenarioText": "You are a field engineer repairing a faulty solar array. Choose actions to restore power safely.",
+  "entryDecision": "d1",
+  "decisions": [
+    {
+      "id": "d1",
+      "text": "The inverter reports an over-voltage fault. What is the first action?",
+      "options": [
+        { "id": "o1", "text": "Isolate the array with the DC isolator", "nextDecision": "d2", "outcomeText": "The array is de-energized." },
+        { "id": "o2", "text": "Touch the wiring to check heat", "nextDecision": null, "outcomeText": "Safety violation—live circuit." },
+        { "id": "o3", "text": "Reset the inverter immediately", "nextDecision": "d2", "outcomeText": "It reboots but still faults." }
+      ]
+    },
+    {
+      "id": "d2",
+      "text": "The array is isolated. What do you measure next?",
+      "options": [
+        { "id": "o4", "text": "Open-circuit voltage of each string", "nextDecision": "d3", "outcomeText": "String 3 reads near zero." },
+        { "id": "o5", "text": "Close everything and call it a day", "nextDecision": null, "outcomeText": "Fault persists—no repair." }
+      ]
+    },
+    {
+      "id": "d3",
+      "text": "String 3 reads near zero. What is the diagnosis?",
+      "options": [
+        { "id": "o6", "text": "A bypass diode is shorted in String 3", "nextDecision": null, "outcomeText": "Correct—replacing the diode restores output." },
+        { "id": "o7", "text": "The sun went in", "nextDecision": null, "outcomeText": "Incorrect—weather doesn't zero one string." }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "template": "The speed of an object is v = d / t. A car travels 150 km in 3 hours. v = ___ km/h.",
+  "blanks": [
+    { "id": "b1", "type": "number", "label": "Average speed", "suffix": " km/h", "maxLength": 6 }
+  ],
+  "keypad": "numeric"
+}

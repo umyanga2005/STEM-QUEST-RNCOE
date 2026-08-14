@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/common/media.schema.json",
+  "$comment": "STEM QUEST reusable media reference (Task 3.2). Storage paths only, never binary.",
+  "title": "Media Reference",
+  "type": "object",
+  "required": ["ref", "alt"],
+  "properties": {
+    "ref": {
+      "type": "string",
+      "description": "Storage path in the question-media bucket; jpeg/png/webp only, <=1 MB asset.",
+      "pattern": "^question-media/[a-z0-9-]+/[a-z0-9-]+/[a-z0-9._-]+\\.(jpe?g|png|webp)$",
+      "maxLength": 300
+    },
+    "alt": {
+      "type": "string",
+      "description": "Meaningful alternative text; required on every image.",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "role": {
+      "type": "string",
+      "enum": ["hero", "instruction", "diagram", "illustration", "audio"],
+      "default": "illustration"
+    },
+    "width": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8192,
+      "description": "Optional natural pixel width for aspect-ratio layout hints."
+    },
+    "height": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 8192,
+      "description": "Optional natural pixel height for aspect-ratio layout hints."
+    }
+  },
+  "additionalProperties": false
+}

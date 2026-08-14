@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "leftItems": [
+    { "id": "l1", "text": "F = m x a" },
+    { "id": "l2", "text": "E = mc^2" },
+    { "id": "l3", "text": "v = d / t" },
+    { "id": "l4", "text": "W = F x d" }
+  ],
+  "rightItems": [
+    { "id": "r1", "text": "Newton's second law" },
+    { "id": "r2", "text": "Mass-energy equivalence" },
+    { "id": "r3", "text": "Average speed" },
+    { "id": "r4", "text": "Work done" }
+  ],
+  "distractors": [ { "id": "d1", "text": "Ohm's law" } ]
+}

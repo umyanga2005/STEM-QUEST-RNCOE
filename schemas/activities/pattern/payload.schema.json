@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/pattern/payload.schema.json",
+  "$comment": "STEM QUEST Pattern payload (Task 3.2). Construct/extend patterns; candidates are a meaningful construction bank, NOT MCQ.",
+  "type": "object",
+  "required": ["schemaVersion", "sequence", "interaction"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "sequence": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/element" }
+    },
+    "interaction": {
+      "enum": ["construct-next", "fill-missing", "complete-sequence"]
+    },
+    "missingAt": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7,
+      "description": "Index of the hidden element (fill-missing)."
+    },
+    "constructCount": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3,
+      "default": 1,
+      "description": "Number of elements the student must construct (construct-next)."
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/element" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "interaction": { "const": "fill-missing" } }, "required": ["interaction"] },
+      "then": { "required": ["missingAt", "candidates"] }
+    },
+    {
+      "if": { "properties": { "interaction": { "const": "construct-next" } }, "required": ["interaction"] },
+      "then": { "required": ["constructCount", "candidates"] }
+    },
+    {
+      "if": { "properties": { "interaction": { "const": "complete-sequence" } }, "required": ["interaction"] },
+      "then": { "required": ["candidates"] }
+    }
+  ],
+  "additionalProperties": false,
+  "$defs": {
+    "element": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+        "text": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "number": { "type": "number" },
+        "shape": { "enum": ["circle", "square", "triangle", "diamond", "star", "hexagon", "pentagon"] },
+        "image": { "$ref": "https://stem-quest.dev/schemas/common/media.schema.json" },
+        "ariaLabel": { "type": "string", "maxLength": 160 }
+      },
+      "anyOf": [
+        { "required": ["text"] },
+        { "required": ["number"] },
+        { "required": ["shape"] },
+        { "required": ["image"] }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

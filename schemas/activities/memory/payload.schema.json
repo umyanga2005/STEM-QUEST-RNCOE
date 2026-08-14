@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/memory/payload.schema.json",
+  "$comment": "STEM QUEST Memory payload (Task 3.2). Cards shown during reveal; groups live ONLY in correct_answer. No pair info in payload.",
+  "type": "object",
+  "required": ["schemaVersion", "cards", "revealSeconds", "recallPrompt", "deckType"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "cards": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "text": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "image": { "$ref": "https://stem-quest.dev/schemas/common/media.schema.json" },
+          "ariaLabel": { "type": "string", "maxLength": 160 }
+        },
+        "anyOf": [
+          { "required": ["text"] },
+          { "required": ["image"] }
+        ],
+        "additionalProperties": false
+      }
+    },
+    "revealSeconds": { "type": "integer", "minimum": 5, "maximum": 30 },
+    "recallPrompt": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "deckType": {
+      "enum": ["pairs", "sets"],
+      "description": "pairs = groups of 2; sets = groups of 3–4."
+    },
+    "shuffle": { "type": "boolean", "default": true },
+    "maxAttempts": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Optional recall-attempt limit consumed by the engine." }
+  },
+  "additionalProperties": false
+}

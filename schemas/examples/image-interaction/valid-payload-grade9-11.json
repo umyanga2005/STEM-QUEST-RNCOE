@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "image": { "ref": "question-media/cell/diagram/cell-diagram.png", "alt": "Plant cell diagram with labeled organelles", "role": "diagram", "width": 1200, "height": 900 },
+  "imageWidth": 1200,
+  "imageHeight": 900,
+  "mode": "label",
+  "hotspots": [
+    { "id": "h1", "x": 40, "y": 40, "shape": "rect", "width": 20, "height": 15 },
+    { "id": "h2", "x": 60, "y": 55, "shape": "rect", "width": 15, "height": 15 },
+    { "id": "h3", "x": 50, "y": 75, "shape": "circle", "radius": 8 }
+  ],
+  "labels": [
+    { "id": "l1", "text": "Nucleus" },
+    { "id": "l2", "text": "Mitochondria" },
+    { "id": "l3", "text": "Cell wall" }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "image": { "ref": "question-media/water-cycle/diagram/water-cycle-diagram.png", "alt": "Diagram of the water cycle with clouds, ocean, and rain", "role": "diagram", "width": 1024, "height": 768 },
+  "imageWidth": 1024,
+  "imageHeight": 768,
+  "mode": "tap",
+  "hotspots": [
+    { "id": "h1", "label": "Evaporation", "x": 25, "y": 70, "shape": "circle", "radius": 12 },
+    { "id": "h2", "label": "Condensation", "x": 75, "y": 25, "shape": "circle", "radius": 12 },
+    { "id": "h3", "label": "Precipitation", "x": 70, "y": 75, "shape": "circle", "radius": 12 }
+  ]
+}

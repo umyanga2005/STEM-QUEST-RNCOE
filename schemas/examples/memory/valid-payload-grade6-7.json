@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "cards": [
+    { "id": "c1", "text": "Lion" },
+    { "id": "c2", "text": "Carnivore" },
+    { "id": "c3", "text": "Rabbit" },
+    { "id": "c4", "text": "Herbivore" }
+  ],
+  "revealSeconds": 15,
+  "recallPrompt": "Match each animal to its food type.",
+  "deckType": "pairs",
+  "shuffle": true,
+  "maxAttempts": 3
+}

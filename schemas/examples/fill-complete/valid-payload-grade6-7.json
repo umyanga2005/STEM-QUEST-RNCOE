@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "template": "The ___ makes food using sunlight, while the ___ carries water up from the roots.",
+  "blanks": [
+    { "id": "b1", "type": "text", "label": "Photosynthesis organ" },
+    { "id": "b2", "type": "text", "label": "Water transport part" }
+  ],
+  "keypad": "text"
+}

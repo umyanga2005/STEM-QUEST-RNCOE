@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/ordering/correct-answer.schema.json",
+  "$comment": "STEM QUEST Ordering correct answer (Task 3.2). Expected sequence = permutation of payload item ids. Server-only.",
+  "type": "object",
+  "required": ["order"],
+  "properties": {
+    "order": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 8,
+      "items": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+    }
+  },
+  "additionalProperties": false
+}

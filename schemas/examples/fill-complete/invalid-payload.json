@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "1.0",
+  "template": "This blank is missing its type ___.",
+  "blanks": [ { "id": "b1", "label": "No type" } ]
+}

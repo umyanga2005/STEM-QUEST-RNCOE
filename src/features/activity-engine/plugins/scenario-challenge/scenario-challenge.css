@@ -1,0 +1,274 @@
+.scenario-activity {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+}
+
+.scenario-sr-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.scenario-mission {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.scenario-prompt {
+  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  margin: 0;
+  line-height: 1.35;
+}
+
+.scenario-progress {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.scenario-text {
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border-radius: 0.65rem;
+  background: var(--color-surface-raised);
+  border: 1px solid rgba(159, 168, 202, 0.22);
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+.scenario-instructions {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.scenario-media {
+  margin: 0;
+  display: flex;
+  gap: 0.6rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
+.scenario-media-img {
+  max-height: 11rem;
+  width: auto;
+  object-fit: contain;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(159, 168, 202, 0.22);
+}
+
+.scenario-decision {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.scenario-decision-title,
+.scenario-consequence-title,
+.scenario-outcome-title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.scenario-decision-text {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.5;
+}
+
+.scenario-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.scenario-option {
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.3rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgba(159, 168, 202, 0.45);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.scenario-option-text {
+  font-size: 0.98rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.scenario-option-action {
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.scenario-option:disabled {
+  cursor: not-allowed;
+}
+
+.scenario-option:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px rgba(79, 139, 255, 0.18);
+}
+
+.scenario-option:focus-visible,
+.scenario-continue-button:focus-visible,
+.scenario-restart-button:focus-visible,
+.scenario-submit-button:focus-visible,
+.scenario-hint-button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(79, 139, 255, 0.3);
+}
+
+.scenario-consequence,
+.scenario-outcome {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+}
+
+.scenario-consequence-option,
+.scenario-outcome-option {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.98rem;
+}
+
+.scenario-consequence-text,
+.scenario-outcome-text {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.5;
+}
+
+.scenario-outcome-summary {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 0.92rem;
+}
+
+.scenario-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scenario-continue-button,
+.scenario-restart-button,
+.scenario-submit-button,
+.scenario-hint-button {
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 0.6rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.scenario-continue-button,
+.scenario-submit-button {
+  background: var(--color-accent);
+  color: #0b0e1a;
+  font-weight: 600;
+}
+
+.scenario-restart-button {
+  background: transparent;
+  border-color: rgba(159, 168, 202, 0.45);
+  color: var(--color-text-muted);
+}
+
+.scenario-hint-button {
+  background: transparent;
+  border-color: rgba(159, 168, 202, 0.45);
+  color: var(--color-text);
+}
+
+.scenario-continue-button:disabled,
+.scenario-restart-button:disabled,
+.scenario-submit-button:disabled,
+.scenario-hint-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.scenario-continue-button:hover:not(:disabled),
+.scenario-submit-button:hover:not(:disabled),
+.scenario-restart-button:hover:not(:disabled),
+.scenario-hint-button:hover:not(:disabled) {
+  box-shadow: 0 0 0 2px rgba(79, 139, 255, 0.18);
+}
+
+.scenario-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scenario-hints {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scenario-hint {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.6rem;
+  background: rgba(79, 139, 255, 0.1);
+  border: 1px solid rgba(79, 139, 255, 0.3);
+  font-size: 0.95rem;
+}
+
+.scenario-hint-level {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-accent);
+}
+
+.scenario-submitted {
+  padding: 0.8rem 1rem;
+  border-radius: 0.6rem;
+  background: rgba(45, 212, 191, 0.1);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scenario-option {
+    transition: none;
+  }
+}

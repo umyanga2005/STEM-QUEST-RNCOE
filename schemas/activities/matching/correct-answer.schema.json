@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/matching/correct-answer.schema.json",
+  "$comment": "STEM QUEST Matching correct answer (Task 3.2). Each left card pairs with exactly one right card. Server-only.",
+  "type": "object",
+  "required": ["pairs"],
+  "properties": {
+    "pairs": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "required": ["leftId", "rightId"],
+        "properties": {
+          "leftId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "rightId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

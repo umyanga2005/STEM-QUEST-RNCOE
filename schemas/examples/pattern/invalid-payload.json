@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": [ { "id": "e1", "number": 1 } ],
+  "interaction": "complete-sequence",
+  "candidates": [ { "id": "c1", "number": 2 } ]
+}

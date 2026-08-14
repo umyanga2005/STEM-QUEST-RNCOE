@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "Seed" },
+    { "id": "i2", "label": "Sprout" },
+    { "id": "i3", "label": "Flower" },
+    { "id": "i4", "label": "Fruit" }
+  ],
+  "shuffle": true
+}

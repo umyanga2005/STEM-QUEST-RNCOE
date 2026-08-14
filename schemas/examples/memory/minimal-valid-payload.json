@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "cards": [
+    { "id": "c1", "text": "H2O" },
+    { "id": "c2", "text": "Water" },
+    { "id": "c3", "text": "CO2" },
+    { "id": "c4", "text": "Carbon dioxide" }
+  ],
+  "revealSeconds": 10,
+  "recallPrompt": "Match each formula to its name.",
+  "deckType": "pairs"
+}

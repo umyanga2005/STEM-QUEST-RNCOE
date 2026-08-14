@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "sequence": [ { "id": "e1", "number": 2 }, { "id": "e2", "number": 4 }, { "id": "e3", "number": 6 } ],
+  "interaction": "construct-next",
+  "constructCount": 1,
+  "candidates": [ { "id": "c1", "number": 8 }, { "id": "c2", "number": 10 }, { "id": "c3", "number": 7 } ]
+}

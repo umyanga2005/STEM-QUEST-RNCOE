@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "Plastic bottle" },
+    { "id": "i2", "label": "Apple core" },
+    { "id": "i3", "label": "Glass jar" },
+    { "id": "i4", "label": "Paper" },
+    { "id": "i5", "label": "Tin can" },
+    { "id": "i6", "label": "Banana peel" }
+  ],
+  "categories": [
+    { "id": "c1", "label": "Recyclable" },
+    { "id": "c2", "label": "Compostable" }
+  ],
+  "shuffle": true
+}

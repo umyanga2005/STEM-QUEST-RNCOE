@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "image": { "ref": "question-media/empty/canvas/empty.png", "alt": "Blank canvas" },
+  "imageWidth": 800,
+  "imageHeight": 600,
+  "mode": "tap",
+  "hotspots": [ { "id": "h1", "x": 150, "y": 50 } ]
+}

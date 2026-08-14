@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/scenario/payload.schema.json",
+  "$comment": "STEM QUEST Scenario Challenge payload (Task 3.2). Decision tree with consequences; NOT A/B/C/D MCQ.",
+  "type": "object",
+  "required": ["schemaVersion", "scenarioText", "entryDecision", "decisions"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "scenarioText": { "type": "string", "minLength": 1, "maxLength": 1500 },
+    "media": {
+      "type": "array",
+      "maxItems": 3,
+      "items": { "$ref": "https://stem-quest.dev/schemas/common/media.schema.json" }
+    },
+    "entryDecision": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "options"],
+        "properties": {
+          "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "text": { "type": "string", "minLength": 1, "maxLength": 300 },
+          "options": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": {
+              "type": "object",
+              "required": ["id", "text"],
+              "properties": {
+                "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+                "text": { "type": "string", "minLength": 1, "maxLength": 200 },
+                "nextDecision": {
+                  "type": ["string", "null"],
+                  "description": "Following decision id, or null to end the scenario.",
+                  "pattern": "^[a-z][a-z0-9_]{0,31}$"
+                },
+                "outcomeText": { "type": "string", "maxLength": 300 }
+              },
+              "additionalProperties": false
+            }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/image-interaction/correct-answer.schema.json",
+  "$comment": "STEM QUEST Image Interaction correct answer (Task 3.2). Expected hotspot selections/placements. Server-only.",
+  "type": "object",
+  "required": ["mode"],
+  "properties": {
+    "mode": { "enum": ["tap", "label"] },
+    "requiredHotspots": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "description": "mode=tap: hotspot ids that must be selected.",
+      "items": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+    },
+    "placements": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "description": "mode=label: expected label→hotspot placements.",
+      "items": {
+        "type": "object",
+        "required": ["labelId", "hotspotId"],
+        "properties": {
+          "labelId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "hotspotId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "mode": { "const": "tap" } }, "required": ["mode"] },
+      "then": { "required": ["requiredHotspots"] }
+    },
+    {
+      "if": { "properties": { "mode": { "const": "label" } }, "required": ["mode"] },
+      "then": { "required": ["placements"] }
+    }
+  ],
+  "additionalProperties": false
+}

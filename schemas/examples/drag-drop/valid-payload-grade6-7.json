@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "Sunlight" },
+    { "id": "i2", "label": "Wind" },
+    { "id": "i3", "label": "Coal" },
+    { "id": "i4", "label": "Natural gas" }
+  ],
+  "zones": [ { "id": "z1", "label": "Renewable" }, { "id": "z2", "label": "Non-renewable" } ]
+}

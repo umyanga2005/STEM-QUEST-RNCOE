@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "1.0",
+  "leftItems": [ { "id": "l1", "text": "H2O" }, { "id": "l2", "text": "CO2" } ],
+  "rightItems": [ { "id": "r1", "text": "Water" }, { "id": "r2", "text": "Carbon dioxide" } ]
+}

@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0",
+  "problem": "Solve for x: 3x = 12",
+  "answerFormat": "integer",
+  "inputMode": "numeric"
+}

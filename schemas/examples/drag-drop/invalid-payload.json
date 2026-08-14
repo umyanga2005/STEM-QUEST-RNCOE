@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "InvalidId!", "label": "Bad id" },
+    { "id": "i2", "label": "Ok" }
+  ],
+  "zones": [ { "id": "z1", "label": "Zone" } ]
+}

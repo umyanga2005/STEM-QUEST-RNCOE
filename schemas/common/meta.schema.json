@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/common/meta.schema.json",
+  "$comment": "STEM QUEST authoring metadata (Task 3.2). Designed to become questions.meta (Task 3.1 OD-2); not a DB column yet.",
+  "title": "Question Authoring Metadata",
+  "type": "object",
+  "properties": {
+    "objective": {
+      "type": "string",
+      "description": "One-sentence educational objective.",
+      "minLength": 1,
+      "maxLength": 400
+    },
+    "feedback": {
+      "type": "object",
+      "description": "Per-state feedback templates. Placeholders like {{detail}} may be filled by the plugin.",
+      "propertyNames": { "enum": ["correct", "partial", "incorrect", "timeout"] },
+      "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 1000 },
+      "minProperties": 1,
+      "maxProperties": 4
+    },
+    "media": {
+      "type": "array",
+      "description": "Presentational (non-interaction) assets. Interaction assets live in payload.",
+      "items": { "$ref": "https://stem-quest.dev/schemas/common/media.schema.json" },
+      "maxItems": 6
+    },
+    "authoring": {
+      "type": "object",
+      "properties": {
+        "authorType": {
+          "type": "string",
+          "enum": ["human", "ai", "import"],
+          "default": "human"
+        },
+        "authorSource": { "type": "string", "maxLength": 120 },
+        "editedByHuman": { "type": "boolean", "default": false },
+        "generationSeed": { "type": "string", "pattern": "^[0-9a-f]{8,128}$" },
+        "templateId": { "type": "string", "pattern": "^[a-z0-9-]{1,64}$" },
+        "scenarioId": { "type": "string", "pattern": "^[a-z0-9-]{1,64}$" },
+        "contentHash": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      },
+      "additionalProperties": false
+    },
+    "review": {
+      "type": "object",
+      "properties": {
+        "state": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "reviewerAdminId": { "type": "string", "format": "uuid" },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "note": { "type": "string", "maxLength": 1000 }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

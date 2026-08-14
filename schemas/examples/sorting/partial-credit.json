@@ -1,0 +1,10 @@
+{
+  "assignments": [
+    { "itemId": "i1", "categoryId": "c1" },
+    { "itemId": "i2", "categoryId": "c2" },
+    { "itemId": "i3", "categoryId": "c1" },
+    { "itemId": "i4", "categoryId": "c2" },
+    { "itemId": "i5", "categoryId": "c1" },
+    { "itemId": "i6", "categoryId": "c2" }
+  ]
+}

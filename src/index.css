@@ -1,0 +1,75 @@
+@import 'tailwindcss';
+
+:root {
+  --color-bg: #0b0e1a;
+  --color-surface: #141a2e;
+  --color-surface-raised: #1c243c;
+  --color-text: #eef1fb;
+  --color-text-muted: #9aa3c0;
+  --color-accent: #4f8bff;
+  --color-accent-strong: #2dd4bf;
+
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--color-text);
+  background: var(--color-bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+.route-placeholder {
+  display: flex;
+  min-height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--color-bg);
+}
+
+.route-placeholder section {
+  max-width: 480px;
+  padding: 2rem;
+  border: 1px solid var(--color-surface-raised);
+  border-radius: 12px;
+  background: var(--color-surface);
+}
+
+.route-placeholder h1 {
+  margin: 0.25rem 0 0.5rem;
+  font-size: 1.5rem;
+  color: var(--color-text);
+}
+
+.route-placeholder__path {
+  margin: 0;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-accent-strong);
+}
+
+.route-placeholder section > p:last-of-type {
+  margin-bottom: 1.5rem;
+  color: var(--color-text-muted);
+}
+
+.route-placeholder a {
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+.route-placeholder a:hover {
+  text-decoration: underline;
+}

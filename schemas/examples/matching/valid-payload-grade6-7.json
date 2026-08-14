@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "leftItems": [
+    { "id": "l1", "text": "Heart" },
+    { "id": "l2", "text": "Lungs" },
+    { "id": "l3", "text": "Kidneys" }
+  ],
+  "rightItems": [
+    { "id": "r1", "text": "Pumps blood around the body" },
+    { "id": "r2", "text": "Exchange oxygen and carbon dioxide" },
+    { "id": "r3", "text": "Filter waste from the blood" }
+  ]
+}

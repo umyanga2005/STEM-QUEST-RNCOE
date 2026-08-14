@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/memory/correct-answer.schema.json",
+  "$comment": "STEM QUEST Memory correct answer (Task 3.2). Groups of cards (pairs or sets). Every card accounted. Server-only.",
+  "type": "object",
+  "required": ["groups"],
+  "properties": {
+    "groups": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "required": ["groupId", "cardIds"],
+        "properties": {
+          "groupId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "cardIds": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 4,
+            "uniqueItems": true,
+            "items": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

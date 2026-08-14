@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "items": [
+    { "id": "i1", "label": "First" },
+    { "id": "i2", "label": "Second" },
+    { "id": "i3", "label": "Third" }
+  ],
+  "shuffle": true
+}

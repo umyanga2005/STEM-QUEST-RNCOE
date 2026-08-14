@@ -1,0 +1,8 @@
+{
+  "mappings": [
+    { "itemId": "i1", "zoneId": "z1" },
+    { "itemId": "i2", "zoneId": "z1" },
+    { "itemId": "i3", "zoneId": "z2" },
+    { "itemId": "i4", "zoneId": "z2" }
+  ]
+}

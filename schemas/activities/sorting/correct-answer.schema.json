@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/sorting/correct-answer.schema.json",
+  "$comment": "STEM QUEST Sorting correct answer (Task 3.2). Every item assigned to exactly one category. Server-only.",
+  "type": "object",
+  "required": ["assignments"],
+  "properties": {
+    "assignments": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": ["itemId", "categoryId"],
+        "properties": {
+          "itemId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "categoryId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

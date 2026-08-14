@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/ordering/payload.schema.json",
+  "$comment": "STEM QUEST Ordering payload (Task 3.2). Shuffled items the student requests; expected sequence is server-only.",
+  "type": "object",
+  "required": ["schemaVersion", "items"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "items": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "properties": {
+          "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+          "image": { "$ref": "https://stem-quest.dev/schemas/common/media.schema.json" },
+          "ariaLabel": { "type": "string", "maxLength": 160 }
+        },
+        "anyOf": [
+          { "required": ["label"] },
+          { "required": ["image"] }
+        ],
+        "additionalProperties": false
+      }
+    },
+    "anchors": {
+      "type": "array",
+      "maxItems": 3,
+      "uniqueItems": true,
+      "description": "Pre-locked positions the student cannot move.",
+      "items": {
+        "type": "object",
+        "required": ["position", "itemId"],
+        "properties": {
+          "position": { "type": "integer", "minimum": 0 },
+          "itemId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "shuffle": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}

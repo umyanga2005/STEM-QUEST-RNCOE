@@ -1,0 +1,7 @@
+{
+  "groups": [
+    { "groupId": "g1", "cardIds": [ "c1", "c2" ] },
+    { "groupId": "g2", "cardIds": [ "c3", "c4" ] },
+    { "groupId": "g3", "cardIds": [ "c5", "c6" ] }
+  ]
+}

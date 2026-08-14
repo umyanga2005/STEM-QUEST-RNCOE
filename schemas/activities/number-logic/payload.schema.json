@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/number-logic/payload.schema.json",
+  "$comment": "STEM QUEST Number/Logic Challenge payload (Task 3.2). Numeric reasoning with explicit answer format. NOT a free-text box accepting anything.",
+  "type": "object",
+  "required": ["schemaVersion", "problem", "answerFormat"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "problem": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "answerFormat": {
+      "enum": ["integer", "decimal", "fraction", "percent", "sequence", "expression"]
+    },
+    "inputMode": { "enum": ["numeric", "text"], "default": "numeric" },
+    "showWork": { "type": "boolean", "default": true },
+    "parts": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 4,
+      "uniqueItems": true,
+      "description": "Optional multi-part (multi-step) structure enabling per-part partial credit.",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "answerFormat"],
+        "properties": {
+          "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "label": { "type": "string", "minLength": 1, "maxLength": 200 },
+          "answerFormat": {
+            "enum": ["integer", "decimal", "fraction", "percent", "sequence", "expression"]
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

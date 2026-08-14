@@ -1,0 +1,8 @@
+{
+  "optimalPath": [
+    { "decisionId": "d1", "optionId": "o1" },
+    { "decisionId": "d2", "optionId": "o4" },
+    { "decisionId": "d3", "optionId": "o6" }
+  ],
+  "acceptableOptions": { "d1": [ "o1" ], "d2": [ "o4" ] }
+}

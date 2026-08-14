@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "scenarioText": "A water pipe bursts during a Science Fair experiment. Your team has 3 minutes to act.",
+  "entryDecision": "d1",
+  "decisions": [
+    {
+      "id": "d1",
+      "text": "Water is flooding the room. What do you do first?",
+      "options": [
+        { "id": "o1", "text": "Turn off the main water valve", "nextDecision": "d2", "outcomeText": "Good—the flow stops." },
+        { "id": "o2", "text": "Try to mop up the water", "nextDecision": null, "outcomeText": "The water keeps coming; this fails." },
+        { "id": "o3", "text": "Unplug all electrical equipment", "nextDecision": "d2", "outcomeText": "Good—safety first." }
+      ]
+    },
+    {
+      "id": "d2",
+      "text": "The water is stopped but the floor is wet. What next?",
+      "options": [
+        { "id": "o4", "text": "Place absorbent mats and warning signs", "nextDecision": null, "outcomeText": "The area is safe." },
+        { "id": "o5", "text": "Ignore it and continue the experiment", "nextDecision": null, "outcomeText": "Someone slips—safety risk." }
+      ]
+    }
+  ]
+}

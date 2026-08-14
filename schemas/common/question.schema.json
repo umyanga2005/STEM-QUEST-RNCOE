@@ -1,0 +1,163 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/common/question.schema.json",
+  "$comment": "STEM QUEST question envelope (Task 3.2): common metadata + activity payload + server-only correct_answer + authoring meta. One envelope = one JSONL line in the future NDJSON import.",
+  "title": "STEM QUEST Question",
+  "type": "object",
+  "required": [
+    "formatVersion", "stream", "level", "activityType", "activitySchemaVersion",
+    "prompt", "payload", "correctAnswer",
+    "gradeMin", "gradeMax", "difficulty",
+    "topic", "subtopic", "explanation", "status"
+  ],
+  "properties": {
+    "formatVersion": { "const": 1, "description": "NDJSON envelope format version." },
+
+    "stream": { "enum": ["science", "technology", "engineering", "mathematics"] },
+    "level": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "activityType": {
+      "enum": ["drag-drop", "matching", "ordering", "sorting", "fill-complete",
+               "image-interaction", "pattern", "memory", "scenario", "number-logic"]
+    },
+    "activitySchemaVersion": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+$" },
+
+    "prompt": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "instructions": { "type": "string", "maxLength": 300 },
+
+    "gradeMin": { "type": "integer", "minimum": 6, "maximum": 11 },
+    "gradeMax": { "type": "integer", "minimum": 6, "maximum": 11 },
+    "difficulty": { "type": "integer", "minimum": 1, "maximum": 5 },
+    "basePoints": { "type": "integer", "minimum": 1, "maximum": 100, "default": 100 },
+    "timerOverrideSeconds": { "type": ["integer", "null"], "minimum": 1, "maximum": 1800 },
+    "topic": { "type": "string", "maxLength": 40 },
+    "subtopic": { "type": "string", "maxLength": 40 },
+    "tags": {
+      "type": "array", "items": { "type": "string", "maxLength": 40 }, "maxItems": 6
+    },
+    "hints": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["level", "text"],
+        "properties": {
+          "level": { "type": "integer", "minimum": 1, "maximum": 3 },
+          "text": { "type": "string", "minLength": 1, "maxLength": 400 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "status": { "enum": ["draft", "published", "archived"] },
+    "isFlagged": { "type": "boolean", "default": false },
+    "version": { "type": "integer", "minimum": 1, "default": 1 },
+
+    "payload": { "description": "Activity-specific structure (validated below by activityType)." },
+    "correctAnswer": { "description": "Server-only expected result (validated below by activityType). Never distributed to clients." },
+    "meta": { "$ref": "https://stem-quest.dev/schemas/common/meta.schema.json" }
+  },
+  "allOf": [
+    { "$ref": "#/$defs/drag-drop" },
+    { "$ref": "#/$defs/matching" },
+    { "$ref": "#/$defs/ordering" },
+    { "$ref": "#/$defs/sorting" },
+    { "$ref": "#/$defs/fill-complete" },
+    { "$ref": "#/$defs/image-interaction" },
+    { "$ref": "#/$defs/pattern" },
+    { "$ref": "#/$defs/memory" },
+    { "$ref": "#/$defs/scenario" },
+    { "$ref": "#/$defs/number-logic" }
+  ],
+  "$defs": {
+    "drag-drop": {
+      "if": { "properties": { "activityType": { "const": "drag-drop" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/drag-drop/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/drag-drop/correct-answer.schema.json" }
+        }
+      }
+    },
+    "matching": {
+      "if": { "properties": { "activityType": { "const": "matching" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/matching/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/matching/correct-answer.schema.json" }
+        }
+      }
+    },
+    "ordering": {
+      "if": { "properties": { "activityType": { "const": "ordering" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/ordering/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/ordering/correct-answer.schema.json" }
+        }
+      }
+    },
+    "sorting": {
+      "if": { "properties": { "activityType": { "const": "sorting" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/sorting/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/sorting/correct-answer.schema.json" }
+        }
+      }
+    },
+    "fill-complete": {
+      "if": { "properties": { "activityType": { "const": "fill-complete" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/fill-complete/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/fill-complete/correct-answer.schema.json" }
+        }
+      }
+    },
+    "image-interaction": {
+      "if": { "properties": { "activityType": { "const": "image-interaction" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/image-interaction/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/image-interaction/correct-answer.schema.json" }
+        }
+      }
+    },
+    "pattern": {
+      "if": { "properties": { "activityType": { "const": "pattern" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/pattern/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/pattern/correct-answer.schema.json" }
+        }
+      }
+    },
+    "memory": {
+      "if": { "properties": { "activityType": { "const": "memory" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/memory/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/memory/correct-answer.schema.json" }
+        }
+      }
+    },
+    "scenario": {
+      "if": { "properties": { "activityType": { "const": "scenario" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/scenario/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/scenario/correct-answer.schema.json" }
+        }
+      }
+    },
+    "number-logic": {
+      "if": { "properties": { "activityType": { "const": "number-logic" } }, "required": ["activityType"] },
+      "then": {
+        "properties": {
+          "payload": { "$ref": "https://stem-quest.dev/schemas/activities/number-logic/payload.schema.json" },
+          "correctAnswer": { "$ref": "https://stem-quest.dev/schemas/activities/number-logic/correct-answer.schema.json" }
+        }
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,5 @@
+{
+  "schemaVersion": "1.0",
+  "leftItems": [ { "id": "InvalidId!", "text": "A" }, { "id": "l2", "text": "B" } ],
+  "rightItems": [ { "id": "r1", "text": "C" } ]
+}

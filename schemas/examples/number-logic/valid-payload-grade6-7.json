@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "problem": "A pizza is cut into 8 equal slices. You eat 2 slices. What fraction of the pizza is left?",
+  "answerFormat": "fraction",
+  "inputMode": "numeric",
+  "showWork": true
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "scenarioText": "Your lab light won't turn on. You must troubleshoot.",
+  "entryDecision": "d1",
+  "decisions": [
+    {
+      "id": "d1",
+      "text": "What do you check first?",
+      "options": [
+        { "id": "o1", "text": "Check the switch", "nextDecision": "d2", "outcomeText": "The switch is fine." },
+        { "id": "o2", "text": "Replace the bulb immediately", "nextDecision": null, "outcomeText": "Wrong move: you skip the diagnostic step." }
+      ]
+    },
+    {
+      "id": "d2",
+      "text": "The switch works. What next?",
+      "options": [
+        { "id": "o3", "text": "Check the fuse box", "nextDecision": null, "outcomeText": "The fuse is blown; replacing it fixes the light." },
+        { "id": "o4", "text": "Check the lamp cord", "nextDecision": null, "outcomeText": "The cord is damaged; you must replace it." }
+      ]
+    }
+  ]
+}

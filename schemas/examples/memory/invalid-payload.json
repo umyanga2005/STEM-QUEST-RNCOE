@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "cards": [ { "id": "c1", "text": "Only one card" } ],
+  "revealSeconds": 10,
+  "recallPrompt": "Too few cards.",
+  "deckType": "pairs"
+}

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/drag-drop/payload.schema.json",
+  "$comment": "STEM QUEST Drag & Drop payload (Task 3.2). Not MCQ: spatial/causal association by moving items to zones.",
+  "type": "object",
+  "required": ["schemaVersion", "items", "zones"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "items": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/draggable" }
+    },
+    "zones": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 5,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/draggable" }
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["multi-target", "single-target"],
+      "default": "multi-target",
+      "description": "single-target = one zone; items either belong there or not."
+    },
+    "randomizeItems": { "type": "boolean", "default": true },
+    "allowRetry": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "draggable": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+        "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "image": { "$ref": "https://stem-quest.dev/schemas/common/media.schema.json" },
+        "ariaLabel": { "type": "string", "maxLength": 160 }
+      },
+      "anyOf": [
+        { "required": ["label"] },
+        { "required": ["image"] }
+      ],
+      "additionalProperties": false
+    }
+  }
+}

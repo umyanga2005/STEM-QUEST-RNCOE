@@ -1,0 +1,8 @@
+{
+  "pairs": [
+    { "leftId": "l1", "rightId": "r1" },
+    { "leftId": "l2", "rightId": "r2" },
+    { "leftId": "l3", "rightId": "r3" },
+    { "leftId": "l4", "rightId": "r4" }
+  ]
+}

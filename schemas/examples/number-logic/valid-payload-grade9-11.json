@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "problem": "A car accelerates from rest at 4 m/s^2. What distance (m) does it cover in 3 seconds?",
+  "answerFormat": "decimal",
+  "inputMode": "numeric",
+  "showWork": true,
+  "parts": [
+    { "id": "p1", "label": "Use the kinematic formula d = (1/2) a t^2", "answerFormat": "decimal" },
+    { "id": "p2", "label": "Substitute a = 4, t = 3 and compute", "answerFormat": "decimal" }
+  ]
+}

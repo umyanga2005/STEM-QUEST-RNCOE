@@ -1,0 +1,19 @@
+{
+  "batch": "1",
+  "authorSource": "stem-quest-task-5.14-batch-1",
+  "importedAt": "2026-08-17T21:23:27.356Z",
+  "counts": {
+    "total": 182,
+    "created": 0,
+    "skipped": 182
+  },
+  "author": {
+    "id": "ed8843ee-f598-4966-aae1-f5ebf481af58",
+    "role": "content_editor"
+  },
+  "approver": {
+    "id": "a051d17f-a273-4ffb-b79f-b1bc435322c6",
+    "role": "admin"
+  },
+  "created": []
+}

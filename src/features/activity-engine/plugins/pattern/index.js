@@ -6,6 +6,9 @@
  * registration helper that wires the plugin into an engine facade.
  */
 
+import { patternPlugin, registerPattern } from './plugin.js'
+import { PatternActivity } from './PatternActivity.jsx'
+
 export {
   patternPlugin,
   registerPattern,

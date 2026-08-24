@@ -8,6 +8,10 @@
  * Endpoints:
  *   POST /api/student/register        → { initials, name, school, grade }
  *   GET  /api/student/me              → Authorization: Bearer <token>
+ *   PUT  /api/student/me              → full profile update of the 4 editable
+ *                                       fields { initials, name, school, grade }
+ *   GET  /api/student/me/progress     → safe student progress overview
+ *                                       (requires progressionService)
  *   PUT  /api/student/me/avatar       → multipart field "photo" (optional)
  *
  * Auth header: `Authorization: Bearer <token>` — the raw opaque session token
@@ -15,7 +19,7 @@
  */
 
 import { Hono } from 'hono'
-import { StudentError, studentCategoryOf } from '../errors.js'
+import { StudentError, STUDENT_ERROR_CODES, studentCategoryOf } from '../errors.js'
 
 const TOKEN_HEADER_RE = /^Bearer\s+(.+)$/i
 
@@ -67,7 +71,7 @@ function errorToHttp(err) {
   return { status: 500, body: { code: 'STUDENT_INTERNAL', category: 'INTERNAL', message: 'An unexpected problem occurred. Please try again.' } }
 }
 
-export function createStudentApi({ service }) {
+export function createStudentApi({ service, progressionService = null }) {
   const app = new Hono()
 
   app.post('/api/student/register', async (c) => {
@@ -80,6 +84,24 @@ export function createStudentApi({ service }) {
 
   app.get('/api/student/me', async (c) => {
     const result = await service.getMe({ token: bearerToken(c) })
+    return c.json(result)
+  })
+
+  app.put('/api/student/me', async (c) => {
+    const body = await readJson(c)
+    const result = await service.updateProfile({ token: bearerToken(c), body })
+    return c.json(result)
+  })
+
+  app.get('/api/student/me/progress', async (c) => {
+    if (!progressionService?.getStudentOverview) {
+      throw new StudentError({
+        code: STUDENT_ERROR_CODES.INTERNAL,
+        message: 'The progress overview service is not available.',
+      })
+    }
+    const { student } = await service.getMe({ token: bearerToken(c) })
+    const result = await progressionService.getStudentOverview({ studentId: student.id })
     return c.json(result)
   })
 

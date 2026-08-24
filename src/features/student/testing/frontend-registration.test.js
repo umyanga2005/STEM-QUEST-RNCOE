@@ -13,6 +13,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createServer as createViteServer } from 'vite'
+import React from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
+import { MemoryRouter } from 'react-router'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import { validateRegistrationInput, parseGrade, GRADE_OPTIONS } from '../validation.js'
 import {
@@ -89,8 +93,8 @@ test('profile photo descriptor is optional, size-gated and MIME-scoped', () => {
   assert.match(PROFILE_PHOTO.accept, /image\/jpeg,image\/png,image\/webp/)
 })
 
-test('NEXT_STEP_PATH points at the game area (Task 5.2 placeholder)', () => {
-  assert.equal(NEXT_STEP_PATH, '/student/game')
+test('NEXT_STEP_PATH points at the mission selection area (Task 5.2)', () => {
+  assert.equal(NEXT_STEP_PATH, '/student/mission')
   assert.equal(typeof SUBMIT_LABEL, 'string')
 })
 
@@ -191,9 +195,9 @@ test('controller avatar failure degrades to success with a warning', async () =>
   assert.deepEqual(events, ['avatar-upload', 'success'])
 })
 
-test('controller nextStep routes to the Task 5.2 placeholder path', () => {
+test('controller nextStep routes to the mission selection area (Task 5.2)', () => {
   const controller = createRegistrationController({ api: fakeApi(), storage: fakeStorage() })
-  assert.equal(controller.nextStep(), '/student/game')
+  assert.equal(controller.nextStep(), '/student/mission')
 })
 
 // ---------------------------------------------------------------------------
@@ -321,10 +325,6 @@ test('registration page static-renders with labelled fields and aria status', as
   try {
     const mod = await vite.ssrLoadModule('/src/pages/StudentRegisterPage.jsx')
     const Component = mod.default
-    const { default: React } = await vite.ssrLoadModule('react')
-    const { renderToStaticMarkup } = await vite.ssrLoadModule('react-dom/server')
-    const { MemoryRouter } = await vite.ssrLoadModule('react-router')
-    const { QueryClient, QueryClientProvider } = await vite.ssrLoadModule('@tanstack/react-query')
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     const element = React.createElement(
       MemoryRouter,

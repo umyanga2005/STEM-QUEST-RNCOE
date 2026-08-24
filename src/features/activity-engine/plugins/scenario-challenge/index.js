@@ -6,6 +6,9 @@
  * registration helper that wires the plugin into an engine facade.
  */
 
+import { scenarioChallengePlugin, registerScenarioChallenge } from './plugin.js'
+import { ScenarioChallengeActivity } from './ScenarioChallengeActivity.jsx'
+
 export {
   scenarioChallengePlugin,
   registerScenarioChallenge,

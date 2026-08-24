@@ -1,0 +1,198 @@
+.ac-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem 6rem;
+  background: var(--color-bg);
+  overflow-x: hidden;
+}
+
+.ac-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 55% at 50% -10%, rgba(79, 139, 255, 0.3), transparent 70%),
+    radial-gradient(50% 40% at 85% 100%, rgba(45, 212, 191, 0.18), transparent 70%);
+  z-index: 0;
+}
+
+.ac-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 780px;
+}
+
+.ac-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.ac-brand {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.ac-greeting {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.ac-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ac-card {
+  padding: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: rgba(15, 22, 41, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.ac-card__head {
+  margin-bottom: 1.25rem;
+}
+
+.ac-title {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.ac-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--color-text-muted);
+}
+
+.ac-badges {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.ac-badge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(24, 34, 60, 0.5);
+  transition: all 0.2s ease;
+}
+
+.ac-badge--earned {
+  border-color: rgba(251, 191, 36, 0.4);
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.05));
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+}
+
+.ac-badge__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-text-dim);
+  font-weight: 800;
+  font-size: 1.5rem;
+}
+
+.ac-badge--earned .ac-badge__icon {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #071021;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+}
+
+.ac-badge__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.ac-badge__desc {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+.ac-badge__state--earned {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+.ac-cert {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(24, 34, 60, 0.6);
+}
+
+.ac-button {
+  min-height: 50px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.ac-button--primary {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: #071021;
+  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.3);
+}
+
+.ac-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(45, 212, 191, 0.45);
+}
+
+.ac-button--ghost {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}
+
+.ac-verify__input {
+  flex: 1 1 220px;
+  min-height: 52px;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(24, 34, 60, 0.8);
+  color: var(--color-text);
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+}

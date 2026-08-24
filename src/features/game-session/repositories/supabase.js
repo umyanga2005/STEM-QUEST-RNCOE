@@ -8,6 +8,8 @@
  * repository logic is unit-testable without a live database.
  */
 
+import { SupabaseProgressionRepository } from '../../progression/repositories/supabase.js'
+
 const ROUNDS_SELECT = '*, activity_types(slug)'
 
 function toMs(ts) {
@@ -25,6 +27,18 @@ function toNumber(value, fallback) {
   if (value === null || value === undefined) return fallback
   const n = typeof value === 'number' ? value : Number(value)
   return Number.isFinite(n) ? n : fallback
+}
+
+/**
+ * Guards malformed route/body ids BEFORE they reach PostgREST: `NaN` (from a
+ * non-numeric `streamId`/`levelId`/`sessionId`) would otherwise serialize as
+ * a literal `NaN` and raise a bigint syntax error instead of a clean 404/409.
+ * Returns null so the service maps it to the same not-found/locked outcome
+ * the in-memory stores produce (D-052).
+ */
+function finiteId(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
 }
 
 // ---------------------------------------------------------------------------
@@ -110,11 +124,9 @@ function sessionPatchToColumns(patch) {
   const out = {}
   for (const [domainKey, column] of Object.entries(SESSION_COLUMN_MAP)) {
     if (patch[domainKey] !== undefined) {
-      if (domainKey === 'completedAt' || domainKey === 'totalTimeMs') {
-        out[column] = toIso(patch[domainKey])
-      } else {
-        out[column] = patch[domainKey]
-      }
+      // total_time_ms is a plain bigint of milliseconds; only completed_at is a
+      // real timestamp that needs ISO serialization (D-052).
+      out[column] = domainKey === 'completedAt' ? toIso(patch[domainKey]) : patch[domainKey]
     }
   }
   return out
@@ -190,6 +202,7 @@ export class SupabaseQuestionRepository {
   }
 
   async getById(id) {
+    if (finiteId(id) === null) return null
     const { data, error } = await this.Q().select('*, activity_types(slug)').eq('id', id).maybeSingle()
     if (error) throw this.#err(error, 'getById')
     return data ? rowToQuestion(data) : null
@@ -227,6 +240,7 @@ export class SupabaseGameSessionRepository {
   }
 
   async findById(id) {
+    if (finiteId(id) === null) return null
     const { data, error } = await this.S().select('*').eq('id', id).maybeSingle()
     if (error) throw new Error(`findById failed: ${error.message}`)
     return data ? rowToGameSession(data) : null
@@ -312,7 +326,7 @@ export class SupabaseSessionRoundRepository {
       base_points: item.basePoints,
       started_at: toIso(item.startedAt),
     }))
-    const { data, error } = await this.R().insert(rows).select(ROUNDS_SELECT)
+    const { data, error } = await this.R().insert(rows).select(ROUNDS_SELECT).order('round_number', { ascending: true })
     if (error) throw new Error(`createRoundsForSession failed: ${error.message}`)
     return (data ?? []).map(rowToSessionRound)
   }
@@ -327,6 +341,7 @@ export class SupabaseSessionRoundRepository {
   }
 
   async findById(roundId) {
+    if (finiteId(roundId) === null) return null
     const { data, error } = await this.R().select(ROUNDS_SELECT).eq('id', roundId).maybeSingle()
     if (error) throw new Error(`findById failed: ${error.message}`)
     return data ? rowToSessionRound(data) : null
@@ -408,6 +423,7 @@ export class SupabaseLevelRepository {
   }
 
   async findLevel({ streamId, levelId }) {
+    if (finiteId(streamId) === null || finiteId(levelId) === null) return null
     const { data, error } = await this.client
       .from('levels')
       .select('id, stream_id, number, name, default_time_seconds, overtime_penalty_per_second, is_active')
@@ -426,6 +442,26 @@ export class SupabaseLevelRepository {
           isActive: data.is_active === true,
         }
       : null
+  }
+
+  async listForStream(streamId) {
+    if (finiteId(streamId) === null) return []
+    const { data, error } = await this.client
+      .from('levels')
+      .select('id, stream_id, number, name, default_time_seconds, overtime_penalty_per_second, is_active')
+      .eq('stream_id', streamId)
+      .eq('is_active', true)
+      .order('number', { ascending: true })
+    if (error) throw new Error(`listForStream failed: ${error.message}`)
+    return (data ?? []).map((row) => ({
+      id: row.id,
+      streamId: row.stream_id,
+      number: row.number,
+      name: row.name,
+      defaultTimeSeconds: row.default_time_seconds,
+      overtimePenaltyPerSecond: row.overtime_penalty_per_second,
+      isActive: row.is_active === true,
+    }))
   }
 }
 
@@ -460,6 +496,7 @@ export function createSupabaseRepositories({ client }) {
     studentRepository: new SupabaseStudentRepository({ client }),
     levelRepository: new SupabaseLevelRepository({ client }),
     settingsRepository: new SupabaseSettingsRepository({ client }),
+    progressionRepository: new SupabaseProgressionRepository({ client }),
   }
 }
 

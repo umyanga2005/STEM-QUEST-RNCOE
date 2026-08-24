@@ -134,7 +134,7 @@ export function parseFractionString(value) {
 }
 
 /** The correct-answer types compatible with each payload answerFormat. */
-const COMPATIBLE_TYPES = Object.freeze({
+export const COMPATIBLE_TYPES = Object.freeze({
   integer: new Set(['exact', 'tolerance', 'range']),
   decimal: new Set(['exact', 'tolerance', 'range']),
   percent: new Set(['percent', 'exact', 'tolerance', 'range']),

@@ -127,6 +127,22 @@ export class SupabaseStudentRepository {
     if (error) throw new Error(`student setProfilePhotoPath failed: ${error.message}`)
     return data ? rowToStudent(data) : null
   }
+
+  async updateProfile(id, patch) {
+    const { data, error } = await this.client
+      .from('students')
+      .update({
+        initials: patch.initials,
+        full_name: patch.fullName,
+        school_id: patch.schoolId,
+        grade: patch.grade,
+      })
+      .eq('id', id)
+      .select('*')
+      .maybeSingle()
+    if (error) throw new Error(`student updateProfile failed: ${error.message}`)
+    return data ? rowToStudent(data) : null
+  }
 }
 
 export class SupabaseStudentSessionRepository {

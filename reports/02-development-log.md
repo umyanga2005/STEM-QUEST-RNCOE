@@ -1762,3 +1762,1198 @@ code-splitting is a later-task concern.
 Later roadmap work (student registration/profile, stream/level selection,
 game-session flow, Admin panel, Question Builder, production content) can
 now use the installed foundations; none of it was started in this task.
+
+## 2026-08-15 (Task 5.1 — COMPLETED)
+
+**Stage:** Stage 5 – Student registration & lightweight session foundation.
+
+**Action:** Implemented and verified student registration, student identity,
+and the lightweight student session foundation, plus the optional profile
+photo. Students remain normal application records (D-005), never Supabase
+Auth users; the browser talks only to the Hono API, never Supabase (D-027).
+Registration accepts only `{ initials, name, school, grade }` (strict field
+gate); sessions use CSPRNG tokens stored as SHA-256 hashes (D-040). The
+existing `students`/`student_sessions`/`student-avatars` architecture was used
+exactly — NO migration, NO new table, NO RLS changes, NO Storage policy
+changes. Task 5.2 (stream/level selection) was NOT started.
+
+**Files created:**
+- `src/features/student/errors.js` — StudentError + stable codes/categories
+  and student-safe public messages.
+- `src/features/student/validation.js` — shared authoritative validation
+  (initials ≤ 5, name ≤ 100, school ≤ 120, grade integer 6–11, Unicode-safe,
+  strict allowed-field gate).
+- `src/features/student/registration/registration-fields.js` — form model
+  (4 fields + optional photo descriptor + submit labels + next-step path).
+- `src/features/student/registration/controller.js` — DOM-free flow
+  controller (validate → register → token store → optional avatar →
+  success/error).
+- `src/features/student/security/tokens.js` — CSPRNG session token
+  (`randomBytes(32)`, base64url), SHA-256 hashing, kiosk login-code generator.
+- `src/features/student/security/avatar.js` — 200 KB / JPEG-PNG-WebP gate +
+  safe `{numeric-id}/profile.{ext}` path builder.
+- `src/features/student/session/token-storage.js` — sessionStorage helper
+  storing only the opaque token (session-scoped, kiosk-appropriate).
+- `src/features/student/service/student-service.js` — server orchestration
+  (register + getMe + uploadAvatar; school find-or-create; TTL from
+  `game_settings`; security boundary).
+- `src/features/student/repositories/contracts.js` / `index.js` /
+  `memory.js` / `supabase.js` — repository contracts + in-memory and
+  service-role Supabase adapters (column names match 0001 exactly).
+- `src/features/student/api/client.js` — browser API client (fetch only).
+- `src/features/student/api/queries.js` — TanStack Query `useStudentMe`.
+- `src/features/student/api/server.js` — Hono routes
+  (`POST /api/student/register`, `GET /api/student/me`,
+  `PUT /api/student/me/avatar`) with Bearer-token parsing + error→HTTP map.
+- `src/features/student/testing/student-service.test.js` (32),
+  `student-api.test.js` (12), `frontend-registration.test.js` (22).
+- `src/pages/StudentRegisterPage.jsx` + `src/pages/student-register.css` —
+  real `/student/register` page (mobile-first, a11y, Motion, reduced-motion).
+- `reports/22-task-5.1-student-registration.md` — the dedicated Task 5.1
+  report (28 sections).
+
+**Files modified:**
+- `src/pages/StudentRegisterPage.jsx` — fixed feature import paths
+  (`../../features/` → `../features/`; the page lives in `src/pages/`, so the
+  feature prefix is one level up). This was the root cause of the SSR page
+  test failing to resolve `controller.js`.
+- `src/features/student/testing/frontend-registration.test.js` — SSR test now
+  imports `react`/`react-dom/server`/`react-router`/`@tanstack/react-query`
+  directly instead of `vite.ssrLoadModule(...)`; React 19 is CJS and Vite 8's
+  module runner throws `module is not defined` when inlining `react` directly.
+  The page component is still loaded via `ssrLoadModule` and rendered to
+  static markup to assert the a11y contract.
+- `src/features/game-session/api/dev-server.js` — composes the student Hono
+  app into the demo API by URL prefix (`createStackedApp`).
+- `package.json` — test glob extended to include
+  `src/features/{activity-engine,game-engine,game-session,student}/testing/**/*.test.js`.
+- `reports/04-todo.md`, `reports/README.md`, `README.md` — tracking updates.
+
+**Packages installed:** none (all dependencies pre-existed from prior stages).
+
+**Configuration changes:** none (no `.env`, no Vite, no Tailwind changes).
+
+**Commands executed:** `npm test` (851), `npm run lint`, `npm run build`,
+`python3 schemas/validate.py` (24/72/12/12), HTTP smoke against the composed
+demo API + Vite dev server (register/me/invalid-token/privileged-field/404 +
+`GET /` + `GET /student/register`), `dist/` bundle security probe.
+
+**Result:** `npm test` = **851 pass / 0 fail** (was 785; +66 student tests);
+oxlint clean; `vite build` clean (StudentRegisterPage lazy chunk 20.36 kB /
+gzip 7.10 kB; main index 391.58 kB / gzip 116.55 kB). HTTP smoke all green
+(201 register, 200 /me, 401 invalid token, 400 unexpected field, 404 unknown
+route, 200 `/` and `/student/register`). Bundle probe 0 leaks. Supabase
+untouched (in-memory demo data only). Schema validator unchanged (24/72/12/12).
+
+**Warnings / errors:** One pre-existing bug surfaced during verification: the
+student page imported features with `../../features/` from `src/pages/`,
+which resolves outside the repo; fixed to `../features/`. The Vite 8 SSR
+`ssrLoadModule('react')` limitation (CJS React) was worked around in the test
+via direct imports. No other warnings.
+
+**Next recommended action:** Task 5.2 — stream/level selection UI on top of
+this foundation (authenticated student via the stored session token chooses a
+stream + level; streams/levels data + game-session service). Do not start it
+inside Task 5.1.
+
+## 2026-08-15 (Task 5.2 — COMPLETED)
+
+**Stage:** Stage 5 – Student stream & level selection UI.
+
+**Action:** Implemented and verified the "Choose your stream" stage. An
+authenticated student (via the Task 5.1 opaque session token, authenticated
+through `StudentService.getMe`) picks exactly one of the four approved streams
+and one of the five levels per stream, then begins a mission. The selection UI
+is a mirror of the authoritative game-session unlock rule
+(`GameSessionService.applyUnlockRule`): level 1 always open; levels 2..5 need
+an active special-access grant (stream-wide or level-specific — the current
+backend treats any matching `stream_id` as covering the stream, recorded as
+D-076). Grade is never a level gate (D-045). The architecture §11
+previous-level-completion progression is documented as future backend work,
+NOT a client-side gate. New mission backend (`/api/student/mission/streams` +
+`/api/student/mission/streams/:streamId/levels`), read-only memory + Supabase
+repositories, pure access resolver, real `/student/mission` page
+(stream picker → level picker → begin → router-state `{ streamId, levelId }`
+to the `/student/game` placeholder), `NEXT_STEP_PATH` now `/student/mission`,
+expired-session 401 guard. NO Supabase migration/RLS/Storage changes, no new
+packages. Task 5.3 (game UI) NOT started.
+
+**Files created:**
+- `src/features/mission/errors.js` — MissionError + stable codes/categories +
+  safe public messages.
+- `src/features/mission/access/access-resolver.js` — pure unlock/status model
+  (available/special/locked; completed/in-progress/not-started;
+  buildLevelContext/buildStreamSummary).
+- `src/features/mission/service/mission-service.js` — read-only orchestration
+  (getMissionOverview / getMissionLevels).
+- `src/features/mission/repositories/contracts.js` / `index.js` / `memory.js` /
+  `supabase.js` — read-only repo contracts + in-memory and service-role
+  PostgREST adapters (columns match 0001 exactly).
+- `src/features/mission/api/server.js` — Hono routes + StudentError/MissionError
+  → HTTP map.
+- `src/features/mission/api/queries.js` — TanStack Query `useMissionStreams` /
+  `useMissionLevels`.
+- `src/features/mission/selection/selection-state.js` — pure reducer
+  (streams → levels → ready, back navigation, locked refusal).
+- `src/features/mission/selection/use-mission-selection.js` — selection hook.
+- `src/features/mission/session-guard.js` — `isExpiredSession` (401 → redirect).
+- `src/features/mission/demo/seed.js` — approved demo stream descriptions.
+- `src/features/mission/testing/access-resolver.test.js` (12),
+  `mission-service.test.js` (12), `mission-api.test.js` (7),
+  `frontend-mission.test.js` (7).
+- `src/pages/StudentMissionPage.jsx` + `src/pages/student-mission.css` +
+  `src/pages/stream-icons.jsx` — real `/student/mission` page + glyphs.
+- `reports/23-task-5.2-stream-level-selection.md` — the dedicated Task 5.2
+  report (29 sections).
+
+**Files modified:**
+- `src/features/student/api/client.js` — added `getMissionStreams` /
+  `getMissionLevels` (single student client surface).
+- `src/features/student/registration/registration-fields.js` —
+  `NEXT_STEP_PATH` `'/student/game'` → `'/student/mission'`.
+- `src/features/student/testing/frontend-registration.test.js` — the two
+  `NEXT_STEP_PATH`/`nextStep()` assertions updated to `/student/mission`.
+- `src/features/game-session/api/dev-server.js` — `createStackedApp` now
+  composes the mission app (mounted before the student prefix); mission
+  memory repos seeded from `demoBaseData()` + approved descriptions;
+  `createDemoApi` returns `missionService`.
+- `src/router.jsx` — `/student/mission` lazy route added.
+- `package.json` — test glob extended to include
+  `src/features/{activity-engine,game-engine,game-session,student,mission}/testing/**/*.test.js`.
+- `reports/04-todo.md`, `reports/README.md`, `README.md` — tracking updates.
+- `reports/03-decisions.md` — new decision D-076.
+
+**Packages installed:** none.
+
+**Configuration changes:** none.
+
+**Commands executed:** `npm test` (889), `npm run lint`, `npm run build`,
+`python3 schemas/validate.py` (24/72/12/12), HTTP smoke against the composed
+demo API + Vite dev server (register → mission streams/levels, no-token 401,
+bogus-token 401, all SPA routes 200).
+
+**Result:** `npm test` = **889 pass / 0 fail** (was 851; +38 mission tests);
+oxlint clean; `vite build` clean (StudentMissionPage lazy chunk 8.90 kB /
+gzip 2.63 kB + 5.41 kB CSS). HTTP smoke all green (mission streams 200 with 4
+streams, levels 200 with 1:available + 2–5:locked, 401 no/bogus token, `/`,
+`/student/register`, `/student/mission`, `/student/game`, `/leaderboards`,
+`/admin/questions` all 200). Supabase untouched (in-memory demo data only).
+Schema validator unchanged (24/72/12/12 PASS).
+
+**Warnings / errors:** Two lint warnings fixed during development (unused
+`backToStreams` parameter → `_state`; unstable `streams` array identity in
+`useMissionSelection` → module-level `EMPTY_STREAMS` constant). No other
+warnings.
+
+**Next recommended action:** Task 5.3 — student game UI on top of the Game
+Session API; the mission page already hands `{ streamId, levelId }` via router
+state. Do not start it inside Task 5.2.
+
+## 2026-08-15 (Task 5.3 — COMPLETED)
+
+**Stage:** Stage 5 – Student game UI (session screen).
+
+**Action:** Implemented and verified the real student game screen at
+`/student/game` as a thin token-authenticated client over the existing
+authoritative `GameSessionService`. The mission page hands `{ streamId,
+levelId }` via router state; the page authenticates with the Task 5.1 opaque
+Bearer token through `StudentService.getMe` (`studentId` derived server-side,
+never from the client). New student game API `/api/student/game/*`
+(start/resume, current, submit, finish) composed ahead of the generic student
+prefix; client fetch client + TanStack Query hooks; pure round lifecycle
+(IDLE→STARTING→PLAYING⇄SUBMITTING→ROUND_RESULT→SESSION_COMPLETE) with a
+minimal Zustand wrapper; session-scoped choice storage for refresh recovery;
+display-only countdown timer; one `RoundActivity` boundary over all ten
+activity renderers; real `StudentGamePage` with HUD (progress/score/timer),
+round-result panel, completion panel, and a navigation guard for active
+sessions. Also: shared student-identity facade so registered students (id ≥ 2)
+can start sessions; ordering demo questions complete the ten-type demo pool;
+six plugin entry files gained top-level imports so Vite's SSR module runner can
+load them. NO Supabase changes, no new packages. Task 5.4 NOT started.
+
+**Files created:**
+- `src/features/game-session/api/student-server.js` — student-authenticated
+  game Hono app (Bearer auth, composed game+student error map).
+- `src/features/game-session/api/student-client.js` — browser fetch client
+  (`gameStudentClient`).
+- `src/features/game-session/api/queries.js` — `useStartSession` /
+  `useSubmitRound` / `useFinishSession` / `useCurrentRound`.
+- `src/features/game-session/round/round-lifecycle.js` + `round-store.js` —
+  pure lifecycle reducer + Zustand wrapper.
+- `src/features/game-session/session/choice-storage.js` — session choice
+  storage (sessionStorage `stemquest.student.game`).
+- `src/features/game-session/timer/use-countdown.js` — display-only countdown.
+- `src/features/game-session/activity/activity-registry.js` +
+  `activity-renderer.jsx` — 10-type render map + `RoundActivity`.
+- `src/features/game-session/demo/ordering-demo-questions.js` — ordering demo
+  content (ids 14–16, from Task 3.2 fixtures).
+- `src/features/game-session/testing/round-lifecycle.test.js` (8),
+  `student-game-api.test.js` (6), `frontend-game.test.js` (12).
+- `src/pages/StudentGamePage.jsx` + `src/pages/student-game.css`.
+- `reports/24-task-5.3-student-game-ui.md` — the dedicated Task 5.3 report.
+
+**Files modified:**
+- `src/features/game-session/api/dev-server.js` — student game app composed
+  into `createStackedApp` (mounted before the student prefix); game service
+  student identity now reads the student feature store (with the game demo
+  store as a legacy fallback); ordering demo questions added to the pool.
+- `src/router.jsx` — `/student/game` lazy route → `StudentGamePage`.
+- `src/features/activity-engine/plugins/{fill-complete,image-interaction,
+  memory,number-logic,pattern,scenario-challenge}/index.js` — added top-level
+  imports so the entry modules load under Vite's SSR module runner (behaviour
+  unchanged).
+- `reports/04-todo.md`, `reports/README.md`, `README.md` — tracking updates.
+
+**Packages installed:** none.
+
+**Configuration changes:** none.
+
+**Commands executed:** `npm test` (915), `npm run lint`, `npm run build`,
+`python3 schemas/validate.py` (24/72/12/12 PASS), HTTP smoke against the
+composed demo server (20/20), `rg` bundle security probe over `dist/assets`.
+
+**Result:** `npm test` = **915 pass / 0 fail** (was 889; +26 game-session
+tests). oxlint clean. `vite build` clean (StudentGamePage lazy chunk 24.58 kB /
+gzip 7.72 kB). Schema validator PASS (unaffected). HTTP smoke 20/20:
+register → mission → start (201, safe descriptor) → resume-same-session →
+submit all 3 rounds (server-scored) → finish (score+code+breakdown), bad
+token 401, foreign-session 403, no scoring secrets in any payload. Bundle
+probe: no `correctAnswer`/`acceptableIds`/`optimalPath`/`requiredHotspots`/
+scoring strings in `dist/assets`.
+
+**Warnings / errors:** Two lint warnings fixed during development (unused
+`repos` in a test; unused `running` in a test). The SSR module-runner load
+failures for six plugin entries were root-caused and fixed (added top-level
+imports, behaviour unchanged). A real composition bug was found and fixed: the
+game service previously looked up students only in its own store (which seeded
+just the demo student), so registered students with id ≥ 2 could not start a
+session — now the student feature store is the single identity source.
+
+**Next recommended action:** Task 5.4 — not started. Backlog candidates:
+Supabase repository adapters for the game-session service, real content
+authoring, or progression backend work (D-076).
+
+## 2026-08-15 (Task 5.4 — COMPLETED)
+
+**Stage:** Stage 5 – Production Supabase integration.
+
+**Action:** Connected the Tasks 5.1–5.3 student + game system to the real
+linked Supabase project (`fmauqixvdpdgrghuapfs`) through a production server.
+One service-role client (`getSupabaseServerClient`, shared across the
+game-session, student and mission repository sets) wires the existing
+`GameSessionService`, `StudentService` and mission services to the existing
+PostgREST adapters — student → game session → 3 rounds → student answers →
+server scoring → scores ledger — reusing contracts and leaving the UI and
+engines unchanged. New `createProductionApi` composition with a binary-safe
+HTTP bridge (multipart avatars) and a `runProductionServer` runner (port 4101).
+Full `.env` support per user request: server reads `SUPABASE_URL` +
+`SUPABASE_SERVICE_ROLE_KEY` from `.env` (gitignored) via `node --env-file=.env`
+(`api:production` + `smoke:production` scripts). Progress writes
+(`student_progress`/`student_level_progress`) documented as deferred to the
+progression task by user decision. NO schema change, no new packages.
+
+**Live smoke verification** surfaced and fixed three fake-masked production
+bugs in `game-session/repositories/supabase.js`: (1) `createRoundsForSession`
+insert-select returned rounds unordered → a fresh session could report round 3
+as current (added `.order('round_number')`); (2) `total_time_ms` was passed
+through `toIso()` → PostgREST `invalid input syntax for type bigint`
+(fixed: bigint milliseconds, only `completed_at` ISO); (3) non-numeric ids
+serialized as literal `NaN` → bigint syntax error instead of clean 409/404
+(added `finiteId()` guards in the supabase repos; mission `findById` too). A
+latent production bug was also fixed: `getSupabaseServerClient` was sync and
+destructured `createClient` from the un-awaited dynamic-import Promise →
+`createClient is not a function` on first live use (now async, all call sites
+await it).
+
+**Files created:**
+- `src/features/game-session/api/production-server.js` — production
+  composition + binary-safe `handle()` + `runProductionServer`.
+- `src/features/game-session/testing/fake-supabase-client.js` — deterministic
+  PostgREST-shaped fake + `questionFixtureToRow`.
+- `src/features/game-session/testing/supabase-repositories.test.js` (7 repo
+  contract tests), `production-api.test.js` (5 production API tests).
+- `scripts/smoke-production.mjs` — idempotent live smoke (pre-cleanup,
+  finally-cleanup, FK-safe order, baseline restoration check).
+- `.env` (gitignored) — real project URL + service-role key.
+- `reports/25-task-5.4-production-supabase-integration.md` — this report.
+
+**Files modified:**
+- `src/features/game-session/repositories/supabase-client.js` — async
+  `getSupabaseServerClient`.
+- `src/features/game-session/repositories/index.js`,
+  `student/repositories/index.js`, `mission/repositories/index.js` — await
+  the client in supabase mode.
+- `src/features/game-session/repositories/supabase.js` — round ordering,
+  `total_time_ms` bigint, `finiteId` guards.
+- `src/features/mission/repositories/supabase.js` — `findById` NaN guard.
+- `package.json` — `api:production`, `smoke:production`.
+- `.env.example` — server-only Supabase vars documented.
+- `reports/04-todo.md`, `reports/README.md`, `reports/03-decisions.md`,
+  `README.md` — tracking updates.
+
+**Packages installed:** none.
+
+**Configuration changes:** `.env` (gitignored) created; scripts use
+`node --env-file=.env`.
+
+**Commands executed:** `npm test` (927), `npm run lint`, `npm run build`,
+`python3 schemas/validate.py` (PASS), `npm run smoke:production` against the
+real project (35/35), direct live-DB baseline query, `rg` bundle security
+probe over `dist/assets`.
+
+**Result:** `npm test` = **927 pass / 0 fail** (was 915; +12 supabase repo +
+production API tests). oxlint clean. `vite build` clean. Schema validator
+PASS (unaffected). Live HTTP smoke **35/35**: identity, catalogue seed intact,
+pre-cleanup idempotent, 3 seeded questions, health, register, me, private
+avatar, mission streams/levels, start → current round resumes → second start
+resumes same session → 3 server-scored correct submits (100 pts each) → no
+pending round → finish (300/300 + code + breakdown) → error matrix
+(401/403/404/409) → DB assertions (completed session, 3 answered rounds, 3
+student_answers, score ledger, hashed token, private avatar, server-side-only
+correct answers) → cleanup restores exact baseline
+(questions=0 students=0 schools=0 sessions=0 scores=0 answers=0). Bundle
+probe (three-way, `grep` — `rg` is not installed here, so the blanket "0
+files" probes of earlier stages were false passes and are corrected in this
+report): **A. credentials** (`SUPABASE_SERVICE_ROLE_KEY`/`service.role`/
+`VITE_SUPABASE`/`sb_secret_`) 0 files; **B. actual answer data** (demo
+fixtures / `correct_answer:` JSON) 0 files; **C. informational prose** — the
+field names appear once each as static error/description strings (schema-check
+registry + `SECURITY_CORRECT_ANSWER_EXPOSED` guard), which is the security
+guard itself, not answer data.
+
+**Warnings / errors:** Three real production bugs found and fixed by the live
+smoke (§ above) plus the latent `getSupabaseServerClient` async bug. One smoke
+check was re-ordered: "404 unknown round" now targets a fresh active session
+because `loadAndGuardSession` correctly rejects a completed session with 409
+before a round lookup can 404. A pre-existing flaky assertion was hardened
+(D-059): the level-1 timer assertions in `student-game-api.test.js` and
+`production-api.test.js` hardcoded 90s, but demo question id 4 carries
+`timerOverrideSeconds: 45` and seeded-random selection can surface it first —
+the assertions now derive the expected value from the selected question's
+override. Suite re-run twice: 927/927 both times.
+
+**Next recommended action:** Task 5.5+ — not started. Backlog candidates:
+progression backend work (D-076, including the now-deferred
+`student_progress` writes), real content authoring pipeline, remaining
+polish. Not begun per plan.
+
+## 2026-08-15 (Task 5.5 — COMPLETED)
+
+**Stage:** Stage 5 – Student progression backend + level unlock persistence.
+
+**Action:** Implemented the D-076 deferred progression entirely in the backend
+with a new `src/features/progression/` feature. `ProgressionService` is the
+single authority: `assertLevelUnlocked` gates every session start (level 1
+open; level N requires N−1 completed for the same stream **or** an active
+special-access grant) and `recordCompletion` writes the deferred rows on
+`finishSession` — `student_level_progress` UPSERT on `(student_id, level_id)`
+(best-score max, attempts+1, first `completed_at` preserved) plus the
+recomputed stream aggregate `student_progress` UPSERT on
+`(student_id, stream_id)` (`current_level = clamp(max+1,1,5)`,
+`completed_levels`, `stream_completed`). Re-finishing a completed session is
+idempotent (stored payload returned, no writes). Game-session repos gained a
+`progressionRepository` + `LevelRepository.listForStream` (memory + Supabase +
+contracts); the deterministic PostgREST fake gained `upsert`. Mission
+`resolveLevelAccess`/`buildLevelContext` gained optional
+`previousLevel`/`previousLevelProgress` so the picker renders a
+progression-unlocked level as `available` (distinct from a grant's `special`);
+`MissionService` threads the same-stream previous level per card. Special
+access stays independent — a grant opens play but never fabricates a
+completion. Removed the old grant-only `GameSessionService.applyUnlockRule`.
+
+**Tests:** 39 new (16 progression-service, 9 game-session E2E over the student
+API, 6 supabase repo contracts, 8 mission access) covering the unlock matrix,
+chain (no leapfrog), cross-stream + cross-student isolation, idempotent
+re-finish, special-access interplay, payload secrecy, and the exact 0001
+column names via UPSERT round-trips. `package.json` test glob extended with
+`progression`. Suite 927 → **966/966** (three consecutive runs), lint clean,
+build clean, `schemas/validate.py` PASS (24/72/12/12). NO schema change, no
+new packages.
+
+**Live smoke (extended 35 → 49 checks):** level-1 finish writes
+`student_level_progress` (attempts 1, best) + `student_progress`
+(current_level 2); level-2 start is then 201 (progression unlock, no grant);
+level-2 finish advances the aggregate to current_level 3; level 3 passes the
+unlock gate (pool-limited only — `GAME_INSUFFICIENT_POOL`, not locked); a
+fresh student stays `GAME_LEVEL_LOCKED` on 2 and 3. 49/49 PASS, live DB
+restored to exact baseline (questions=0 students=0 schools=0 sessions=0
+scores=0 answers=0 level_progress=0 stream_progress=0). Bundle probe
+(three-way `grep`, `rg` absent): **A.** credentials 0 files; **B.** actual
+answer data (`"mappings"`, demo fixture content, `"zones":[...]`) 0 files;
+**C.** informational prose only — `correctAnswer`/`acceptableIds` appear once
+each as the `SECURITY_CORRECT_ANSWER_EXPOSED` guard message and a
+schema-check registry description.
+
+**Warnings / errors:** One smoke check was written incorrectly at first —
+after completing level 2, level 3 is legitimately unlocked, so the "level 3
+still locked" assertion was reworded to assert the unlock gate passed
+(pool-limited only). No production runtime bugs surfaced.
+
+**Next recommended action:** Task 5.6+ — not started. Backlog candidates:
+leaderboards, admin/progression viewing, real content authoring, remaining
+polish.
+
+---
+
+## 2026-08-16
+**Stage:** Task 5.6 — student profile + progress dashboard.
+
+**Action:** Built the editable profile + safe progress dashboard. Backend:
+`StudentService.updateProfile` — identity from the session token only; the
+raw body goes through the exact `validateRegistrationInput` gate (foreign
+fields like `score`/`studentId` → `400 STUDENT_UNEXPECTED_FIELD`); school
+name resolved to `school_id`; repository `updateProfile` touches exactly the
+editable 0001 columns (`initials`, `full_name`, `school_id`, `grade`), never
+`login_code`. `ProgressionService.getStudentOverview({ studentId })` (new
+optional `streamRepository` dep) returns a read-only safe projection: per
+stream exactly `{ id, number, name, status, access, replayable }` per level
+(no attempts/bestScore per level) + safe aggregates (currentLevel clamp,
+completion percent, stream-level bestScore/totalAttempts, nextLevel = first
+non-completed non-locked level) + `overall` totals. API: `PUT /api/student/me`
+and `GET /api/student/me/progress` on the student Hono app;
+`createStudentApi({ service, progressionService = null })` backward
+compatible; dev + production servers wire `profileProgressionService` from
+the mission `streamRepository` (removed the duplicate `studentApp` const in
+the dev server). Client: `studentApiClient.updateProfile`/`getProgress` +
+`useStudentProgress`/`useUpdateProfile`/`useUploadAvatar` (mutations
+invalidate `['student','me',token]`). Frontend: real `/student/profile` page
+(`StudentProfilePage.jsx` + `student-profile.css`, exported
+`ProgressOverview`, `StreamCard`, `Statistics`, `PhotoHalo`,
+`ProfileEditForm`) — photo halo, validated edit form, per-stream progress
+cards with five level pips + `role="progressbar"`, statistics,
+Continue/Back-to-mission navigation, session-expiry guard (Navigate to
+register). Entry points on the register success/returning panels and the
+mission header.
+
+**Files created:** `src/pages/StudentProfilePage.jsx`,
+`src/pages/student-profile.css`,
+`src/features/student/testing/profile-service.test.js`,
+`src/features/student/testing/profile-api.test.js`,
+`src/features/student/testing/frontend-profile.test.js`,
+`src/features/progression/testing/progression-overview.test.js`,
+`reports/27-task-5.6-student-profile-progress.md`.
+
+**Files modified:** `src/features/student/service/student-service.js`,
+`src/features/student/repositories/{contracts,memory,supabase}.js`,
+`src/features/student/api/server.js`,
+`src/features/progression/service/progression-service.js`,
+`src/features/game-session/api/{dev-server,production-server}.js`,
+`src/features/student/api/{client,queries}.js`, `src/router.jsx`,
+`src/pages/StudentRegisterPage.jsx`, `src/pages/StudentMissionPage.jsx`,
+`scripts/smoke-production.mjs`, `reports/{02-development-log,03-decisions,
+04-todo,README}.md`, root `README.md`.
+
+**Packages installed:** None. No new dependencies.
+
+**Configuration changes:** None.
+
+**Commands executed:** `node --test` on the four new test files (iterate),
+`npm test` (twice, 1006/1006), `npm run lint` (clean), `npm run build`
+(clean), `python3 schemas/validate.py` (PASS 24/72/12/12), `npm run
+smoke:production` (58/58), bundle grep probe over `dist/assets`.
+
+**Result:** 40 new tests → suite 966 → **1006/1006**. Lint clean, build
+clean, schema validator PASS. Live smoke extended 49 → **58/58** against
+`fmauqixvdpdgrghuapfs`: profile update persists (school + grade), `me`
+reflects it, foreign `score` + forged `studentId` rejected (`400
+STUDENT_UNEXPECTED_FIELD`), fresh overview all-zero, overview advances
+truthfully after level 1 and level 2, per-level rows expose only the approved
+level surface, student B stays zero (isolation). Cleanup switched to the
+ilike `STEM QUEST Smoke %` pattern so both smoke schools are removed; DB
+restored to exact baseline (questions=0 students=0 schools=0 sessions=0
+scores=0 answers=0 level_progress=0 stream_progress=0). Bundle probe
+(three-way `grep`): **A.** credentials 0 files; **B.** JWT material 0 files;
+**C.** answer data 0 files (only the `correctAnswerExposed` guard error name
+as prose). NO schema change, no new packages.
+
+**Warnings / errors:** (1) Two smoke assertions initially expected `400
+STUDENT_INVALID_INPUT` for foreign fields; the real contract is the distinct
+`400 STUDENT_UNEXPECTED_FIELD` — smoke assertions corrected. (2) A
+constant-nullishness lint warning (`Number(x) ?? 0`) in the overview
+aggregation fixed to `Number(x) || 0`. (3) `nextLevel` originally picked the
+first non-locked level (always level 1); corrected to skip completed levels
+so it reports the true next playable level. No production runtime bugs
+surfaced.
+
+**Next recommended action:** Task 5.7+ — not started. Backlog candidates:
+leaderboards, admin/progression viewing, real content authoring, remaining
+polish.
+
+## 2026-08-16
+**Stage:** Task 5.7 — live stream leaderboard.
+
+**Action:** Built four stream Top-10 leaderboards over the existing
+`leaderboard_entries` table (0001 §20 — NO schema change, no migration).
+`LeaderboardService` (`recordBestScore` + `getTopForStream` +
+`getAllLeaderboards`, exported pure `isBetterScore` + `TOP_N = 10`): write
+path validates score (0–300 int), derives `displayName` as `${initials}
+${fullName}` from the student record, and upserts only when strictly better
+(D-010/D-029: score DESC, completion_time_ms ASC NULLS LAST, achieved_at ASC,
+LIMIT 10). Repositories: `MemoryLeaderboardRepository` (dev/tests) and
+`SupabaseLeaderboardRepository` (prod — one covered read on
+`leaderboard_top10_idx`, one point read, single `(student_id, stream_id)`
+upsert). Public Hono API `GET /api/student/leaderboards` +
+`/api/student/leaderboards/:streamId` mounted before `/api/student/*`;
+optional Bearer token only upgrades the payload with `self: true`;
+`toPublicEntry` strips `studentId` (never exposed; login code / token hash /
+school id / grade never leave the server). Best-effort
+`GameSessionService.finishSession` hook calls `recordBestScore` after the
+completion is recorded — a failure is caught + logged, never 500s the
+finish; the next better attempt repairs the row. Browser Realtime
+(**D-080**): `@supabase/realtime-js@^2.112.3` added; refcounted
+`createLeaderboardRealtimeController` (one socket regardless of subscribers)
+on channel `leaderboard_entries`; `useLiveLeaderboard` invalidates the
+`['leaderboard']` prefix; `realtimeConfig()` reads
+`import.meta.env?.VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` at runtime
+and reports `UNAVAILABLE` when absent → UI shows "Live updates off"
+(**`.env` untouched** — the public anon key stays a deploy-time config
+step). Frontend: real `/leaderboards` page (`LeaderboardPage.jsx` +
+`leaderboard.css`, reusable exports `LeaderboardBoard`, `LeaderboardTable`,
+`LeaderboardSkeleton`, `LeaderboardStatus`, `LeaderboardError`, `LiveBadge`)
+— tabs, self-row highlight, retry action, aria-live, keyboard tabs,
+reduced-motion; "View live leaderboards" entry point added to the mission
+page. The deterministic PostgREST fake gained the `leaderboard_entries`
+table + multi-column `.order()` with Postgres null semantics.
+
+**Files created:** `src/features/leaderboard/` —
+`contracts/contracts.js`, `errors.js`,
+`repositories/{memory,supabase,index}.js`,
+`service/leaderboard-service.js`, `api/server.js`,
+`client/client.js`, `queries/queries.js`, `realtime/realtime.js`,
+`testing/{leaderboard-repository,leaderboard-service,leaderboard-api,
+leaderboard-realtime,leaderboard-session-hook,frontend-leaderboard}.test.js`;
+`src/pages/LeaderboardPage.jsx`, `src/pages/leaderboard.css`;
+`reports/28-task-5.7-live-leaderboard.md`.
+
+**Files modified:** `src/features/game-session/service/game-session-service.js`
+(optional `leaderboardService` + best-effort finish hook),
+`src/features/game-session/api/{dev-server,production-server}.js`
+(leaderboard wiring + `createStackedApp` mount order),
+`src/features/game-session/testing/fake-supabase-client.js`,
+`src/router.jsx`, `src/pages/StudentMissionPage.jsx`, `package.json`
+(realtime-js dep + leaderboard test glob), `scripts/smoke-production.mjs`,
+`reports/{02-development-log,03-decisions,04-todo,README}.md`, root
+`README.md`.
+
+**Packages installed:** `@supabase/realtime-js@^2.112.3` (browser Realtime
+only; the service-role client stays server-side).
+
+**Configuration changes:** None (no `.env` change; `VITE_SUPABASE_URL` /
+`VITE_SUPABASE_ANON_KEY` optional at deploy time for live updates).
+
+**Commands executed:** `node --test` on the six leaderboard test files
+(iterate), `npm test` (1056/1056), `npm run lint` (clean), `npm run build`
+(clean), `python3 schemas/validate.py` (PASS), `npm run smoke:production`
+(69/69), bundle grep probe over `dist/assets`.
+
+**Result:** 50 new tests → suite 1006 → **1056/1056**. Lint clean, build
+clean, schema validator PASS. Live smoke extended 58 → **69/69** against
+`fmauqixvdpdgrghuapfs`: all-four-streams endpoint; science board shows A's
+best 300 at rank 1 with `self:true`; technology board isolated (empty);
+public no-token access (`self:false`); student B (never played) has no
+entry; DB row materialised with derived display name "SS Smoke Student";
+**best-score rule verified live** — a lower-scoring replay finishes cleanly,
+does NOT overwrite the 300, and keeps a single row; 404 for unknown stream;
+no private fields in any payload. Cleanup: `leaderboard_entries` added to
+baseline + restore; DB restored to exact baseline (leaderboard=0). Bundle
+probe (three-way `grep`): **A.** credentials 0 files; **B.** JWT material —
+no such secret exists in the app; **C.** answer data 0 fixtures (only the
+server-response display strings `waiting for server scoring.` /
+`correctnessFraction ?? 0` and error prose). NO schema change.
+
+**Warnings / errors:** (1) **Production bug caught by smoke** — the Supabase
+upsert sent the ISO string `1970-01-01T00:00:18.088Z` into the `bigint`
+`completion_time_ms` column (`toIso` instead of `toMs`), silently skipping
+every best-score write; fixed in `repositories/supabase.js`, smoke re-ran
+green with leaderboard rows verified live. (2) **SSR test quirk** —
+react-query v5 renders an optimistic `pending` for an errored no-data query
+under `renderToStaticMarkup`, so the page-level error assertion could never
+pass; extracted a pure `LeaderboardStatus` gate and tested its error/empty
+branches directly (client-side error rendering unchanged and correct). (3)
+Class-count regexes in the frontend test counted only non-active
+`class="lb-tab"`/`class="lb-row"` strings; widened to `(?= |")` so
+active/self variants count. (4) Local smoke noise from parallel runs left an
+orphan server on port 4101 (EADDRINUSE + interleaved logs) — not a product
+issue; clean runs pass 69/69.
+
+**Next recommended action:** Task 5.8+ — not started (per plan). Backlog
+candidates: admin/progression viewing, real content authoring, remaining
+polish.
+
+## 2026-08-16 (Task 5.8 — COMPLETED)
+
+**Stage:** Stage 5 – badges & certificates.
+
+**Action:** Built backend-authoritative badges + certificates over the
+existing `badges`/`student_badges`/`certificates` tables (0001 §17–§19, 0002
+4-badge seed — NO schema change, no migration, no new packages). New
+`src/features/achievements/`: `AchievementsService.awardForCompletion` is the
+single write path called by `GameSessionService.finishSession` (best-effort,
+after the leaderboard hook); it gates on a new trusted read
+`getStreamProgress` (`student_progress.stream_completed`, added to the
+progression repo contract + memory + Supabase), then awards the
+stream-completion badge (slug derived server-side, idempotent on UNIQUE
+`(student_id, badge_id)`) and issues the stream certificate (idempotent on
+UNIQUE `(student_id, stream_id)`, `SQ-XXXXXX-XXXXXX` public code via
+`crypto.randomInt` with an unambiguous alphabet, `certificate_code`-collision
+retry). Per the **user decision**, the certificate PDF is a **hand-rolled
+minimal PDF** (`pdf-generator.js`, D-081) — single US-Letter page, base-14
+Helvetica byte streams, ASCII width tables for centering, escaping +
+non-ASCII neutralisation, byte-exact xref — generated ON DEMAND, never stored
+(no certificates Storage bucket; `document_path`/`generated_at` stay NULL).
+API (Hono, mounted before `/api/student/*` in `createStackedApp`):
+`GET /api/student/achievements`, `GET /api/student/certificates`,
+`GET /api/student/certificates/:id/pdf` (`application/pdf`), public
+`GET /api/certificates/verify/:code` (safe surface only — no student_id,
+login code, token/hash, score or answers). Revocation (service-role flag)
+→ list drops it, PDF **410**, verify `valid:false`. Memory + service-role
+Supabase repos mirror the 0001 columns/constraints; the fake PostgREST client
+gained `badges`/`student_badges`/`certificates` + `BADGE_SEED`. Frontend:
+real `/student/achievements` page (`StudentAchievementsPage.jsx` +
+`student-achievements.css`, badge cards, certificate rows + download, verify
+panel) + TanStack hooks + mission-page link. 50 new tests (47 achievements +
+3 game-session hook tests incl. the real finishSession→award flow, idempotent
+repeat finish, best-effort failure path); `npm test` **1106/1106** (2 runs),
+lint clean, build clean, schema validator PASS (24/72/12/12). Live smoke
+**84/84** (was 69) against `fmauqixvdpdgrghuapfs`: catalogue before/after,
+hook award via service-role-seeded stream completion, DB rows, valid PDF,
+public verify safe surface, **ownership isolation** (student A → C's PDF
+404), revoke → list drop + 410 + `valid:false`, unknown code 404, no private
+fields; DB restored to exact baseline incl. `student_badges` + `certificates`
+back to 0. Bundle probe: service-role key 0 files, PDF-generation secrets 0
+files (`generateCertificatePdf`/`makeCertificateCode`/`certificate_code`/
+`%PDF-`), answer fixtures 0 (`correctAnswerExposed` is the client-mode guard
+name); `loginCode` only on the register success panel (intended).
+
+**Warnings / errors:** (1) Smoke killed by the shell timeout on the first run
+— network-latency-bound against Supabase (~3 s/check), so it must run
+detached (`nohup`) or with a long tool timeout; second run passed 84/84. (2)
+Smoke upserted columns `student_progress` does not have (`best_score`,
+`total_attempts`) and `current_level: 6` (CHECK 1–5); fixed to
+`current_level: 5, completed_levels: 5, stream_completed: true`. (3) Smoke
+called `app.achievementsService` but `createProductionApi()` returns it as a
+sibling of `app`; destructured explicitly. (4) Test iteration: memory
+certificate repo did not enforce `certificate_code` uniqueness (no error →
+no collision retry) — added the duplicate-key guard; xref test compared a
+12-char slice to a 7-char expectation — fixed the slice length; hook tests
+needed the mission store seeded with the 4 streams and `register({ body })`
+shape — fixed. (5) oxlint: removed unused `PAGE_H`, rewrote `escapePdfString`
+char-by-char (`no-control-regex`), dropped two unused `harness` vars.
+
+## 2026-08-16 (Task 5.9 — COMPLETED)
+
+**Stage:** Stage 5 – admin panel foundation + Supabase Auth.
+
+**Action:** Built browser-side Supabase Auth admin login/logout with a real
+session state machine, a protected `/admin` route boundary, a server-side
+`requireAdmin` middleware and a safe `GET /api/admin/me`. New server feature
+`src/features/admin/`: `AdminService.resolveAdmin(token)` — service-role
+client `auth.getUser(token)` establishes the authenticated identity (rejects
+missing/expired JWTs and opaque student-session tokens), then
+`admins.findActiveByAuthUserId(user.id)` checks the existing 0001
+`public.admins` table for `id = user.id AND is_active = true` (D-082: the
+callable server-side `is_admin()` equivalent, crisp 401 vs 403 — invalid/
+absent token → `ADMIN_UNAUTHENTICATED`/`ADMIN_INVALID_TOKEN`, valid identity
+not an active admin → `ADMIN_FORBIDDEN`). Reusable `requireAdmin` middleware
+runs in front of every `/api/admin/*` route; `createAdminApi` exposes
+`GET /api/admin/me` returning only `{ admin: { id, displayName, role } }`
+(no token/email/secret ever). New browser feature `src/features/admin-auth/`:
+anon-key Supabase client (`persistSession:false`), access token mirrored to
+`sessionStorage` (kiosk-friendly, survives reloads), injectable
+state-machine controller (`loading/unavailable/unauthenticated/authenticated`;
+403 during restore clears the token → `unauthenticated` with no redirect
+loop; 403 during signIn throws `AdminAuthForbiddenError` + best-effort
+signOut), React context/provider, and `adminApiClient.getMe`. Real pages:
+public `/admin/login` (`AdminLoginPage`) + guarded `/admin` parent
+(`AdminAuthProvider` + `AdminShell` with placeholder nav for Dashboard,
+Questions, Students, Progress, Leaderboards, Badges & Certificates, Settings)
++ `admin.css`. Wiring: `createStackedApp` gained `adminApp = null`; the
+production server builds the admin repos/service/app and mounts `adminApp`
+**before** `/api/student/*`; the demo server passes null (no Supabase Auth in
+the demo env). Memory + service-role Supabase repos; the fake PostgREST client
+gained `admins` + `auth.getUser` + `addFakeAuthUser`/`seedFakeAdmin`. NO
+schema change, no migration, no new packages (`@supabase/supabase-js` already
+a dependency). Question Builder / 2,000 questions explicitly NOT built (out of
+scope). 37 new tests (admin API 10, admin repo 5, auth controller 14,
+frontend admin-auth 8); `npm test` **1143/1143** (2 runs), lint clean, build
+clean, schema validator PASS (24/72/12/12). Live smoke **91/91** (was 84)
+against `fmauqixvdpdgrghuapfs`: temporary Auth admin user + `admins` row
+signs in → safe `/api/admin/me` (role=admin, raw payload passes the
+no-secrets probe), 401 missing/bogus, a **student session token never grants
+admin (401)**, a valid non-admin identity → **403 `ADMIN_FORBIDDEN`**, the
+active-admin row confirmed, and the temporary Auth users + rows cleaned up
+with the DB back to its exact baseline incl. `admins=0` + the Auth user pool.
+Bundle probe: service-role key 0 files, `SUPABASE_SERVICE_ROLE_KEY`/
+`VITE_SERVICE_ROLE_KEY` 0, admin authz identifiers
+(`public.admins`/`is_admin()`/`display_name`/`is_active`) 0, admin
+credential material 0 (only login-form `password` labels + supabase-js
+library storage-prefix strings — verified by context inspection).
+
+**Warnings / errors:** (1) Live smoke seed `fetch failed` twice on first
+attempts — transient network flakiness to Supabase (nothing logged by the
+app); runs passed on retry; the smoke must run detached (`nohup`). (2) On
+two consecutive runs every DB assertion after the admin section failed
+(`total=undefined`) — diagnosed as a **smoke-script bug, not product code**:
+supabase-js switches a client's effective `Authorization` to the signed-in
+user's access token, so the shared client made all later `db.from()` queries
+as the non-admin user → RLS-empty results. Fixed by giving the smoke a
+dedicated `authDb` for `auth.admin.*`/`signInWithPassword`, keeping the
+service-role data client clean; added DB-query error capture to the affected
+checks for future diagnosability. (3) oxlint: no new findings — the
+context/provider split keeps the router's `only-export-components` rule
+satisfied; lint clean.
+
+**Next recommended action:** Task 5.10 **not started** (per plan). Backlog
+candidates: Question Builder, real content authoring, admin CRUD on the
+shell's placeholder sections, remaining polish.
+
+**Next recommended action:** Task 5.9 **not started** (per plan). Backlog
+candidates: admin/progression viewing, real content authoring, remaining
+polish.
+
+## 2026-08-17 (Task 5.10 — COMPLETED)
+
+**Stage:** Stage 5 – Admin Question Builder (foundation).
+
+**Action:** Built the Admin Question Builder catalogue surface and editor
+foundation. New server feature `src/features/admin/questions/`:
+`QuestionService` is the single authority over `GET /questions` (preview
+list), `GET /questions/catalogue` (4 streams × 5 level bands + available
+activity types), `GET /questions/:id` (full admin surface), `POST /` (create
+**draft v1** — status forced to `draft`, `version` server-managed,
+`activitySchemaVersion` derived server-side), `PUT /:id` (in-place update,
+**version preserved**, published/archived → 409 `QUESTION_READONLY_PUBLISHED`
+per D-044), `DELETE /:id` (draft only); all behind `requireAdmin` (D-082).
+Validation is **three-layer**: (A) AJV envelope
+(`question.schema.json`, grade 6..11, `^[a-z][a-z0-9_]{0,31}$` ids) + payload
++ correct-answer + meta schemas (`meta.schema.json`
+`additionalProperties:false`, no `hints` — hints live at the envelope top
+level); (B) resolved plugin `validatePayload` semantics; (C) cross-document
+plugin rules (pattern `acceptableIds` exist + schema-key alias, memory groups
+cover the deck, ordering no-duplicates, fill-complete blanks → accepted
+values, scenario entry/next/terminal references). Memory + service-role
+Supabase repositories (forced `QUESTION_SELECT` joining streams/levels/
+activity_types; row-mapper maps DTO↔row incl. `meta`). `correctAnswer`/`meta`
+are **server-only**: list/catalogue project preview rows only, and the engine
+render context **throws `SECURITY_CORRECT_ANSWER_EXPOSED`** if a question with
+`correctAnswer`/`correct_answer`/`answerKey` is rendered — `QuestionPreview`
+therefore renders a student-visible snapshot (prompt/instructions/payload)
+through a new **`createDefaultClientActivityEngine()`** that registers all 10
+plugins payload-only (mirroring the server registry). New browser feature
+`src/features/admin-questions/`: TanStack Query hooks, `QuestionList`
+(previews only, draft-only delete), `QuestionEditor` (catalogue-driven
+new/edit via `/admin/questions/new` + `/admin/questions/:id/edit`,
+**lazy template init** — fixes SSR under `renderToStaticMarkup`, collapsed
+correct-answer block, client 3-layer advisory validation + server-error
+`fields[]` display), `QuestionPreview` (per-`kind` for all 10 types), and
+`schema-valid starter templates for all 10 activity types`. One required DB
+change: `questions.meta jsonb` (migration `0004_add_questions_meta.sql`,
+idempotent `add column if not exists`, RLS-neutral, D-043 pre-authorized) —
+**user-approved** to apply in the Supabase SQL editor, **pending** at write
+time (live builder smoke blocked on `column questions.meta does not exist`
+until applied). 59 new tests (46 backend validation/service/api over the
+production stack incl. the fake Supabase client, 13 frontend + template
+validity for all 10 types + client-engine plugin registration);
+`npm test` **1202/1202** (2 runs), lint clean, build clean, schema validator
+PASS (24/72/12/12). Live smoke extended to **106 checks** (91 + meta-column
+probe + 14 builder checks: catalogue, before-list=6 seeded, create→draft v1
+with meta persisted, get full surface, list previews only, update preserves
+version with `status:'draft'` in the body — the service rejects `published`
+targets, invalid draft → 400 `QUESTION_VALIDATION_FAILED` with 3 field errors
+**and not persisted**, 404 unknown, DELETE, list back to 6, 401 no token, no
+secret keys leak); builder section verified offline against the production
+stack + fake Supabase client (create 201, invalid 400/3 fields, full HTTP
+round-trip via node `http`). Bundle probe: credentials/correct-answer `$id`s/
+`public.admins` identifiers 0 files; `correctAnswer` only as admin-editor
+response handling + shared plugin method signatures + the security guard
+(D-051/D-052 baseline), `acceptableIds` only in pattern rule code. DB baseline
+fully restored and re-verified this session (incl. cleaning 6 orphaned
+smoke-test questions + their game sessions left by a SIGPIPE-killed `| head`
+smoke run — removed in FK-safe order; questions/students/schools/
+game_sessions/scores/admins all 0, Auth users 0). `reports/31-task-5.10-admin-question-builder.md`.
+
+**Warnings / errors:** (1) Original 6 failing frontend tests — the client
+activity engine registered **no plugins**, so `validateDraft`/preview hit a
+missing plugin; fixed by registering all 10 in `createDefaultClientActivityEngine`.
+(2) SSR: `QuestionEditor` initialized from the DB draft in `useEffect` — no
+effect runs under `renderToStaticMarkup` → blank editor; fixed with lazy
+`useState` init. (3) `engine.render` **threw `SECURITY_CORRECT_ANSWER_EXPOSED`**
+because the draft included `correctAnswer`; `QuestionPreview` now strips it
+into a student-visible snapshot. (4) Original templates used hyphenated ids
+(`item-1`) violating `^[a-z][a-z0-9_]{0,31}$` and had wrong field shapes —
+rewrote all 10 to be schema-valid. (5) Grade-bounds UX checks were 1..12 vs
+the contract's 6..11 — aligned. (6) Hono trailing-slash gotcha: admin app is
+mounted via `app.use('/api/admin/*')`, so `/api/admin/questions/` → 404
+`ADMIN_UNAVAILABLE`; smoke uses exact paths (`builder('')`). (7) PUT body must
+carry `status:'draft'` — the service rejects `published` targets. (8) Smoke
+leftover cleanup: a `| head -30` probe killed a smoke run via SIGPIPE before
+`finally` cleanup, orphaning 6 seeded questions + sessions; cleaned in
+FK-safe order and baseline re-verified. (9) Live builder smoke is **blocked
+until migration 0004 is applied** (`questions.meta` column missing); offline
+production-stack verification passes, and check 4 of the smoke is the live
+gate.
+
+**Next recommended action:** Task 5.11 **not started** (per plan): apply
+migration `0004` (user), then re-run the live smoke to green the builder
+checks; backlog: per-type visual authoring forms, question-media upload
+integration, publish/review workflow, real content authoring.
+
+## 2026-08-17 (Task 5.11A — COMPLETED)
+
+**Stage:** Stage 5 – Admin Visual Question Authoring (first four types).
+
+**Action:** Replaced the raw-JSON authoring experience for Drag & Drop,
+Matching, Ordering and Sorting with visual authoring forms. New
+`src/features/admin-questions/visual-editor/`: `model.js` (pure, DOM-free:
+`nextId` reusing `^[a-z][a-z0-9_]{0,31}$`, entity makers, answer builders
+`buildMappings`/`buildPairs`/`buildOrder`/`buildAnchors`/`buildAssignments`
+that preserve existing references and re-home dangling ones, `moveInList`),
+`primitives.jsx`, four per-type forms, `registry.js` (VISUAL_FORMS,
+`hasVisualForm`, advisory `checkAnswerIntegrity` reusing the exact plugin
+cross-document rules — no duplicated/invented UI rules, no correct-answer
+schema bundled), and `index.jsx` exporting only the `VisualFormFor` component.
+`QuestionEditor` reworked into Basic information / Activity editor / Correct
+answer (visual types: "derived from the visual form", no raw JSON) / Authoring
+metadata / Preview / Actions; the other six types keep the raw JSON editors;
+published/archived stay read-only (D-044); draft now initializes synchronously
+from the query cache for deterministic SSR. `aq-*` styles added to
+`src/pages/admin.css`. NO schema change, no new packages.
+
+**Verification:** `npm test` 1229/1229 (27 new tests in
+`visual-forms.test.js` — model, SSR `renderToStaticMarkup` renders, and editor
+integration incl. published read-only and raw-JSON fallback, validated through
+the server's `createQuestionValidator`); `npm run lint` clean (split registry
+out of `index.jsx` to satisfy react fast-refresh); `npm run build` passes
+(editor chunk 197.49 kB / gzip 53.92 kB); `python3 schemas/validate.py` PASS
+(24/72/12/12); bundle probe clean (service-role creds, correct-answer `$id`s,
+`public.admins`/`is_admin()` all 0 files; `SECURITY_CORRECT_ANSWER_EXPOSED`
+guard active); live `npm run smoke:production` **106/106 PASS** (migration 0004
+now applied) with DB restored to exact baseline. `reports/32-task-5.11a-visual-authoring.md`.
+
+**Warnings / errors:** (1) First drag-drop SSR test wrongly asserted the form
+does NOT include "Goes to" — the form intentionally has a per-item zone select;
+asserted positively instead. (2) Editor integration test had a dead `void slug`
+loop — removed. (3) Ordering-removal test removed below the 3-item schema
+minimum — rewritten with a 4-step list. (4) Sorting "unassigned item" test hit
+the schema minItems before the cross-doc rule — rewritten to call the exact
+`validateAssignments` plugin rule directly. (5) `index.jsx` (registry +
+component) tripped `react(only-export-components)` lint warnings — split
+non-component exports into `registry.js`.
+
+**Next recommended action:** Task 5.11B — visual forms for the remaining six
+activity types (fill-complete, image-interaction, pattern, memory,
+scenario-challenge, number-logic) using the same thin-form/model/registry
+architecture, then media-upload integration and a publish/review workflow. Not
+started (per the stop rule after 5.11A).
+
+## 2026-08-17 (Task 5.11B — COMPLETED)
+
+**Stage:** Stage 5 – Admin Visual Question Authoring (remaining six types).
+
+**Action:** Completed visual authoring for Fill & Complete, Image Interaction,
+Pattern, Memory, Scenario Challenge and Number / Logic, reusing the 5.11A
+architecture unchanged. Six new thin forms under
+`src/features/admin-questions/visual-editor/`: `fill-complete-form.jsx`
+(template + `___` placeholders, per-blank type/label/prefix/suffix/maxLength
+and accepted-answers editors; correct answer split into the `answers` /
+`numeric` / `expression` groups, emitted only when non-empty),
+`image-interaction-form.jsx` (tap vs label, % hotspots with circle/rect hit
+regions, required toggles and label placements), `pattern-form.jsx`
+(construct-next / fill-missing / complete-sequence, reorderable sequence,
+candidate bank, candidate/numeric/text answer rule with per-candidate
+Acceptable toggles; fresh answers default to all candidates),
+`memory-form.jsx` (deck settings, cards with group selectors, group chips;
+groups live only in `correctAnswer`, sizes via `groupSizeRange`),
+`scenario-challenge-form.jsx` (decision tree: entry selector, nodes with
+options, next-decision links, optimal-option + acceptable toggles; optimalPath
+is traversable by construction), `number-logic-form.jsx` (problem, answer
+format, input mode, show-work, single vs multi-part with per-part specs;
+`COMPATIBLE_TYPES` exported from the plugin). `model.js` gained 18 strict
+helpers (`makeBlank`/`buildBlankAnswers`, `makeHotspot`/`makeImageLabel`/
+`buildImageAnswer`, `makePatternElement`/`PATTERN_SHAPES`/`withPatternKind`/
+`buildPatternAnswer`, `makeMemoryCard`/`makeMemoryGroup`/`buildMemoryGroups`,
+`makeDecision`/`makeScenarioOption`/`buildScenarioAnswer`,
+`makeNumberLogicPart`/`buildAnswerSpec`/`buildNumberLogicAnswer`) — deleted or
+renamed entities are repaired/re-homed, never left dangling. `registry.js`
+now maps all ten slugs in `VISUAL_FORMS` + `INTEGRITY_RULES` (reusing the six
+plugins' exact cross-document rules; no duplicated rules); `QuestionEditor`
+offers raw JSON only for unknown types. Added `NumberField` primitive and
+`aq-subsection`/`aq-subsection__accepted`/`aq-row--element` CSS. NO schema
+change, no new packages; correct-answer schemas still absent from the bundle.
+
+**Verification:** `npm test` 1251/1251 (22 new tests in `visual-forms.test.js`:
+model tests round-tripped through the server's `createQuestionValidator`,
+SSR renders for all six forms, and editor-integration updates — registry now
+asserts all ten visual + unknown-only raw JSON; run twice);
+`npm run lint` clean; `npm run build` passes (editor chunk 237.87 kB / gzip
+62.80 kB); `python3 schemas/validate.py` PASS (24/72/12/12); bundle probe
+clean (service-role creds, correct-answer `$id`s, `public.admins`/`is_admin()`
+all 0 files; `SECURITY_CORRECT_ANSWER_EXPOSED` guard active); live
+`npm run smoke:production` **106/106 PASS (run twice)** with DB restored to
+exact baseline. `reports/33-task-5.11b-visual-authoring.md`.
+
+**Warnings / errors:** (1) The multi-part number-logic correct answer must
+carry a schema-required top-level `type` — `buildNumberLogicAnswer` now emits
+a neutral `{ type: 'exact', value: 0 }` alongside the per-part specs, matching
+`schemas/examples/number-logic/partial-credit.json`. (2) Three new tests
+initially produced schema-invalid drafts (empty `label` on a new fill-complete
+blank, empty label `text`, empty scenario option `text`) — test fixtures now
+author the required non-blank content. (3) `makeBlank`/`makeImageLabel`/
+`makeDecision` defaults are authoring starting points; the advisory rules
+surface incompleteness until the author fills required content.
+
+**Next recommended action:** Task 5.12 — media upload integration for the
+question builder (bucket upload, path validation, alt/thumbnail flows) then a
+publish/review workflow so authored drafts can move to live distribution. Not
+started (per the stop rule after 5.11B).
+
+### 2026-08-17 — Task 5.12: secure question-media upload for the Admin Question Builder
+
+**Objective:** let the admin upload images into the private `question-media`
+bucket through the backend (never the service role in the browser), reference
+them in any of the ten visual authoring forms, preview them via short-lived
+signed URLs, and delete them with a non-destructive lifecycle — verified live.
+
+**Server (new):**
+- `src/features/admin/questions/security/media.js` — upload guardrails:
+  `QUESTION_MEDIA_BUCKET`, `QUESTION_MEDIA_MAX_BYTES = 1048576`,
+  `QUESTION_MEDIA_ALLOWED_MIME` (jpeg/png/webp), `QUESTION_MEDIA_URL_TTL_SECONDS
+  = 3600`, `MEDIA_REF_PATTERN` (matches the media schema contract), `isSafeMediaRef`,
+  `sniffImageExtension` (magic-byte sniffing for JPEG/PNG/WebP),
+  `sanitizeMediaSegment` (traversal-proof, `../evil` → `eviletc`),
+  `validateQuestionMediaFile` (EMPTY / TOO_LARGE / MIME / CONTENT / MISMATCH
+  codes), `buildQuestionMediaPath` → `question-media/{owner}/uploads/{uuid}.{ext}`,
+  and `collectMediaRefs` (recursive ref scan of a question payload).
+- `src/features/admin/questions/errors.js` — four new codes:
+  `QUESTION_MEDIA_VALIDATION_FAILED` (400), `QUESTION_MEDIA_NOT_FOUND` (404),
+  `QUESTION_MEDIA_IN_USE` (409), `QUESTION_MEDIA_FORBIDDEN` (403) + factory methods.
+- `src/features/admin/questions/service/media-service.js` —
+  `QuestionMediaService` (upload / url / remove). Ownership is proven by the
+  sanitized owner segment in the ref; removal additionally requires
+  `questionRepository.isMediaRefInUse(ref) === false` (D-084). No media table.
+- Repos: `contracts.js` documents `isMediaRefInUse` + the `QuestionMediaRepository`
+  contract; `memory.js` gained `store.media` + `MemoryQuestionMediaRepository`
+  + `isMediaRefInUse`; `supabase.js` gained `SupabaseQuestionMediaRepository`
+  (upload `upsert:true`, `createSignedUrl` TTL, remove) + `isMediaRefInUse` via
+  a `SELECT payload` scan. Both wired into the `create*QuestionRepositories`.
+- API: `admin/questions/api/server.js` registers `POST /media` (multipart field
+  `file`), `GET /media/url?ref=`, `DELETE /media?ref=` BEFORE `DELETE /:id`
+  (so `DELETE /media` is not shadowed); `readMediaFile` helper; `statusByCode`
+  extended; `createAdminQuestionsApi({ questionService, mediaService = null })`.
+  `admin/api/server.js` + `production-server.js` thread `mediaService` through
+  `createAdminApi`; the exported object now also returns `mediaService`.
+
+**Client:**
+- `client.js` — `MEDIA_REF_CLIENT_PATTERN`, `requestMultipart` helper (FormData,
+  no hard-coded content-type), `uploadMedia(token, file)`, `mediaUrl(token, ref)`,
+  `removeMedia(token, ref)`.
+- `visual-editor/primitives.jsx` — `MediaReferenceEditor` now uploads/previews/
+  replaces/removes: signed-URL preview effect (guarded `tokenFor()`, SSR-safe
+  placeholder), busy + error states, best-effort old-ref cleanup on
+  replace/remove (409 tolerated), `PENDING_REF` placeholder ref.
+- `components/QuestionPreview.jsx` — new `PreviewImage` component (signed URL
+  via `mediaUrl`, ref-code placeholder fallback for SSR) used in the
+  `ImagePlaceholder` and `ElementList` item thumbnails.
+- `src/pages/admin.css` — `aq-media__preview`, `aq-media__actions`,
+  `aq-media__error`, `aq-preview__image(-box/-img)`.
+- `testing/fake-supabase-client.js` — storage `remove(paths)` + `list(folder)`.
+
+**Tests:** new `media-api.test.js` (21): auth matrix incl. production-stack 403,
+JPEG/PNG/WebP uploads, TOO_LARGE / MIME / CONTENT / MISMATCH / EMPTY, traversal
++ bucket-injection 400, signed URL, 404, cross-admin 403 `MEDIA_FORBIDDEN`,
+in-use 409 (incl. published/archived), draft-removal-frees-media, no secret
+leakage, and a full production-stack flow (upload → signed URL → draft
+referencing media → 409 → delete draft → 200 delete → object gone).
+`frontend-admin-questions.test.js` +4 (media client contract, media error
+mapping, QuestionPreview image SSR, MediaReferenceEditor SSR). `npm test`
+**1276/1276**, lint clean, build clean (editor chunk 239.52 kB / gzip
+63.46 kB), schema validator PASS (24/72/12/12).
+
+**Live smoke:** extended `scripts/smoke-production.mjs` to **122 checks**:
+baseline "question-media empty", upload 201 + safe ref (owner prefix, no client
+filename), object exists in the bucket, signed preview URL, student-token 401,
+bad content 400, oversized 400 `TOO_LARGE`, path-traversal 400, cross-admin
+403, draft-references-media 201, in-use 409, removing the draft leaves storage
+untouched, unreferenced media deletable 200, object removed, no secret leakage.
+DB **and** storage both restored to exact baseline (0 objects). Debug notes:
+the object path includes the bucket prefix (`list` must target the
+ref-derived folder), and the supabase-js library internals (`createSignedUrl`,
+`sb_secret_`) appear in the admin bundle but are NOT our server code — the
+server-only media constants and path builders are absent from `dist/assets`.
+
+**Verification:** `npm test` 1276/1276, `npm run lint` clean, `npm run build`
+passes, `python3 schemas/validate.py` PASS, `npm run smoke:production`
+**122/122** (DB + storage restored to exact baseline), bundle probes clean
+(service-role creds, JWT secrets, correct-answer schema `$id`s,
+`public.admins`/`is_admin()`, and the new server-only media constants all
+0 files). NO schema change, no migration, no new packages.
+`reports/34-task-5.12-question-media-upload.md`. D-084 recorded.
+
+**Next recommended action:** Task 5.13 — the publish/review workflow so
+authored drafts can move from visual authoring to live distribution (and the
+question bank content itself). Not started (per the stop rule after 5.12).
+
+## 2026-08-17 (Task 5.13 — COMPLETED)
+
+**Stage:** Stage 5 – Admin Question Review, Approval & Publish Workflow.
+
+**Action:** Added the full server-authoritative review lifecycle on top of the
+Task 5.10 Question Builder. The `questions.status` CHECK constraint is
+UNCHANGED (`draft|published|archived`); review state lives in
+`meta.review` (`state ∈ {pending,approved,rejected}`, `submittedAt`,
+`submittedByAdminId`, `reviewedAt`, `reviewerAdminId`, `note`, `version`) and
+every transition writes an immutable `admin_actions` row (0001 §2 — existing
+table, NO migration). Service: `submitForReview`/`approve`/`reject`
+(note required)/`publish`/`archive`/`createVersion`/`reviewQueue`/`audit` +
+`create`/`update` now stamp `meta.authoring.createdByAdminId` and audit
+(`QUESTION_CREATED`/`QUESTION_EDITED`); update forces `draft`, clears review,
+preserves source chain fields; `#draftFromRow` rebuilds a schema-valid
+envelope (`formatVersion` + null-safe fields) so re-validation across the
+lifecycle is self-consistent. Release gates = explanation + ≥1 feedback
+template + topic/subtopic + full three-layer validation + media integrity.
+Stale-approval guard (409 `QUESTION_APPROVAL_STALE` when
+`review.version !== row.version`); reject without a note → 400
+`QUESTION_REVIEW_NOTE_REQUIRED`; invalid transitions → 409
+`QUESTION_INVALID_STATE`. Clone-on-edit: `POST /:id/versions` → draft v2 via
+`meta.sourceQuestionId`/`sourceVersion`; publishing v2 archives v1
+(`supersededByVersion`). Errors/contracts extended (`QUESTION_REVIEW_STATES`,
+`QUESTION_LIFECYCLE_ACTIONS`); `meta.schema.json` gained the review/authoring/
+source fields. API: `GET /questions/review` (before `/:id`), `GET /:id/audit`,
+`POST /:id/submit|approve|reject|publish|archive|versions`; `POST /` and
+`PUT /:id` pass the admin context. Memory + Supabase `adminActionRepository`
+(id-desc deterministic newest-first), fake client `admin_actions` table,
+production wiring (also passes `mediaRepository`). Client: 8 methods + 8 Query
+hooks (mutations invalidate the shared cache). UI: `ReviewQueue` (previews
+only — no correctAnswer/meta) + `ReviewDetail` (admin-only answer, review
+envelope, audit trail, Approve/Reject/Publish/Archive, note box) + pages +
+routes `questions/review`/`questions/:id/review` + AdminShell "Review" nav +
+editor "Submit for review" + list "New version" + `aq-review*` CSS. 26 new
+tests (21 lifecycle incl. student-distribution regression over the game repos
++ 5 client/SSR). Student distribution gate already existed (only `published`
+served) — locked in by regression tests.
+
+**Files created:**
+- `src/features/admin/questions/testing/question-lifecycle.test.js` (21 tests)
+- `src/features/admin-questions/components/ReviewQueue.jsx`
+- `src/features/admin-questions/components/ReviewDetail.jsx`
+- `src/pages/AdminReviewQueuePage.jsx`
+- `src/pages/AdminReviewDetailPage.jsx`
+
+**Files modified:**
+- `src/features/admin/questions/errors.js` — 3 codes + factories
+  (`INVALID_STATE`, `REVIEW_NOTE_REQUIRED`, `APPROVAL_STALE`).
+- `src/features/admin/questions/contracts.js` — review states + lifecycle actions.
+- `src/features/admin/questions/service/question-service.js` — lifecycle + gates + `#draftFromRow`.
+- `src/features/admin/questions/api/server.js` — review/audit routes + statusByCode.
+- `src/features/admin/questions/repositories/{contracts,memory,supabase}.js` — admin-action repos.
+- `src/features/game-session/api/production-server.js` — QuestionService wiring.
+- `src/features/game-session/testing/fake-supabase-client.js` — `admin_actions`.
+- `schemas/common/meta.schema.json` — review/authoring/source fields.
+- `src/features/admin-questions/client/client.js`, `queries/queries.js`.
+- `src/features/admin-questions/components/{QuestionEditor,QuestionList}.jsx`.
+- `src/router.jsx`, `src/pages/AdminShell.jsx`, `src/pages/admin.css`.
+- `src/features/admin-questions/testing/frontend-admin-questions.test.js` (5 new).
+- `scripts/smoke-production.mjs` — review phase + `admin_actions` baseline/cleanup.
+- `reports/35-task-5.13-publish-review-workflow.md`, `reports/README.md`,
+  `reports/04-todo.md`, `reports/03-decisions.md` (D-085).
+
+**Packages installed:** none.
+
+**Configuration changes:** none.
+
+**Commands executed:** `npm test` (1302/1302), `npm run lint` (clean),
+`npm run build` (passes; editor chunk 240.07 kB / gzip 63.61 kB),
+`python3 schemas/validate.py` (PASS), `npm run smoke:production`
+(**141/141**, DB + storage restored to exact baseline incl. every
+`admin_actions` row), bundle probes (0 files for server-only lifecycle
+identifiers; `SECURITY_CORRECT_ANSWER_EXPOSED` guard active).
+
+**Result:** All lifecycle transitions verified offline (service, API,
+production-stack) and live against the real Supabase project: create → submit
+→ queue → reject (note required) → re-submit → approve → publish → clone v2 →
+publish v2 archives v1 → newest-first audit trail → `admin_actions` rows
+persisted with the acting admin → no secret leakage. `npm test` 1302/1302.
+`reports/35-task-5.13-publish-review-workflow.md`. D-085 recorded.
+
+**Warnings / errors:** During the test pass: (a) `#draftFromRow` initially
+emitted a row-derived DTO missing `formatVersion` and carrying `null`
+`instructions`/`hints`, which failed envelope re-validation — fixed by
+building a clean envelope (`formatVersion: FORMAT_VERSION`, omit null optionals,
+defaults for taxonomy/explanation/basePoints); (b) the memory admin-action
+`listByTarget` sort used `created_at` localeCompare, which is non-deterministic
+within the same millisecond — switched to `id`-descending; (c) two smoke
+assertions were wrong (the review queue intentionally exposes
+`submittedByAdminId` inside its preview `review` envelope, and the v1 audit
+is exactly 7 rows), and the cleanup left 3 `admin_actions` rows for drafts
+deleted mid-run — fixed by tracking every smoke question id and sweeping their
+audit rows. All resolved; smoke 141/141 with exact baseline restore.
+
+**Next recommended action:** Task 5.14 — the question-bank content itself
+(the curated pool of release-ready questions that this workflow exists to
+produce and publish). Not started (per the stop rule after 5.13).
+
+---
+
+## 2026-08-18 (Task 5.14 — IN PROGRESS, batch 1 live)
+
+**Stage:** Task 5.14 — Production Question Bank Content (batch 1, 182/2,000).
+
+**Action:** Built the full offline→live question-bank pipeline and published
+batch 1 (182 questions) through the Task 5.13 review workflow via
+`QuestionService` only. Authored `mathematics-l1..l5` (102), `science-l1..l4`
+(55), `technology-l2..l4` (12), `engineering-l2..l4` (13) records via
+`content/helpers.mjs` builders; `blueprint.mjs` encodes reports/07
+distributions; `content-validator.mjs` (same `createQuestionValidator`) gates
+Q1–Q16 machine subset, exact/near-dups (bigram Jaccard after stem-prefix
+strip), template limits (≤3 per stream/level/template) and blueprint
+exceedances. `generate-images.mjs` (pure-Node PNG encoder) drew 10 diagrams;
+`upload-media.mjs` stored them at the correct `question-media/`-prefixed
+paths and verified signed URLs; `import.mjs` created drafts (idempotent by
+canonical contentHash); `review.mjs` submitted → approved → published each
+draft with a real `admin_actions` trail; `verify-bank.mjs` reported
+`BANK:182 STATUS:published=182 MEDIA_MISSING:0 LIFECYCLE_ERRORS:0
+RESULT: VERIFIED_OK`. Runtime check: `getEligibleQuestions` returns the
+published bank (mathematics L1 → pool 21).
+
+**Files created:**
+`scripts/content-bank/{blueprint,content-validator,lib,setup-admin,upload-media,import,review,verify-bank,generate-images}.mjs`,
+`scripts/content-bank/content/{helpers,mathematics-l1..l5,science-l1..l4,technology-l2..l4,engineering-l2..l4}.mjs`,
+`scripts/content-bank/generated-media/**` (10 PNGs),
+`scripts/content-bank/snapshots/{batch-1.ndjson,import-manifest.json,verification-batch-1.json}`,
+`reports/36-task-5.14-question-bank-content.md`.
+
+**Files modified:** `reports/README.md` (index entry for 36).
+
+**Packages installed:** none.
+
+**Configuration changes:** two persistent test admins created live
+(`content-bank.author@stem-quest.test` / `content-bank.approver@stem-quest.test`).
+
+**Commands executed:** `node --env-file=.env scripts/content-bank/setup-admin.mjs`,
+`upload-media.mjs`, `import.mjs`, `review.mjs`, `verify-bank.mjs --json
+scripts/content-bank/snapshots/verification-batch-1.json`, plus full gates:
+`npm test` (1302/1302), `npm run lint`, `npm run build`,
+`python3 schemas/validate.py` (PASS), content-validator CLI (`OK (publishable)`).
+
+**Result:** 182 questions published live, all ten activity types, D1–D4,
+55 approved topic/subtopic pairs, distribution within blueprint (no
+over-production). 731 `admin_actions` rows (728 bank lifecycle + 3
+pre-existing baseline rows untouched). No schema change, no new packages.
+
+**Warnings / errors:** (1) first import re-run created 182 duplicate drafts —
+idempotency keyed on `authorSource` without the stream suffix; fixed to key
+on canonical `contentHash`, duplicates removed via `QuestionService.remove`,
+their orphaned `QUESTION_CREATED` audit rows swept by target_id (the exact
+convention `smoke-production.mjs` uses, lines 145–149). (2) Media upload
+initially dropped the `question-media/` bucket prefix; 10 image-interaction
+questions blocked at submit until re-uploaded at prefixed paths — matches how
+`#assertMediaIntegrity`/`buildQuestionMediaPath` resolve refs. (3) The 141/141
+live smoke is NOT re-runnable against the live bank (asserts `questions===0`,
+`admins===0`, empty bucket; sweeps `@stem-quest.test` admins) — documented in
+report 36 §9; `verify-bank.mjs` is the live-equivalent gate.
+
+**Next recommended action:** Task 5.14 remains IN PROGRESS (182/2,000).
+Next session: continue authoring the remaining (stream, level) pools to 100
+each with the same pipeline, then run the full §10 verification including the
+student 3-of-100 pool exercise. Task 5.15 must NOT be started before the
+2,000-question target is verified.

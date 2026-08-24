@@ -8,6 +8,8 @@
  * project.
  */
 
+import { MemoryProgressionRepository } from '../../progression/repositories/memory.js'
+
 /**
  * @typedef {object} MemoryStore
  * @property {object[]} students
@@ -21,6 +23,8 @@
  * @property {object[]} specialAccess
  * @property {object[]} settings
  * @property {object[]} scores
+ * @property {object[]} studentProgress      - student_progress (stream rows)
+ * @property {object[]} studentLevelProgress - student_level_progress rows
  */
 
 export function createMemoryStore() {
@@ -36,6 +40,8 @@ export function createMemoryStore() {
     specialAccess: [],
     settings: [],
     scores: [],
+    studentProgress: [],
+    studentLevelProgress: [],
   }
 }
 
@@ -256,6 +262,12 @@ class MemoryLevelRepository {
     )
     return level && level.isActive !== false ? level : null
   }
+
+  async listForStream(streamId) {
+    return this.store.levels
+      .filter((l) => l.streamId === streamId && l.isActive !== false)
+      .sort((a, b) => a.number - b.number)
+  }
 }
 
 class MemorySettingsRepository {
@@ -290,6 +302,7 @@ export function createMemoryRepositories(store = createMemoryStore()) {
     studentRepository: new MemoryStudentRepository(store),
     levelRepository: new MemoryLevelRepository(store),
     settingsRepository: new MemorySettingsRepository(store),
+    progressionRepository: new MemoryProgressionRepository(store),
   }
 }
 

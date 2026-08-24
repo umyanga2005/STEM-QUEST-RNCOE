@@ -44,10 +44,22 @@ export const studentApiClient = Object.freeze({
   getMe(token) {
     return request('/me', { token })
   },
+  updateProfile({ token, initials, name, school, grade }) {
+    return request('/me', { method: 'PUT', token, json: { initials, name, school, grade } })
+  },
+  getProgress(token) {
+    return request('/me/progress', { token })
+  },
   uploadAvatar({ token, file }) {
     const formData = new FormData()
     formData.append('photo', file)
     return request('/me/avatar', { method: 'PUT', token, formData })
+  },
+  getMissionStreams(token) {
+    return request('/mission/streams', { token })
+  },
+  getMissionLevels(token, streamId) {
+    return request(`/mission/streams/${encodeURIComponent(streamId)}/levels`, { token })
   },
 })
 

@@ -43,6 +43,7 @@ import {
   buildRoundBreakdown,
 } from '../scoring/central-scoring-service.js'
 import { buildSafeRoundDescriptor, toPublicSession } from '../security/safe-descriptor.js'
+import { ProgressionService } from '../../progression/service/progression-service.js'
 
 const SESSION_CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
 const DEFAULT_LAST_SESSIONS = 5
@@ -92,11 +93,19 @@ export class GameSessionService {
    * @param {import('../repositories/contracts.js').StudentRepository} deps.studentRepository
    * @param {import('../repositories/contracts.js').LevelRepository} deps.levelRepository
    * @param {import('../repositories/contracts.js').SettingsRepository} deps.settingsRepository
+   * @param {import('../repositories/contracts.js').ProgressionRepository} deps.progressionRepository
    * @param {object} [deps.activityEngine] - server-mode engine (drag-drop registered)
    * @param {object} [deps.scoring] - central scoring function bundle
    * @param {() => number} [deps.now] - injectable clock (tests)
    * @param {() => string} [deps.makeSessionCode]
-   */
+   * @param {object} [deps.progressionService] - overridable ProgressionService
+   *           (defaults to one built over the repositories above).
+* @param {object} [deps.leaderboardService] - optional LeaderboardService
+ *           (Task 5.7); when present, finishSession records the best score.
+ * @param {object} [deps.achievementsService] - optional AchievementsService
+ *           (Task 5.8); when present, finishSession awards the stream badge
+ *           + certificate on stream completion.
+ */
   constructor(deps) {
     this.questionRepository = deps.questionRepository
     this.gameSessionRepository = deps.gameSessionRepository
@@ -108,6 +117,15 @@ export class GameSessionService {
     this.activityEngine = deps.activityEngine ?? createDefaultServerActivityEngine()
     this.now = deps.now ?? (() => Date.now())
     this.makeSessionCode = deps.makeSessionCode ?? randomSessionCode
+    this.progressionService =
+      deps.progressionService ??
+      new ProgressionService({
+        progressionRepository: deps.progressionRepository,
+        levelRepository: deps.levelRepository,
+        specialAccessRepository: deps.specialAccessRepository,
+      })
+    this.leaderboardService = deps.leaderboardService ?? null
+    this.achievementsService = deps.achievementsService ?? null
   }
 
   // ------------------------------------------------------------------
@@ -135,10 +153,10 @@ export class GameSessionService {
     const level = await this.levelRepository.findLevel({ streamId: stid, levelId: lid })
     if (!level) throw gameError.levelLocked(stid, lid)
 
-    // 3. special-access unlock rule (progression system not yet implemented;
-    //    level 1 is always open, otherwise an active grant is required).
+    // 3. unlock rule (D-076): level 1 open; higher levels need a completed
+    //    previous level (same stream) or an active special-access grant.
     const grants = await this.specialAccessRepository.getActiveGrants(sid)
-    this.applyUnlockRule(level, grants)
+    await this.progressionService.assertLevelUnlocked({ studentId: sid, level, grants })
 
     // Resume an existing active session for the same (student, stream) rather
     // than violating the concurrent-active guard (partial index D-028).
@@ -364,11 +382,33 @@ export class GameSessionService {
 
   /**
    * Finalizes a session where all 3 rounds are answered: sums the frozen
-   * per-round points (0–300), persists completion and the scores ledger.
+   * per-round points (0–300), persists completion and the scores ledger, then
+   * records progression. Re-finishing an already-completed session is
+   * idempotent — the stored completion payload is returned without rewriting.
    * @param {object} input - { sessionId, studentId }
    */
   async finishSession({ sessionId, studentId }) {
-    const session = await this.loadAndGuardSession(sessionId, studentId)
+    const session = await this.gameSessionRepository.findById(Number(sessionId))
+    guardSessionForStudent(normalizeSessionForGuard(session), String(studentId))
+
+    if (session.status === 'completed') {
+      // Idempotent re-finish: the session, ledger and progression rows already
+      // exist. Return the stored result without any further writes.
+      const rounds = await this.roundRepository.findBySessionId(session.id)
+      return {
+        sessionId: session.id,
+        sessionCode: session.sessionCode,
+        sessionScore: session.totalScore,
+        totalTimeMs: session.totalTimeMs,
+        status: 'completed',
+        result: session.result,
+        roundBreakdown: buildRoundBreakdown(rounds),
+      }
+    }
+    if (session.status !== 'active') {
+      throw gameError.sessionNotActive(`status is "${session.status}"`)
+    }
+
     const rounds = await this.roundRepository.findBySessionId(session.id)
     if (rounds.some((r) => r.status === 'pending')) {
       throw gameError.invalidState('cannot finish session before all rounds are answered')
@@ -402,6 +442,48 @@ export class GameSessionService {
       roundBreakdown,
     })
 
+    await this.progressionService.recordCompletion({
+      studentId: session.studentId,
+      streamId: session.streamId,
+      levelId: session.levelId,
+      score: totalScore,
+      completedAt,
+    })
+
+    // Leaderboard (Task 5.7): best score per (student, stream) is derived,
+    // strictly-better, and best-effort — a write failure must never roll the
+    // completed session back or 500 the finish. Progression stays the
+    // authoritative record; the next better attempt repairs the row.
+    if (this.leaderboardService?.recordBestScore) {
+      try {
+        await this.leaderboardService.recordBestScore({
+          studentId: session.studentId,
+          streamId: session.streamId,
+          score: totalScore,
+          completionTimeMs: totalTimeMs,
+          achievedAt: completedAt,
+        })
+      } catch (err) {
+        console?.warn?.(`leaderboard best-score write skipped: ${err.message}`)
+      }
+    }
+
+    // Achievements (Task 5.8): on stream completion the backend awards the
+    // stream badge and issues the stream certificate. Best-effort and
+    // idempotent — a failure must never roll the completed session back or
+    // 500 the finish (architecture §11; D-011/D-031).
+    if (this.achievementsService?.awardForCompletion) {
+      try {
+        await this.achievementsService.awardForCompletion({
+          studentId: session.studentId,
+          streamId: session.streamId,
+          completedAt,
+        })
+      } catch (err) {
+        console?.warn?.(`achievements award skipped: ${err.message}`)
+      }
+    }
+
     return {
       sessionId: session.id,
       sessionCode: session.sessionCode,
@@ -425,15 +507,6 @@ export class GameSessionService {
       throw gameError.sessionNotActive(`status is "${session.status}"`)
     }
     return session
-  }
-
-  /** Level 1 is open; higher levels require an active level/stream grant. */
-  applyUnlockRule(level, grants) {
-    if (level.number === 1) return
-    const covered = grants.some(
-      (g) => g.streamId === level.streamId || g.levelId === level.id
-    )
-    if (!covered) throw gameError.levelLocked(level.streamId, level.id)
   }
 
   /** Rehydrates a domain session (Game Engine) from persisted rows. */

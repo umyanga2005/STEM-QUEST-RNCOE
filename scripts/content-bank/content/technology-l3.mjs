@@ -1,0 +1,18 @@
+/**
+ * Content Bank — Technology, Level 3 (Task 5.14, Batch 1).
+ * Blueprint §6.1 L3 (DD10 MT10 OR10 ST5 FC15 II10 PA15 ME10 SC5 NL10),
+ * topics §7.3 L3, difficulty §5.3 L3 (D1 30 / D2 40 / D3 25 / D4 5).
+ */
+import { src, sorting, fillComplete, pattern, ordering } from './helpers.mjs'
+
+const S = { level: 3, ...src('technology') }
+
+export default [
+  sorting({ items: [{ id: 'i1', label: 'Sharing your home address publicly' }, { id: 'i2', label: 'Using a strong, unique password' }, { id: 'i3', label: 'Telling a friend your password' }, { id: 'i4', label: 'Logging out of shared computers' }, { id: 'i5', label: 'Clicking links from unknown people' }, { id: 'i6', label: 'Keeping software updated' }], categories: [{ id: 'c_safe', label: 'Safe online behaviour' }, { id: 'c_unsafe', label: 'Unsafe online behaviour' }], assignments: [{ itemId: 'i1', categoryId: 'c_unsafe' }, { itemId: 'i2', categoryId: 'c_safe' }, { itemId: 'i3', categoryId: 'c_unsafe' }, { itemId: 'i4', categoryId: 'c_safe' }, { itemId: 'i5', categoryId: 'c_unsafe' }, { itemId: 'i6', categoryId: 'c_safe' }], prompt: 'Sort each action as safe or unsafe online behaviour.', explanation: 'Strong passwords, logging out and updates are safe; sharing private details, passwords or unknown links is unsafe.', objective: 'Evaluate online safety actions.', topic: 'digital-literacy', subtopic: 'online-safety-ethics', difficulty: 2, gradeMin: 7, gradeMax: 9, hints: [{ level: 1, text: 'Would this action protect or risk your information?' }], ...S }),
+
+  fillComplete({ template: 'A step-by-step set of instructions to solve a problem is called an ___.', blanks: [{ id: 'b1', type: 'text', label: 'instructions', maxLength: 14 }], answers: [{ blankId: 'b1', type: 'text', accepted: ['algorithm'] }], prompt: 'A step-by-step set of instructions to solve a problem is called an ___.', explanation: 'An algorithm is a precise sequence of steps, such as a recipe or a sorting routine.', objective: 'Define an algorithm.', topic: 'programming', subtopic: 'algorithms', difficulty: 1, gradeMin: 7, gradeMax: 9, hints: [{ level: 1, text: 'Think of a cooking recipe done in exact order.' }], ...S }),
+
+  pattern({ sequence: [{ id: 'e1', number: 1 }, { id: 'e2', number: 2 }, { id: 'e3', number: 4 }, { id: 'e4', number: 8 }], interaction: 'complete-sequence', candidates: [{ id: 'c1', number: 16 }, { id: 'c2', number: 12 }, { id: 'c3', number: 10 }, { id: 'c4', number: 14 }], answer: { type: 'candidate', rule: 'Doubling — binary place values.', acceptableIds: ['c1'] }, prompt: 'Choose the next number: 1, 2, 4, 8, …', explanation: 'Each term doubles the previous one, just like binary place values: 16 is next.', objective: 'Extend a doubling sequence.', topic: 'programming', subtopic: 'algorithms', difficulty: 3, gradeMin: 7, gradeMax: 9, hints: [{ level: 1, text: 'Multiply each term by 2.' }], ...S }),
+
+  ordering({ items: [{ id: 'o1', label: 'Test the fix' }, { id: 'o2', label: 'Find the cause' }, { id: 'o3', label: 'Reproduce the bug' }, { id: 'o4', label: 'Fix the code' }], order: ['o3', 'o2', 'o4', 'o1'], prompt: 'Arrange the debugging steps in order.', explanation: 'Reproduce the bug, find its cause, fix the code, then test the fix.', objective: 'Order the steps of debugging.', topic: 'programming', subtopic: 'debugging', difficulty: 2, gradeMin: 7, gradeMax: 9, hints: [{ level: 1, text: 'You cannot fix a bug you cannot reproduce.' }], ...S }),
+]

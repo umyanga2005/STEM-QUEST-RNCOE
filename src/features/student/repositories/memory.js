@@ -89,6 +89,16 @@ class MemoryStudentRepository {
     if (student) student.profilePhotoPath = profilePhotoPath
     return student ?? null
   }
+
+  async updateProfile(id, patch) {
+    const student = this.store.students.find((s) => s.id === id)
+    if (!student) return null
+    if (patch.initials !== undefined) student.initials = patch.initials
+    if (patch.fullName !== undefined) student.fullName = patch.fullName
+    if (patch.schoolId !== undefined) student.schoolId = patch.schoolId
+    if (patch.grade !== undefined) student.grade = patch.grade
+    return student
+  }
 }
 
 class MemoryStudentSessionRepository {

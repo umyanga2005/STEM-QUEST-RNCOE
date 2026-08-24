@@ -1,17 +1,17 @@
 import { useMemo, useRef, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
-import { createRegistrationController } from '../../features/student/registration/controller.js'
+import { createRegistrationController } from '../features/student/registration/controller.js'
 import {
   REGISTRATION_FIELDS,
   PROFILE_PHOTO,
   GRADE_OPTIONS_UI,
   SUBMIT_LABEL,
   SUBMITTING_LABEL,
-} from '../../features/student/registration/registration-fields.js'
-import { studentApiClient } from '../../features/student/api/client.js'
-import tokenStorage from '../../features/student/session/token-storage.js'
-import { useStudentMe } from '../../features/student/api/queries.js'
+} from '../features/student/registration/registration-fields.js'
+import { studentApiClient } from '../features/student/api/client.js'
+import tokenStorage from '../features/student/session/token-storage.js'
+import { useStudentMe } from '../features/student/api/queries.js'
 import './student-register.css'
 
 function PhotoPicker({ file, onChange }) {
@@ -184,6 +184,9 @@ export default function StudentRegisterPage() {
             <button type="button" className="sr-button sr-button--ghost" onClick={startMission}>
               Continue your mission
             </button>
+            <button type="button" className="sr-button sr-button--link" onClick={() => navigate('/student/profile')}>
+              View your profile
+            </button>
             <button type="button" className="sr-button sr-button--link" onClick={clearReturning}>
               Start a new registration
             </button>
@@ -198,6 +201,7 @@ export default function StudentRegisterPage() {
           avatarUrl={avatarUrl}
           avatarWarning={avatarWarning}
           onStart={startMission}
+          onViewProfile={() => navigate('/student/profile')}
         />
       ) : (
         <motion.section
@@ -277,7 +281,7 @@ export default function StudentRegisterPage() {
   )
 }
 
-function SuccessPanel({ reduceMotion, session, avatarUrl, avatarWarning, onStart }) {
+function SuccessPanel({ reduceMotion, session, avatarUrl, avatarWarning, onStart, onViewProfile }) {
   return (
     <motion.section
       className="sr-card sr-card--success"
@@ -326,6 +330,9 @@ function SuccessPanel({ reduceMotion, session, avatarUrl, avatarWarning, onStart
 
       <button type="button" className="sr-button sr-button--primary" onClick={onStart}>
         Continue to your mission
+      </button>
+      <button type="button" className="sr-button sr-button--ghost" onClick={onViewProfile}>
+        View your profile
       </button>
       <p className="sr-footnote">Next: choose your STEM stream and level.</p>
     </motion.section>

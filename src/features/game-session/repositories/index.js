@@ -14,7 +14,7 @@ export async function createRepositories({ mode }) {
   }
   if (mode === 'supabase') {
     const { getSupabaseServerClient } = await import('./supabase-client.js')
-    const client = getSupabaseServerClient()
+    const client = await getSupabaseServerClient()
     return createSupabaseRepositories({ client })
   }
   throw new Error(`Unknown repository mode: "${mode}"`)

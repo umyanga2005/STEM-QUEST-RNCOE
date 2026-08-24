@@ -13,8 +13,10 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Task 4.4 demo: forward /api to the local Hono server (`npm run api`).
-      '/api': { target: 'http://localhost:4100', changeOrigin: true },
+      '/api': {
+        target: `http://localhost:${process.env.VITE_API_PORT || '4100'}`,
+        changeOrigin: true,
+      },
     },
   },
 })

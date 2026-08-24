@@ -35,6 +35,11 @@
         },
         "authorSource": { "type": "string", "maxLength": 120 },
         "editedByHuman": { "type": "boolean", "default": false },
+        "createdByAdminId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Admin identity that created the current draft row."
+        },
         "generationSeed": { "type": "string", "pattern": "^[0-9a-f]{8,128}$" },
         "templateId": { "type": "string", "pattern": "^[a-z0-9-]{1,64}$" },
         "scenarioId": { "type": "string", "pattern": "^[a-z0-9-]{1,64}$" },
@@ -42,13 +47,30 @@
       },
       "additionalProperties": false
     },
+    "sourceQuestionId": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "For a cloned draft (published v1 -> draft v2): the row this version branches from."
+    },
+    "sourceVersion": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Version of the source row this clone was created from."
+    },
     "review": {
       "type": "object",
       "properties": {
         "state": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "submittedAt": { "type": "string", "format": "date-time" },
+        "submittedByAdminId": { "type": "string", "format": "uuid" },
         "reviewerAdminId": { "type": "string", "format": "uuid" },
         "reviewedAt": { "type": "string", "format": "date-time" },
-        "note": { "type": "string", "maxLength": 1000 }
+        "note": { "type": "string", "maxLength": 1000 },
+        "version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Question version the review applies to (stale-approval guard)."
+        }
       },
       "additionalProperties": false
     }

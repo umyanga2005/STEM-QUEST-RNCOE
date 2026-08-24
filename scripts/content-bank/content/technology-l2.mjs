@@ -1,0 +1,18 @@
+/**
+ * Content Bank — Technology, Level 2 (Task 5.14, Batch 1).
+ * Blueprint §6.1 L2 (DD15 MT15 OR10 ST10 FC15 II10 PA10 ME10 SC0 NL5),
+ * topics §7.2 L2, difficulty §5.3 L2 (D1 35 / D2 40 / D3 20 / D4 5).
+ */
+import { src, dragDrop, matching, fillComplete, imageInteraction } from './helpers.mjs'
+
+const S = { level: 2, ...src('technology') }
+
+export default [
+  dragDrop({ items: [{ id: 'i1', label: 'Keyboard' }, { id: 'i2', label: 'Monitor' }, { id: 'i3', label: 'Mouse' }, { id: 'i4', label: 'Speaker' }, { id: 'i5', label: 'Scanner' }, { id: 'i6', label: 'Printer' }], zones: [{ id: 'z_in', label: 'Input device' }, { id: 'z_out', label: 'Output device' }], mappings: [{ itemId: 'i1', zoneId: 'z_in' }, { itemId: 'i2', zoneId: 'z_out' }, { itemId: 'i3', zoneId: 'z_in' }, { itemId: 'i4', zoneId: 'z_out' }, { itemId: 'i5', zoneId: 'z_in' }, { itemId: 'i6', zoneId: 'z_out' }], prompt: 'Classify each device as an input or an output device.', explanation: 'Inputs send data to the computer (keyboard, mouse, scanner); outputs send data out (monitor, speaker, printer).', objective: 'Classify computer devices as input or output.', topic: 'computing', subtopic: 'hardware', difficulty: 2, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'Ask: does information go in or come out?' }], ...S }),
+
+  matching({ leftItems: [{ id: 'l1', text: '.png' }, { id: 'l2', text: '.mp3' }, { id: 'l3', text: '.txt' }, { id: 'l4', text: '.csv' }], rightItems: [{ id: 'r1', text: 'Image' }, { id: 'r2', text: 'Audio' }, { id: 'r3', text: 'Plain text' }, { id: 'r4', text: 'Data table' }], pairs: [{ leftId: 'l1', rightId: 'r1' }, { leftId: 'l2', rightId: 'r2' }, { leftId: 'l3', rightId: 'r3' }, { leftId: 'l4', rightId: 'r4' }], prompt: 'Match each file extension to what it stores.', explanation: '.png stores images, .mp3 audio, .txt plain text and .csv tabular data.', objective: 'Match file extensions to their contents.', topic: 'digital-literacy', subtopic: 'files-formats', difficulty: 2, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'Think of the files you open with a picture or music app.' }], ...S }),
+
+  fillComplete({ template: 'The main circuit board that connects all the parts of a computer is called the ___.', blanks: [{ id: 'b1', type: 'text', label: 'part', maxLength: 14 }], answers: [{ blankId: 'b1', type: 'text', accepted: ['motherboard'] }], prompt: 'The main circuit board that connects all the parts of a computer is called the ___.', explanation: 'The motherboard connects the CPU, memory and other components.', objective: 'Name the main circuit board of a computer.', topic: 'computing', subtopic: 'hardware', difficulty: 1, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'It is the board that everything plugs into.' }], ...S }),
+
+  imageInteraction({ image: { ref: 'question-media/technology/computing/hardware-parts.png', alt: 'A desktop computer setup with a monitor, a tower and a keyboard.', role: 'diagram', width: 400, height: 300 }, imageWidth: 400, imageHeight: 300, mode: 'tap', hotspots: [{ id: 'h1', label: 'The CPU tower', x: 15, y: 55, radius: 12 }], requiredHotspots: ['h1'], prompt: 'The picture shows a desktop computer. Tap the part that holds the main processor (CPU).', explanation: 'The tower case holds the CPU, memory and storage.', objective: 'Identify the CPU tower of a desktop computer.', topic: 'computing', subtopic: 'hardware', difficulty: 2, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'It is the tall box that the monitor sits near.' }], ...S }),
+]

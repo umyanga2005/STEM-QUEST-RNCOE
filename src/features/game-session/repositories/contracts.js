@@ -177,6 +177,21 @@ export const ROUND_STATUS = Object.freeze({
 /**
  * @typedef {object} LevelRepository
  * @property {(args: { streamId: number, levelId: number }) => Promise<Level|null>} findLevel
+ * @property {(streamId: number) => Promise<Level[]>} listForStream
+ *           - active levels of a stream, ascending by number (used by the
+ *             progression unlock to resolve the previous level, D-076).
+ */
+
+/**
+ * @typedef {object} ProgressionRepository
+ * @property {(args: { studentId: number, levelId: number }) => Promise<object|null>} getLevelProgress
+ *           - one student_level_progress row (domain shape) or null.
+ * @property {(args: { studentId: number, streamId: number }) => Promise<object[]>} listLevelProgress
+ *           - all level rows for a (student, stream).
+ * @property {(row: object) => Promise<object>} upsertLevelProgress
+ *           - upsert on UNIQUE(student_id, level_id).
+ * @property {(row: object) => Promise<object>} upsertStreamProgress
+ *           - upsert on UNIQUE(student_id, stream_id).
  */
 
 /**

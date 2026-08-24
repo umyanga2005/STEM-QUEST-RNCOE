@@ -1,0 +1,254 @@
+.pf-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem 6rem;
+  background: var(--color-bg);
+  overflow-x: hidden;
+}
+
+.pf-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(70% 55% at 50% -10%, rgba(79, 139, 255, 0.3), transparent 70%),
+    radial-gradient(50% 40% at 85% 100%, rgba(45, 212, 191, 0.18), transparent 70%);
+  z-index: 0;
+}
+
+.pf-shell {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 780px;
+}
+
+.pf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.pf-brand {
+  font-size: 1.5rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pf-greeting {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+.pf-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.pf-card {
+  padding: 1.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background: rgba(15, 22, 41, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.pf-title {
+  margin: 0 0 1.25rem;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.pf-identity {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.pf-photo {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-surface-raised);
+  border: 3px solid var(--color-accent-strong);
+  box-shadow: 0 0 25px rgba(45, 212, 191, 0.35);
+}
+
+.pf-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pf-photo--initials {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #071021;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+}
+
+.pf-identity__body {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.pf-identity__name {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.pf-identity__meta {
+  margin: 0 0 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.pf-photo-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pf-photo-hint {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+.pf-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(24, 34, 60, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.pf-bar__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.5);
+}
+
+.pf-streams {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.pf-stream {
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  background: rgba(24, 34, 60, 0.6);
+  transition: all 0.2s ease;
+}
+
+.pf-stream:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.pf-stream__head {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.9rem;
+}
+
+.pf-stream__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: var(--color-accent-strong);
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+}
+
+.pf-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.9rem;
+}
+
+.pf-stats div {
+  padding: 1.1rem;
+  border-radius: 16px;
+  background: rgba(24, 34, 60, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: center;
+}
+
+.pf-stats dt {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.pf-stats dd {
+  margin: 0.35rem 0 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--color-accent-strong);
+  text-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+}
+
+.pf-button {
+  min-height: 50px;
+  padding: 0.75rem 1.5rem;
+  border-radius: 14px;
+  font: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.pf-button--primary {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  color: #071021;
+  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.3);
+}
+
+.pf-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(45, 212, 191, 0.45);
+}
+
+.pf-button--ghost {
+  background: transparent;
+  border: 1px solid var(--color-accent);
+  color: var(--color-accent);
+}

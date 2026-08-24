@@ -12,9 +12,11 @@
 import { createServer } from 'node:http'
 import { Hono } from 'hono'
 import { createGameApi } from './server.js'
+import { createStudentGameApi } from './student-server.js'
 import { createMemoryStore, createMemoryRepositories } from '../repositories/memory.js'
 import { seedStoreFromBaseData, demoBaseData } from '../demo/seed-data.js'
 import { demoMatchingQuestions } from '../demo/matching-demo-questions.js'
+import { demoOrderingQuestions } from '../demo/ordering-demo-questions.js'
 import { demoSortingQuestions } from '../demo/sorting-demo-questions.js'
 import { demoFillCompleteQuestions } from '../demo/fill-complete-demo-questions.js'
 import { demoImageInteractionQuestions } from '../demo/image-interaction-demo-questions.js'
@@ -26,12 +28,28 @@ import GameSessionService from '../service/game-session-service.js'
 import { createStudentApi } from '../../student/api/server.js'
 import { createStudentMemoryRepositories } from '../../student/repositories/memory.js'
 import { StudentService } from '../../student/service/student-service.js'
+import { createMissionApi } from '../../mission/api/server.js'
+import { createMissionMemoryRepositories, seedMissionStore } from '../../mission/repositories/memory.js'
+import { MissionService } from '../../mission/service/mission-service.js'
+import { missionDemoStreams } from '../../mission/demo/seed.js'
+import { ProgressionService } from '../../progression/service/progression-service.js'
+import { createLeaderboardApi } from '../../leaderboard/api/server.js'
+import {
+  createLeaderboardMemoryStore,
+  createLeaderboardMemoryRepositories,
+} from '../../leaderboard/repositories/memory.js'
+import { LeaderboardService } from '../../leaderboard/service/leaderboard-service.js'
+import { createAchievementsApi } from '../../achievements/api/server.js'
+import { createAchievementsMemoryRepositories } from '../../achievements/repositories/memory.js'
+import { AchievementsService } from '../../achievements/service/achievements-service.js'
 
 export function createDemoApi() {
   const store = createMemoryStore()
-  seedStoreFromBaseData(store, demoBaseData())
+  const baseData = demoBaseData()
+  seedStoreFromBaseData(store, baseData)
   store.questions.push(
     ...demoMatchingQuestions(),
+    ...demoOrderingQuestions(),
     ...demoSortingQuestions(),
     ...demoFillCompleteQuestions(),
     ...demoImageInteractionQuestions(),
@@ -41,23 +59,98 @@ export function createDemoApi() {
     ...demoNumberLogicQuestions()
   )
   const repos = createMemoryRepositories(store)
-  const service = new GameSessionService(repos)
-  const gameApp = createGameApi({ service })
-
   const studentRepos = createStudentMemoryRepositories()
   const studentService = new StudentService(studentRepos)
-  const studentApp = createStudentApi({ service: studentService })
 
-  return { app: createStackedApp({ gameApp, studentApp }), service, store, studentService }
+  // Single source of student identity for the student flow: the student
+  // feature's store, with the game demo store as a legacy fallback (Task 4.4
+  // x-student-id demo). Registered students must be visible to the
+  // authoritative GameSessionService, not just the demo student.
+  repos.studentRepository = {
+    findById: async (id) =>
+      (await studentRepos.studentRepository.findById(id)) ??
+      store.students.find((s) => s.id === id) ??
+      null,
+  }
+
+  const leaderboardRepos = createLeaderboardMemoryRepositories(createLeaderboardMemoryStore())
+  const achievementsRepos = createAchievementsMemoryRepositories()
+  const missionRepos = createMissionMemoryRepositories()
+  seedMissionStore(missionRepos.store, {
+    streams: missionDemoStreams(baseData.streams),
+    levels: baseData.levels,
+    streamProgress: [],
+    levelProgress: [],
+    specialAccess: baseData.specialAccess ?? [],
+  })
+  const missionService = new MissionService({
+    streamRepository: missionRepos.streamRepository,
+    levelRepository: missionRepos.levelRepository,
+    progressRepository: missionRepos.progressRepository,
+    specialAccessRepository: missionRepos.specialAccessRepository,
+  })
+  const missionApp = createMissionApi({ studentService, missionService })
+
+  const leaderboardService = new LeaderboardService({
+    studentRepository: repos.studentRepository,
+    streamRepository: missionRepos.streamRepository,
+    leaderboardRepository: leaderboardRepos.leaderboardRepository,
+  })
+
+  const achievementsService = new AchievementsService({
+    progressionRepository: repos.progressionRepository,
+    badgeRepository: achievementsRepos.badgeRepository,
+    studentBadgeRepository: achievementsRepos.studentBadgeRepository,
+    certificateRepository: achievementsRepos.certificateRepository,
+    studentRepository: repos.studentRepository,
+    streamRepository: missionRepos.streamRepository,
+  })
+  const service = new GameSessionService({ ...repos, leaderboardService, achievementsService })
+  const gameApp = createGameApi({ service })
+
+  const studentGameApp = createStudentGameApi({ studentService, gameService: service })
+
+  const leaderboardApp = createLeaderboardApi({ studentService, leaderboardService })
+
+  const achievementsApp = createAchievementsApi({ studentService, achievementsService })
+
+  // Student-facing progress overview reuses the ProgressionService with the
+  // mission stream catalogue (Task 5.6) — unlock/completion paths are unchanged.
+  const profileProgressionService = new ProgressionService({
+    progressionRepository: repos.progressionRepository,
+    levelRepository: repos.levelRepository,
+    specialAccessRepository: repos.specialAccessRepository,
+    streamRepository: missionRepos.streamRepository,
+  })
+  const studentApp = createStudentApi({ service: studentService, progressionService: profileProgressionService })
+
+  return {
+    app: createStackedApp({ gameApp, studentApp, studentGameApp, missionApp, leaderboardApp, achievementsApp }),
+    service,
+    store,
+    studentService,
+    missionService,
+  }
 }
 
 /**
- * Composes two Hono apps by URL prefix. Each sub-app keeps its own notFound/
- * onError handling scoped to its prefix; anything else falls through to a
- * game-style 404 so the demo behaves as before for unknown routes.
+ * Composes Hono apps by URL prefix. Each sub-app keeps its own notFound/
+ * onError handling scoped to its prefix; the admin/leaderboard/mission/
+ * achievements prefixes are mounted BEFORE the generic student prefix so
+ * their routes win. Anything else falls through to a game-style 404 so the
+ * demo behaves as before for unknown routes.
  */
-export function createStackedApp({ gameApp, studentApp }) {
+export function createStackedApp({ gameApp, studentApp, studentGameApp = null, missionApp = null, leaderboardApp = null, achievementsApp = null, adminApp = null }) {
   const app = new Hono()
+  if (adminApp) app.use('/api/admin/*', (c) => adminApp.fetch(c.req.raw, c.env))
+  if (achievementsApp) {
+    app.use('/api/student/achievements/*', (c) => achievementsApp.fetch(c.req.raw, c.env))
+    app.use('/api/student/certificates/*', (c) => achievementsApp.fetch(c.req.raw, c.env))
+    app.use('/api/certificates/*', (c) => achievementsApp.fetch(c.req.raw, c.env))
+  }
+  if (leaderboardApp) app.use('/api/student/leaderboards/*', (c) => leaderboardApp.fetch(c.req.raw, c.env))
+  if (missionApp) app.use('/api/student/mission/*', (c) => missionApp.fetch(c.req.raw, c.env))
+  if (studentGameApp) app.use('/api/student/game/*', (c) => studentGameApp.fetch(c.req.raw, c.env))
   app.use('/api/student/*', (c) => studentApp.fetch(c.req.raw, c.env))
   app.use('/api/*', (c) => gameApp.fetch(c.req.raw, c.env))
   app.notFound((c) =>

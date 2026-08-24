@@ -557,6 +557,12 @@ revised. Do not overwrite history – append or amend entries with a note.
   `07-task-3.1-content-model.md` §2.
 - **Status note:** `meta` is **not** migrated now; OD-2 in the spec decides
   timing (recommended at Admin Question Builder build time).
+- **Status update (2026-08-17, Task 5.10):** migration `0004_add_questions_meta.sql`
+  (`alter table public.questions add column if not exists meta jsonb;` —
+  idempotent, RLS-neutral) authored and **user-approved** at Admin Question
+  Builder build time per this decision; application via Supabase SQL editor is
+  pending. `meta` validated against `schemas/common/meta.schema.json`,
+  server-only, never exposed to students.
 
 ## D-044 – Question lifecycle + versioning (snapshot-safe editing)
 
@@ -1170,3 +1176,298 @@ revised. Do not overwrite history – append or amend entries with a note.
   part ids) — the semantic port of the validate.py `number-logic.parts-match`
   pair rule. `validateAnswer` rejects a single-value response to a multi-part
   challenge and vice versa.
+
+## D-076 – Mission selection mirrors the current backend unlock rule; §11 previous-level progression is deferred backend work
+
+- **Status:** DECIDED (2026-08-15, Task 5.2)
+- **Decision:** The stream/level selection UI resolves locked/unlocked state
+  by mirroring `GameSessionService.applyUnlockRule` exactly: level 1 is always
+  available, and levels 2..5 are available only when an ACTIVE special-access
+  grant matches `grant.streamId === level.streamId` **or**
+  `grant.levelId === level.id`. Because the composite FK D-039 always pairs a
+  `level_id` with its owning `stream_id`, and the current backend rule treats
+  any matching `stream_id` as covering the whole stream, a "level-specific"
+  grant is in practice a stream-wide grant today. The architecture's §11
+  "previous level completed unlocks the next" progression is a designed,
+  not-yet-implemented backend behavior — the UI must NOT invent a client-side
+  copy of it (no fake unlocks), and it will render whatever the backend
+  resolves. The selection service is read-only and never writes progression.
+- **Why:** The play gate stays server-authoritative (D-027/D-033); a UI that
+  unlocked more (or less) than the backend would desynchronise selection from
+  the real entitlement enforced at session start. Mirroring the current rule
+  keeps the UI truthful today, and the deferred §11 work can land entirely in
+  the backend (GameSessionService) with the UI untouched.
+- **Consequence:** `resolveLevelAccess` in
+  `src/features/mission/access/access-resolver.js` is the single pure mirror
+  of the rule; `MissionService` reads only catalogue + progression + grants
+  and returns `access: 'available'|'special'|'locked'` and
+  `status: 'completed'|'in-progress'|'not-started'`. Tests assert the 
+  stream-OR-level grant semantics (a level-specific grant still covers the
+  whole stream under the current backend rule). Future work: implement §11 in
+  `GameSessionService` and re-run the mission service tests unchanged.
+  **SUPERSEDED FOR §11 (Task 5.5, D-078):** the previous-level progression
+  rule is now implemented by `ProgressionService.assertLevelUnlocked` +
+  `recordCompletion` (writes `student_progress`/`student_level_progress` on
+  `finishSession`); the mission access resolver mirrors it via the added
+  `previousLevel`/`previousLevelProgress` inputs, and the existing mission
+  service tests ran unchanged.
+
+## D-077 – Production Supabase integration: one service-role client + env-file server config + hardened repositories
+
+- **Status:** DECIDED (2026-08-15, Task 5.4)
+- **Decision:** The production server runs the Tasks 5.1–5.3 student + game
+  system against the real linked Supabase project with exactly one service-role
+  Supabase client (`getSupabaseServerClient`) shared by the game-session,
+  student and mission repository sets, composed by `createProductionApi` (a
+  binary-safe HTTP bridge for multipart avatar uploads). Server credentials
+  come only from `.env` (`SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`,
+  gitignored), loaded via `node --env-file=.env`; the key is never a `VITE_*`
+  var, never logged, and the built bundle is probed for it. The service and
+  activity/game engines are used **unchanged**; this task only wires the
+  existing PostgREST adapters and verifies them.
+- **Why:** A single shared client avoids duplicate connections and keeps one
+  identity boundary (service-role) with the browser never touching PostgREST
+  directly. Reusing existing repos/contracts avoids a redesign and keeps the
+  engine authority (D-016/D-052) intact. Env-file loading matches the operator
+  request for full `.env` support without adding a dependency.
+- **Consequence:** Three production-only bugs were found by the live smoke and
+  fixed in the supabase repositories: (1) `createRoundsForSession` must order
+  inserted rounds by `round_number` (PostgREST insert-select order is not
+  guaranteed), or a fresh session could report round 3 as current; (2)
+  `total_time_ms` is a bigint of milliseconds and must not be ISO-serialized —
+  only `completed_at` is a timestamp; (3) non-numeric ids must be guarded
+  (`finiteId`) before reaching PostgREST, which otherwise raises `invalid
+  input syntax for type bigint: "NaN"` instead of the service's clean
+  409/404. The latent `getSupabaseServerClient` async bug (createClient
+  destructured from an un-awaited dynamic-import Promise) was also fixed.
+  Progress writes (`student_progress`/`student_level_progress`) are explicitly
+  deferred to the progression task (D-076) — this task persists only the
+  session ledger (sessions, rounds, answers, scores).
+
+## D-078 – Progression authority + idempotent completion (implements D-076 §11)
+
+- **Status:** DECIDED (2026-08-15, Task 5.5)
+- **Decision:** The normal-progression unlock and completion writes live
+  entirely in a new `ProgressionService` consumed by `GameSessionService`:
+  (1) `startSession` re-checks the D-076 rule authoritatively at every start
+  via `assertLevelUnlocked` — level 1 open; level N open when N−1 is
+  completed for the same stream **or** an active special-access grant covers
+  the stream/level; (2) `finishSession` calls `recordCompletion` once per
+  finished session, UPSERTing `student_level_progress` on
+  `(student_id, level_id)` (best-score max, attempts+1, first `completed_at`
+  preserved) and the recomputed stream aggregate `student_progress` on
+  `(student_id, stream_id)` (`current_level = clamp(maxCompletedNumber + 1,
+  1, 5)`, `completed_levels`, `stream_completed`). Re-finishing an already
+  completed session is idempotent: the stored completion payload is returned
+  with no further writes. Special access stays an independent entitlement — a
+  grant opens play but never fabricates a completion record.
+- **Why:** D-076 required the gate to remain backend-authoritative and the
+  UI never to invent unlocks. Deferring the writes to `finishSession` keeps
+  the session/ledger operation atomic-ish and the aggregation (max/clamp)
+  testable in one place; PostgREST's `ON CONFLICT DO UPDATE` cannot express
+  `max(existing, new)`, so the service owns the merge logic and the
+  repositories stay dumb adapters. Idempotency falls out of the table unique
+  keys.
+- **Consequence:** `GameSessionService.applyUnlockRule` (grant-only) was
+  removed in favour of `ProgressionService.assertLevelUnlocked`.
+  `resolveLevelAccess`/`buildLevelContext` gained optional
+  `previousLevel`/`previousLevelProgress` (backward compatible) so the
+  Mission UI renders a progression-unlocked level as `available`, distinct
+  from a grant's `special`. Existing mission/access tests run unchanged. New
+  ProgressionService/repo/game/mission tests cover the full matrix; live
+  smoke (49/49) and `npm test` 966/966 verify the deferred writes and the
+  two-level unlock chain against the linked project.
+
+## D-079 – Profile edit gate + safe progress overview (Task 5.6)
+
+- **Status:** DECIDED (2026-08-16, Task 5.6)
+- **Decision:** Profile editing reuses the registration boundary verbatim:
+  `StudentService.updateProfile` derives identity from the session token
+  only (a forged `studentId` in the body is rejected, never used) and runs
+  the **raw** request body through the exact `validateRegistrationInput`
+  strict gate, so foreign/privileged fields (`score`, `studentId`, …) fail
+  with the distinct `400 STUDENT_UNEXPECTED_FIELD`. The repository writes
+  exactly the editable 0001 columns (`initials`, `full_name`, `school_id`,
+  `grade`); `login_code` and `profile_photo_path` are never touched. The
+  progress dashboard is a **read-only safe projection** —
+  `ProgressionService.getStudentOverview({ studentId })` (new optional
+  `streamRepository` dependency) exposes per level only
+  `{ id, number, name, status, access, replayable }` plus stream-level safe
+  aggregates (completed levels, current-level clamp, completion percent,
+  stream best score / attempts, next playable level), and an `overall`
+  block. Per-level attempts/best-score, scoring data, answer data and
+  special-access internals never leave the server.
+- **Why:** One strict gate (D-021's registration validator) keeps the
+  editable surface identical to what registration accepts, so there is no
+  second, weaker input path. The token-derived identity (established in
+  Task 5.1) removes any client-choosable target, making the PUT a pure field
+  update. Reusing the D-078 authority for the overview means the dashboard
+  can never disagree with the real unlock/completion state, and the
+  per-level surface keeps the earlier payload-secrecy guarantees (Tasks
+  5.2–5.5) intact.
+- **Consequence:** `createStudentApi({ service, progressionService = null })`
+  gained an optional dependency (backward compatible; the progress route
+  returns `500 STUDENT_INTERNAL` if unmounted without it); dev + production
+  servers wire a `profileProgressionService` from the mission
+  `streamRepository`. New tests: service (12), API (12), overview (8),
+  frontend SSR + client (8). Live smoke (58/58) and `npm test` 1006/1006
+  verify the update, the strict gate, the truthful overview advancement and
+  per-student isolation against the linked project.
+
+## D-080 – Browser Realtime: the one approved Supabase channel (Task 5.7)
+
+- **Status:** DECIDED (2026-08-16, Task 5.7)
+- **Decision:** The browser is allowed **exactly one** Supabase connection —
+  the public Realtime channel on `leaderboard_entries` — so the live
+  leaderboard can refresh without polling. It is served by
+  `@supabase/realtime-js@^2.112.3` (direct dependency) through a refcounted
+  `createLeaderboardRealtimeController` (one `RealtimeClient` + one
+  subscription shared by every subscriber; torn down when the page is
+  left). Credentials come from **VITE env vars only**
+  (`VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), read at runtime via
+  `import.meta.env`; when absent the controller reports `UNAVAILABLE` and
+  the UI shows "Live updates off". `.env` is NOT modified and the
+  service-role key is never used in the browser. All data writes remain on
+  the server through `recordBestScore`; the channel is receive-only. The
+  table already carries `anon select` RLS (0001 §20), so only the public
+  projection is broadcast.
+- **Why:** The only earlier Realtime decision (D-029) was conservative —
+  no browser connection at all. Live boards need a push channel to be truly
+  live, and this is the one table whose public read surface is exactly what
+  the leaderboard needs, so a single read-only anon channel is a bounded,
+  privacy-safe exception. The anon key is a publishable credential by
+  design; the service-role key remains server-only (D-027), keeping the
+  browser surface to one channel with no write capability.
+- **Consequence:** `@supabase/realtime-js` added to `package.json`;
+  `getLeaderboardRealtime()` lazy singleton + `realtimeConfig()` +
+  `liveStatusOf` in `src/features/leaderboard/realtime/realtime.js`;
+  `useLiveLeaderboard` invalidates the `['leaderboard']` query prefix on
+  `POSTGRES_CHANGES`. Without VITE config the leaderboard page still fully
+  works via queries. Verified by 50 new leaderboard tests, live smoke
+  69/69 and the three-way bundle probe (service-role key absent from the
+  bundle).
+
+## D-081 – Certificate PDF: hand-rolled minimal PDF (Task 5.8)
+
+- **Status:** DECIDED (2026-08-16, Task 5.8 — user decision)
+- **Decision:** The on-demand certificate PDF is produced by a small
+  hand-written generator (`src/features/achievements/pdf/pdf-generator.js`)
+  with **zero new dependencies** — pdfkit was considered and rejected. The
+  generator emits a single US-Letter page using the base-14 **Helvetica** /
+  **Helvetica-Bold** byte streams (no font embedding), per-style ASCII
+  **width tables** to center the recipient/stream/code/date lines,
+  backslash-escaping of `\ ( )` plus neutralisation of non-ASCII characters
+  (`escapePdfString`) so the object stream stays valid for any name, and a
+  byte-exact **xref table**. The PDF is generated ON DEMAND on the server,
+  served as `application/pdf` with a short private cache, and never stored —
+  `certificates.document_path`/`generated_at` stay `NULL` and there is no
+  certificates Storage bucket (D-011/D-031 remain the record-of-truth + no
+  stored-document contract).
+- **Why:** A certificate for this system is a short, static, single-page
+  document. The hand-rolled path keeps the Free-Tier footprint at zero, adds
+  no supply-chain surface, and gives byte-exact control over layout that
+  tests can assert (xref offsets, `%PDF-` header). It matches the project's
+  standing bias against gratuitous dependencies (compare D-077/D-080).
+- **Consequence:** `pdf-generator.js` + `certificate-code.js` are server-only
+  (verified absent from the client bundle by the probe). Layout is plain text
+  with the base-14 fonts — no embedded artwork or signature images. Any future
+  richer certificate can swap this generator without touching the issuing
+  contract, repository or API.
+
+## D-082 – Admin authorization = auth.getUser + public.admins query (Task 5.9)
+
+- **Status:** DECIDED (2026-08-16, Task 5.9)
+- **Decision:** Server-side admin authorization is implemented as the
+  `AdminService.resolveAdmin(token)` two-step: the service-role client's
+  `auth.getUser(token)` establishes the **authenticated Supabase identity**
+  (rejects missing/expired JWTs and any non-JWT such as a student session
+  token), then `admins.findActiveByAuthUserId(user.id)` checks the existing
+  `public.admins` table for `id = user.id AND is_active = true`. This is
+  semantically identical to the 0001 `is_admin()` SQL function (which relies
+  on the `auth.uid()` GUC and cannot be called from application code) but is
+  callable server-side, so it runs uniformly across tests (memory repo), the
+  demo server and production.
+- **Why:** The mandate for Task 5.9 was Supabase Auth admin login with the
+  existing `admins`/`is_admin()` model preserved — no migration. A pure
+  PostgREST/RLS-only check would leave the boundary implicit; an explicit
+  service-side query keeps 401 vs 403 crisp (invalid/absent token → 401
+  `ADMIN_UNAUTHENTICATED`/`ADMIN_INVALID_TOKEN`; valid identity, not an
+  active admin → 403 `ADMIN_FORBIDDEN`), matches D-011/D-027 (service-role
+  stays server-only; browser uses the anon key with `persistSession:false`),
+  and gives a `requireAdmin` middleware that every `/api/admin/*` route can
+  share.
+- **Consequence:** `src/features/admin/` (server feature) + 
+  `src/features/admin-auth/` (browser feature) added. The browser holds only
+  the access token in `sessionStorage`; the client bundle never references
+  `public.admins`/`is_admin()`/`display_name`/`is_active` (probe: 0 files).
+  The demo server passes `adminApp = null` (no Supabase Auth there). Admin
+  sessions have no auto-refresh yet (foundation scope; 401 → login).
+
+## D-083 – Multi-part number-logic correct answers carry a neutral top-level spec (Task 5.11B)
+
+- **Status:** DECIDED (2026-08-17, Task 5.11B)
+- **Decision:** When a number-logic payload has `parts`, the authored
+  correct-answer document contains BOTH the schema-required top-level `type`
+  (a neutral `{ type: 'exact', value: 0 }`) AND the per-part specs
+  (`parts: [{ partId, type, ... }]`), mirroring the shipped
+  `schemas/examples/number-logic/partial-credit.json`. The per-part specs are
+  the only scoring surface (D-075); the top-level spec exists solely because
+  the correct-answer JSON Schema marks `type` as required at the root.
+- **Why:** A multi-part answer with only `parts` fails the envelope schema
+  (`required: ["type"]`), so a spurious-but-harmless top-level spec is the
+  least-friction way to keep the stored document schema-valid. The scoring
+  path (`validateMultiPart`) and the cross-document rule
+  (`validateNumberLogicAnswer` validates each part against its payload
+  answerFormat, not the top level) ignore it; it is never shown to students.
+- **Consequence:** `buildNumberLogicAnswer(payload, { parts })` emits
+  `{ type: 'exact', value: 0, parts: [...] }`. Any future schema revision can
+  drop the required top-level `type` without a code change here.
+
+## D-084 – Question media ownership & lifecycle without a media table (Task 5.12)
+
+- **Status:** DECIDED (2026-08-17, Task 5.12)
+- **Decision:** Uploaded question images are stored only in the private
+  `question-media` bucket (0003) with a server-generated path that embeds a
+  sanitized admin-identity owner segment:
+  `question-media/{owner}/uploads/{uuid}.{ext}`. There is **no** media table and
+  no schema redesign. Ownership is proven by the owner segment; deletion is
+  gated on `questionRepository.isMediaRefInUse(ref)` — an object is removed
+  only when NO question (draft, published or archived) still references it.
+  Question deletion never cascades to storage; orphaned objects are cleaned
+  explicitly through `DELETE /api/admin/questions/media` (D-044-style explicit
+  author action).
+- **Why:** The schema is frozen under the D-043 pre-authorization discipline
+  and a media table would add join complexity for every question read. Embedding
+  the owner in the path keeps uploads/ownership checks in the storage layer the
+  bucket already enforces (no RLS change), while the in-use scan is a single
+  `SELECT payload` over `questions` — cheap at current scale. Ownership in the
+  path prevents cross-admin deletion (403 `QUESTION_MEDIA_FORBIDDEN`) without a
+  lookup table.
+- **Consequence:** Deleting/replacing an image in one draft can never destroy
+  another question's media (409 `QUESTION_MEDIA_IN_USE`). Removing a question
+  leaves its media in place until explicitly deleted; the smoke verifies the
+  storage baseline returns to exactly 0 objects after cleanup. A future media
+  GC job or admin "media library" screen would build on the same surface.
+
+## D-085 – No admin role split for review; any active admin completes the whole lifecycle (Task 5.13)
+
+- **Status:** DECIDED (2026-08-17, Task 5.13)
+- **Decision:** There is no reviewer/approver role separation. Any active
+  admin (an `admins` row with `is_active = true`) may submit, approve, reject,
+  publish, archive, and clone-version any question. Accountability comes from
+  the immutable `admin_actions` audit trail, which records the acting admin,
+  the action, the target question, details and timestamp for every transition
+  (newest-first, deterministic `id`-descending order). The state machine still
+  separates duties functionally: a draft must pass release gates, be approved
+  against the current version (stale approvals are rejected), and only then
+  publish; versioned edits never overwrite a published question.
+- **Why:** Introducing `admins.role` or a separate `reviewers` surface would
+  require a schema change (blocked by the D-043 pre-authorization discipline)
+  and adds account-management overhead for a small admin team. The review
+  gates + stale-approval guard enforce content quality independent of who
+  holds the token, and the audit trail provides the same non-repudiation a
+  role split would. Task scope also explicitly deferred role separation.
+- **Consequence:** The review queue, review detail and audit trail are
+  available to every active admin through the same `/api/admin/questions/*`
+  routes. If a future requirement needs author/approver separation, it builds
+  on the existing `admin_actions` trail without redesigning the lifecycle.

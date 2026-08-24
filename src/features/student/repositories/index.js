@@ -14,7 +14,7 @@ export async function createStudentRepositories({ mode }) {
   }
   if (mode === 'supabase') {
     const { getSupabaseServerClient } = await import('../../game-session/repositories/supabase-client.js')
-    const client = getSupabaseServerClient()
+    const client = await getSupabaseServerClient()
     return createSupabaseStudentRepositories({ client })
   }
   throw new Error(`Unknown student repository mode: "${mode}"`)

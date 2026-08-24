@@ -6,6 +6,9 @@
  * registration helper that wires the plugin into an engine facade.
  */
 
+import { memoryPlugin, registerMemory } from './plugin.js'
+import { MemoryActivity } from './MemoryActivity.jsx'
+
 export {
   memoryPlugin,
   registerMemory,

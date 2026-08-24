@@ -7,6 +7,7 @@
  */
 
 import { imageInteractionPlugin, registerImageInteraction } from './plugin.js'
+import { ImageInteractionActivity } from './ImageInteractionActivity.jsx'
 
 export {
   imageInteractionPlugin,

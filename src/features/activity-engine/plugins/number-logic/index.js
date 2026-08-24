@@ -7,6 +7,9 @@
  * facade.
  */
 
+import { numberLogicPlugin, registerNumberLogic } from './plugin.js'
+import { NumberLogicActivity } from './NumberLogicActivity.jsx'
+
 export {
   numberLogicPlugin,
   registerNumberLogic,

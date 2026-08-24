@@ -1,0 +1,18 @@
+/**
+ * Content Bank — Engineering, Level 2 (Task 5.14, Batch 1).
+ * Blueprint §6.1 L2 (DD15 MT15 OR10 ST10 FC15 II10 PA5 ME10 SC5 NL5),
+ * topics §7.2 L2, difficulty §5.3 L2 (D1 35 / D2 40 / D3 20 / D4 5).
+ */
+import { src, dragDrop, matching, fillComplete, imageInteraction } from './helpers.mjs'
+
+const S = { level: 2, ...src('engineering') }
+
+export default [
+  dragDrop({ items: [{ id: 'i1', label: 'Wood' }, { id: 'i2', label: 'Brick' }, { id: 'i3', label: 'Wool' }, { id: 'i4', label: 'Steel' }, { id: 'i5', label: 'Cotton' }, { id: 'i6', label: 'Plastic' }], zones: [{ id: 'z_nat', label: 'Natural material' }, { id: 'z_man', label: 'Manufactured material' }], mappings: [{ itemId: 'i1', zoneId: 'z_nat' }, { itemId: 'i2', zoneId: 'z_man' }, { itemId: 'i3', zoneId: 'z_nat' }, { itemId: 'i4', zoneId: 'z_man' }, { itemId: 'i5', zoneId: 'z_nat' }, { itemId: 'i6', zoneId: 'z_man' }], prompt: 'Classify each material as natural or manufactured.', explanation: 'Wood, wool and cotton come from nature; brick, steel and plastic are made by people.', objective: 'Classify materials as natural or manufactured.', topic: 'materials-structures', subtopic: 'material-properties', difficulty: 1, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'Does it grow in nature or is it made in a factory?' }], ...S }),
+
+  matching({ leftItems: [{ id: 'l1', text: 'Lever' }, { id: 'l2', text: 'Pulley' }, { id: 'l3', text: 'Wheel and axle' }, { id: 'l4', text: 'Inclined plane' }], rightItems: [{ id: 'r1', text: 'Seesaw' }, { id: 'r2', text: 'Flagpole rope' }, { id: 'r3', text: 'Bicycle wheel' }, { id: 'r4', text: 'Ramp' }], pairs: [{ leftId: 'l1', rightId: 'r1' }, { leftId: 'l2', rightId: 'r2' }, { leftId: 'l3', rightId: 'r3' }, { leftId: 'l4', rightId: 'r4' }], prompt: 'Match each simple machine to a real example.', explanation: 'A seesaw is a lever, a flagpole rope is a pulley, a bicycle wheel is a wheel and axle, and a ramp is an inclined plane.', objective: 'Match simple machines to examples.', topic: 'mechanisms-machines', subtopic: 'simple-machines', difficulty: 1, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'Think about how each object helps move or lift things.' }], ...S }),
+
+  fillComplete({ template: 'A seesaw is an example of a simple machine called a ___.', blanks: [{ id: 'b1', type: 'text', label: 'machine', maxLength: 10 }], answers: [{ blankId: 'b1', type: 'text', accepted: ['lever'] }], prompt: 'A seesaw is an example of a simple machine called a ___.', explanation: 'A seesaw is a lever: it pivots on a fulcrum to lift the load.', objective: 'Name the simple machine in a seesaw.', topic: 'mechanisms-machines', subtopic: 'simple-machines', difficulty: 2, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'It balances on a middle pivot point.' }], ...S }),
+
+  imageInteraction({ image: { ref: 'question-media/engineering/mechanisms-machines/lever-fulcrum.png', alt: 'Diagram of a seesaw lever with a triangle fulcrum in the middle, a load on the left and an effort on the right.', role: 'diagram', width: 400, height: 260 }, imageWidth: 400, imageHeight: 260, mode: 'tap', hotspots: [{ id: 'h1', label: 'The fulcrum', x: 50, y: 78, radius: 12 }], requiredHotspots: ['h1'], prompt: 'The diagram shows a lever. Tap the fulcrum.', explanation: 'The fulcrum is the pivot point on which the lever turns.', objective: 'Identify the fulcrum of a lever.', topic: 'mechanisms-machines', subtopic: 'simple-machines', difficulty: 2, gradeMin: 6, gradeMax: 8, hints: [{ level: 1, text: 'It is the triangular support at the balance point.' }], ...S }),
+]

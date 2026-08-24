@@ -122,6 +122,38 @@ export class StudentService {
     return { student: await this.#toPublicStudent(updated, school?.name ?? 'Unknown school', avatarUrl) }
   }
 
+  /**
+   * Updates the student's editable profile fields (initials, name, school,
+   * grade). `body` is the RAW request body — validated by the same strict
+   * registration gate, so foreign (privileged) fields are rejected before
+   * anything is extracted. Identity is always derived from the session token;
+   * the client can never choose which student is updated.
+   * @param {{ token: string, body: object }} args
+   * @returns {Promise<{ student: object }>}
+   */
+  async updateProfile({ token, body }) {
+    const student = await this.#resolveStudentFromToken(token)
+    const check = validateRegistrationInput(body)
+    if (!check.ok) {
+      throw check.unexpected !== undefined
+        ? studentError.unexpectedField(check.unexpected)
+        : studentError.invalidInput('one or more profile fields are invalid.')
+    }
+    const { initials, name, school, grade } = check.value
+
+    const schoolRecord = await this.#resolveSchool(school)
+    const updated = await this.repos.studentRepository.updateProfile(student.id, {
+      initials,
+      fullName: name,
+      schoolId: schoolRecord.id,
+      grade,
+    })
+    if (!updated) throw studentError.notFound()
+
+    const avatarUrl = await this.#avatarUrl(updated.profilePhotoPath)
+    return { student: await this.#toPublicStudent(updated, schoolRecord.name, avatarUrl) }
+  }
+
   // -------------------------------------------------------------------------
 
   async #resolveSchool(name) {

@@ -5,13 +5,17 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:prod": "VITE_API_PORT=4101 vite",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "api": "node src/features/game-session/api/dev-server.js",
-    "test": "node --test \"src/features/{activity-engine,game-engine,game-session,student}/testing/**/*.test.js\""
+    "api:production": "node --env-file=.env src/features/game-session/api/production-server.js",
+    "smoke:production": "node --env-file=.env scripts/smoke-production.mjs",
+    "test": "node --test \"src/features/{activity-engine,game-engine,game-session,student,mission,progression,leaderboard,achievements,admin,admin-auth,admin-questions}/testing/**/*.test.js\" \"src/features/admin/questions/testing/**/*.test.js\""
   },
   "dependencies": {
+    "@supabase/realtime-js": "^2.112.3",
     "@supabase/supabase-js": "^2.112.3",
     "@tanstack/react-query": "^5.101.4",
     "ajv": "^8.20.0",

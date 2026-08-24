@@ -69,7 +69,7 @@ export const GRADE_OPTIONS_UI = GRADE_OPTIONS
 
 export const SUBMIT_LABEL = 'Start Your STEM Quest'
 export const SUBMITTING_LABEL = 'Starting your mission…'
-export const NEXT_STEP_PATH = '/student/game'
+export const NEXT_STEP_PATH = '/student/mission'
 
 export function fieldMessageFor(errors, name) {
   return errors && errors[name] ? errors[name] : null

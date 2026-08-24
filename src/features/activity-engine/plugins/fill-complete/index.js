@@ -7,6 +7,7 @@
  */
 
 import { fillCompletePlugin, registerFillComplete } from './plugin.js'
+import { FillCompleteActivity } from './FillCompleteActivity.jsx'
 
 export {
   fillCompletePlugin,

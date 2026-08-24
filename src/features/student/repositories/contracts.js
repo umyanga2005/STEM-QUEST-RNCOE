@@ -55,6 +55,10 @@
  *           - row = { initials, fullName, schoolId, grade, loginCode }
  *             (server-controlled columns only; never client fields).
  * @property {(id: number, profilePhotoPath: string|null) => Promise<Student|null>} setProfilePhotoPath
+ * @property {(id: number, patch: { initials: string, fullName: string, schoolId: number, grade: number }) => Promise<Student|null>} updateProfile
+ *           - updates ONLY the editable profile columns (initials, full_name,
+ *             school_id, grade). Never id, login_code, profile_photo_path,
+ *             status or is_archived. Returns the updated student or null.
  */
 
 /**

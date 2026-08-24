@@ -27,12 +27,12 @@ export function loadServerConfig(env = globalThis.process?.env ?? {}) {
 
 /**
  * Lazy factory: creates exactly one service-role client per process.
- * @returns {import('@supabase/supabase-js').SupabaseClient}
+ * @returns {Promise<import('@supabase/supabase-js').SupabaseClient>}
  */
-export function getSupabaseServerClient(env) {
+export async function getSupabaseServerClient(env) {
   if (!getSupabaseServerClient._client) {
     const { supabaseUrl, serviceRoleKey } = loadServerConfig(env)
-    const { createClient } = requireSupabase()
+    const { createClient } = await requireSupabase()
     getSupabaseServerClient._client = createClient(supabaseUrl, serviceRoleKey, {
       auth: { persistSession: false, autoRefreshToken: false },
       realtime: { params: { eventsPerSecond: 0 } },

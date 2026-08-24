@@ -360,6 +360,13 @@
   color: var(--color-text-muted);
 }
 
+.sr-success-photo-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1.25rem 0;
+}
+
 .sr-success-photo {
   display: inline-block;
   width: 96px;
@@ -374,4 +381,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.sr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  width: 100%;
+  margin-top: 1.5rem;
 }

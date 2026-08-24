@@ -21,14 +21,15 @@ const STATUS_LABEL = {
 }
 
 function PhotoHalo({ student }) {
-  if (student.avatarUrl) {
+  const [imgError, setImgError] = useState(false)
+  if (student.avatarUrl && !imgError) {
     return (
       <span className="pf-photo" aria-hidden="true">
-        <img src={student.avatarUrl} alt="" />
+        <img src={student.avatarUrl} alt="" onError={() => setImgError(true)} />
       </span>
     )
   }
-  return <span className="pf-photo pf-photo--initials" aria-hidden="true">{student.initials}</span>
+  return <span className="pf-photo pf-photo--initials" aria-hidden="true">{student.initials || 'SQ'}</span>
 }
 
 export default function StudentProfilePage() {

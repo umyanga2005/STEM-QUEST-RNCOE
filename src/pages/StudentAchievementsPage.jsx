@@ -172,10 +172,11 @@ export default function StudentAchievementsPage() {
 }
 
 function BadgeCard({ badge }) {
+  const slug = badge.slug ? badge.slug.replace('-completion', '') : 'science'
   return (
     <article className={`ac-badge${badge.awarded ? ' ac-badge--earned' : ''}`}>
       <span className="ac-badge__icon" aria-hidden="true">
-        {badge.awarded ? <StreamIcon slug={badge.slug.replace('-completion', '')} /> : '·'}
+        <StreamIcon slug={slug} />
       </span>
       <div className="ac-badge__body">
         <h3 className="ac-badge__name">{badge.name}</h3>

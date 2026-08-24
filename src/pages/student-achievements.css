@@ -1,11 +1,13 @@
+/* Student Achievements Page — Premium Layout & Desktop Support */
+
 .ac-page {
   position: relative;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 2.5rem 1rem 6rem;
+  justify-content: flex-start;
+  padding: 2.5rem 1.25rem 7.5rem;
   background: var(--color-bg);
   overflow-x: hidden;
 }
@@ -24,21 +26,32 @@
   position: relative;
   z-index: 1;
   width: 100%;
-  max-width: 780px;
+  max-width: 960px;
 }
+
+/* Header ----------------------------------------------------------------- */
 
 .ac-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 1.5rem;
+  width: 100%;
+  margin-bottom: 2rem;
   flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+}
+
+.ac-header__top {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
 }
 
 .ac-brand {
-  font-size: 1.5rem;
+  font-size: 1.65rem;
   font-weight: 900;
+  line-height: 1.2;
   letter-spacing: 0.08em;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
   -webkit-background-clip: text;
@@ -49,62 +62,98 @@
 .ac-greeting {
   color: var(--color-text-muted);
   font-size: 0.95rem;
+  font-weight: 600;
 }
+
+.ac-back {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--color-accent-strong);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.ac-back:hover {
+  background: rgba(45, 212, 191, 0.15);
+  border-color: var(--color-accent);
+  transform: translateX(-3px);
+}
+
+/* Stack & Cards ----------------------------------------------------------- */
 
 .ac-stack {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.75rem;
 }
 
 .ac-card {
-  padding: 1.75rem;
+  padding: 2rem;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 24px;
-  background: rgba(15, 22, 41, 0.82);
+  background: rgba(15, 22, 41, 0.85);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 .ac-card__head {
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
 }
 
 .ac-title {
   margin: 0;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: #ffffff;
 }
 
 .ac-subtitle {
-  margin: 0.25rem 0 0;
+  margin: 0.35rem 0 0;
   font-size: 0.9rem;
   color: var(--color-text-muted);
 }
 
+/* Badges Grid ------------------------------------------------------------ */
+
 .ac-badges {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 1rem;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+  .ac-badges {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .ac-badge {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.1rem;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(24, 34, 60, 0.5);
-  transition: all 0.2s ease;
+  gap: 1.15rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(24, 34, 60, 0.6);
+  transition: all 0.25s ease;
+}
+
+.ac-badge:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
 }
 
 .ac-badge--earned {
-  border-color: rgba(251, 191, 36, 0.4);
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12), rgba(245, 158, 11, 0.05));
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.15);
+  border-color: var(--color-accent-strong);
+  background: rgba(45, 212, 191, 0.08);
+  box-shadow: 0 0 25px rgba(45, 212, 191, 0.15);
 }
 
 .ac-badge__icon {
@@ -114,45 +163,152 @@
   justify-content: center;
   width: 52px;
   height: 52px;
-  border-radius: 50%;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.06);
-  color: var(--color-text-dim);
-  font-weight: 800;
-  font-size: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--color-text-muted);
 }
 
 .ac-badge--earned .ac-badge__icon {
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  color: #071021;
-  box-shadow: 0 0 20px rgba(251, 191, 36, 0.5);
+  background: rgba(45, 212, 191, 0.15);
+  border-color: var(--color-accent-strong);
+  color: var(--color-accent-strong);
+  box-shadow: 0 0 15px rgba(45, 212, 191, 0.3);
+}
+
+.ac-badge__icon svg {
+  width: 26px;
+  height: 26px;
+}
+
+.ac-badge__body {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .ac-badge__name {
   margin: 0;
   font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--color-text);
+  font-weight: 800;
+  color: #ffffff;
 }
 
 .ac-badge__desc {
-  margin: 0.15rem 0 0;
+  margin: 0.25rem 0 0;
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
 
-.ac-badge__state--earned {
-  color: #fbbf24;
+.ac-badge__state {
+  font-size: 0.75rem;
   font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.ac-badge__state--earned {
+  color: #071021;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
+  box-shadow: 0 0 12px rgba(45, 212, 191, 0.4);
+}
+
+/* Certificates ------------------------------------------------------------ */
+
+.ac-certs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .ac-cert {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 1.1rem;
+  gap: 1.15rem;
+  padding: 1.25rem 1.5rem;
   border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(24, 34, 60, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
+}
+
+.ac-cert__icon {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  color: var(--color-accent-strong);
+  background: rgba(45, 212, 191, 0.12);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+}
+
+.ac-cert__body {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.ac-cert__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.ac-cert__meta {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+
+/* Verification Section --------------------------------------------------- */
+
+.ac-verify__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ac-verify__label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.ac-verify__row {
+  display: flex;
+  gap: 0.85rem;
+  flex-wrap: wrap;
+}
+
+.ac-verify__input {
+  flex: 1 1 220px;
+  height: 50px;
+  padding: 0 1.2rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(24, 34, 60, 0.8);
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+}
+
+.ac-verify__input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 15px rgba(79, 139, 255, 0.3);
 }
 
 .ac-button {
@@ -165,34 +321,62 @@
   cursor: pointer;
   border: none;
   transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .ac-button--primary {
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-strong));
   color: #071021;
-  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.3);
+  box-shadow: 0 6px 20px rgba(45, 212, 191, 0.35);
 }
 
-.ac-button--primary:hover {
+.ac-button--primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(45, 212, 191, 0.45);
+  box-shadow: 0 10px 25px rgba(45, 212, 191, 0.5);
+}
+
+.ac-button--primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .ac-button--ghost {
   background: transparent;
   border: 1px solid var(--color-accent);
-  color: var(--color-accent);
+  color: var(--color-accent-strong);
 }
 
-.ac-verify__input {
-  flex: 1 1 220px;
-  min-height: 52px;
-  padding: 0.75rem 1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(24, 34, 60, 0.8);
-  color: var(--color-text);
-  font-family: ui-monospace, 'Cascadia Code', monospace;
-  font-size: 1.05rem;
-  letter-spacing: 0.08em;
+.ac-button--small {
+  min-height: 40px;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.88rem;
+}
+
+.ac-empty, .ac-status {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+  padding: 1.5rem 0;
+}
+
+.ac-error {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-radius: 18px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .ac-card {
+    padding: 1.25rem;
+  }
 }

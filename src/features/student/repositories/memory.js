@@ -139,7 +139,20 @@ class MemoryStudentAvatarRepository {
   }
 
   async signedUrl(path) {
-    return this.store.avatars[path] ? `memory://student-avatars/${path}` : null
+    const item = this.store.avatars[path]
+    if (!item) return null
+    let base64 = ''
+    if (typeof Buffer !== 'undefined' && Buffer.from) {
+      base64 = Buffer.from(item.buffer).toString('base64')
+    } else {
+      let binary = ''
+      const bytes = new Uint8Array(item.buffer)
+      for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i])
+      }
+      base64 = btoa(binary)
+    }
+    return `data:${item.mimeType || 'image/jpeg'};base64,${base64}`
   }
 }
 

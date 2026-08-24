@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
-import { Link, Navigate, useNavigate } from 'react-router'
+import { Navigate, useNavigate } from 'react-router'
 import { useMissionSelection } from '../features/mission/selection/use-mission-selection.js'
 import { SELECTION_STEP } from '../features/mission/selection/selection-state.js'
 import { isExpiredSession } from '../features/mission/session-guard.js'
@@ -61,19 +61,12 @@ export default function StudentMissionPage() {
       <div className="sm-glow" aria-hidden="true" />
       <div className="sm-card">
         <header className="sm-header">
-          <h1>STEM QUEST</h1>
-          {me.data?.student ? (
-            <p className="sm-greeting">Hi {me.data.student.name}</p>
-          ) : null}
-          <Link className="sm-button sm-button--link" to="/student/profile">
-            View your profile
-          </Link>
-          <Link className="sm-button sm-button--link" to="/student/achievements">
-            View your achievements
-          </Link>
-          <Link className="sm-button sm-button--link" to="/leaderboards">
-            View live leaderboards
-          </Link>
+          <div className="sm-header__brand">
+            <h1>STEM QUEST</h1>
+            {me.data?.student ? (
+              <p className="sm-greeting">Hi {me.data.student.name}</p>
+            ) : null}
+          </div>
         </header>
 
         {selection.streamsQuery.isLoading ? (

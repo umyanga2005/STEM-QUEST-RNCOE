@@ -316,8 +316,10 @@ function SuccessPanel({ reduceMotion, session, avatarUrl, avatarWarning, onStart
         </div>
 
         {avatarUrl ? (
-          <div className="sr-success-photo">
-            <img src={avatarUrl} alt="Your profile photo" />
+          <div className="sr-success-photo-wrap">
+            <div className="sr-success-photo">
+              <img src={avatarUrl} alt="Student Profile" />
+            </div>
           </div>
         ) : null}
 
@@ -328,12 +330,14 @@ function SuccessPanel({ reduceMotion, session, avatarUrl, avatarWarning, onStart
         </div>
       </div>
 
-      <button type="button" className="sr-button sr-button--primary" onClick={onStart}>
-        Continue to your mission
-      </button>
-      <button type="button" className="sr-button sr-button--ghost" onClick={onViewProfile}>
-        View your profile
-      </button>
+      <div className="sr-actions">
+        <button type="button" className="sr-button sr-button--primary" onClick={onStart}>
+          Continue to your mission
+        </button>
+        <button type="button" className="sr-button sr-button--ghost" onClick={onViewProfile}>
+          View your profile
+        </button>
+      </div>
       <p className="sr-footnote">Next: choose your STEM stream and level.</p>
     </motion.section>
   )

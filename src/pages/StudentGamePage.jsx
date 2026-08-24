@@ -15,7 +15,7 @@ import { useMissionStreams, useMissionLevels } from '../features/mission/api/que
 import { RoundActivity } from '../features/game-session/activity/activity-renderer.jsx'
 import { useCountdown } from '../features/game-session/timer/use-countdown.js'
 import { isExpiredSession } from '../features/mission/session-guard.js'
-import StreamIcon from './stream-icons.jsx'
+import StreamIcon, { STREAM_ASSETS, GAME_ASSETS } from './stream-icons.jsx'
 import './student-game.css'
 
 function formatDuration(totalMs) {
@@ -48,7 +48,6 @@ export default function StudentGamePage() {
   const stateChoice = location.state?.streamId != null ? location.state : null
   const [choice] = useState(() => stateChoice ?? choiceStorage.read())
 
-  // Keep the chosen mission in this tab so a refresh can resume deterministically.
   useEffect(() => {
     if (choice) choiceStorage.write(choice)
   }, [choice])
@@ -102,16 +101,12 @@ export default function StudentGamePage() {
     )
   }, [choice, startRequested, sessionStarted, startSession, finishSession, finished, failed])
 
-  // Auto-start (or resume) ONCE per choice. The server resumes an existing
-  // active session for (student, stream), so refresh recovery is
-  // deterministic — the stored choice only says which stream to re-request.
   const autoStartedRef = useRef(false)
   useEffect(() => {
     if (round.phase !== ROUND_PHASE.IDLE || !choice || autoStartedRef.current) return
     autoStartedRef.current = true
     runStart()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [round.phase, choice])
+  }, [round.phase, choice, runStart])
 
   const handleSubmit = useCallback(
     ({ response, interactionMetrics }) => {
@@ -155,8 +150,6 @@ export default function StudentGamePage() {
     resetKey: round.currentRound?.roundId ?? null,
   })
 
-  // Navigation guard for active sessions: the server stays the authority, the
-  // browser only warns. Leaving an active mission discards the live session.
   const blocker = useBlocker(() => hasActiveSession(round))
 
   if (!token) {
@@ -166,18 +159,44 @@ export default function StudentGamePage() {
     return <Navigate to="/student/mission" replace />
   }
 
+  const streamAsset = STREAM_ASSETS[stream?.slug] || {}
+
   return (
     <main className="game-page">
       <div className="game-glow" aria-hidden="true" />
+      {GAME_ASSETS.gameHudLoop ? (
+        <video
+          src={GAME_ASSETS.gameHudLoop}
+          autoPlay
+          loop
+          muted
+          playsInline
+          style={{
+            position: 'fixed',
+            inset: 0,
+            width: '100vw',
+            height: '100vh',
+            objectFit: 'cover',
+            opacity: 0.15,
+            pointerEvents: 'none',
+            zIndex: 0,
+          }}
+        />
+      ) : null}
+
       <div className="game-shell">
         <header className="game-header">
           <div className="game-header__top">
             <span className="game-brand">STEM QUEST</span>
-            {me.data?.student ? <span className="game-greeting">{me.data.student.name}</span> : null}
+            {me.data?.student ? <span className="game-greeting">⚡ {me.data.student.name}</span> : null}
           </div>
           <div className="game-header__mission">
             <span className="game-stream-icon" aria-hidden="true">
-              {stream ? <StreamIcon slug={stream.slug} /> : null}
+              {streamAsset.bg ? (
+                <img src={streamAsset.bg} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+              ) : stream ? (
+                <StreamIcon slug={stream.slug} />
+              ) : null}
             </span>
             <div className="game-header__titles">
               <span className="game-stream-name">{stream?.name ?? 'Mission'}</span>
@@ -193,7 +212,7 @@ export default function StudentGamePage() {
               <div className="game-hud__progress" aria-live="polite">
                 {round.currentRound ? (
                   <span>
-                    Question {round.currentRound.progress.current} of {round.currentRound.progress.total}
+                    🎯 Question {round.currentRound.progress.current} of {round.currentRound.progress.total}
                   </span>
                 ) : round.progress ? (
                   <span>
@@ -202,10 +221,10 @@ export default function StudentGamePage() {
                 ) : null}
               </div>
               <div className="game-hud__score">
-                Score <strong>{round.score?.sessionRunningTotal ?? 0}</strong>
+                🏆 Score <strong>{round.score?.sessionRunningTotal ?? 0}</strong>
               </div>
               <div className={`game-hud__timer game-hud__timer--${timer.tone}`} role="timer" aria-live="polite">
-                {round.phase === ROUND_PHASE.PLAYING
+                ⏱️ {round.phase === ROUND_PHASE.PLAYING
                   ? `${timer.remaining}s`
                   : round.currentRound
                     ? `${round.currentRound.timer.allowedSeconds}s`
@@ -360,19 +379,26 @@ function RoundResultPanel({ round, onNext }) {
 
 function SessionCompletePanel({ finished, reduceMotion, onPlayAgain, onBackToMission }) {
   const passed = finished.result === 'passed'
+  const bgImage = passed ? GAME_ASSETS.victoryBg : GAME_ASSETS.gameOverBg
+
   return (
     <motion.section
       className="game-stage game-complete"
-      initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, ease: 'easeOut' }}
+      style={{
+        backgroundImage: `linear-gradient(rgba(15, 22, 41, 0.85), rgba(15, 22, 41, 0.95)), url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+      initial={reduceMotion ? false : { opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
     >
       <div className={`game-complete__seal game-complete__seal--${passed ? 'pass' : 'attempt'}`} aria-hidden="true">
-        {passed ? '✓' : '★'}
+        {passed ? '🏆' : '💪'}
       </div>
-      <h2 className="game-complete__title">{passed ? 'Mission passed' : 'Mission attempted'}</h2>
+      <h2 className="game-complete__title">{passed ? 'MISSION VICTORY!' : 'GREAT EFFORT!'}</h2>
       <p className="game-complete__score">
-        Final score <strong>{finished.sessionScore}</strong> / 300
+        Final Score: <strong>{finished.sessionScore}</strong> / 300
       </p>
       <dl className="game-complete__meta">
         <div>

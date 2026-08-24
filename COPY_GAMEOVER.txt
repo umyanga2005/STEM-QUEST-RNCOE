@@ -1,0 +1,3 @@
+Please run this one command to copy the gameover background image:
+
+  cp "src/assets/ChatGPT Image Aug 24, 2026, 01_04_05 PM.png" src/assets/game/gameover-bg.png

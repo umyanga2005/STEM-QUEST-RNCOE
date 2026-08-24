@@ -14,9 +14,20 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(70% 55% at 50% -10%, rgba(79, 139, 255, 0.35), transparent 70%),
-    radial-gradient(50% 40% at 85% 100%, rgba(45, 212, 191, 0.2), transparent 70%);
+    radial-gradient(60% 50% at 50% 0%, rgba(79, 139, 255, 0.35), transparent 70%),
+    radial-gradient(45% 45% at 90% 80%, rgba(45, 212, 191, 0.25), transparent 70%),
+    radial-gradient(50% 50% at 10% 90%, rgba(168, 85, 247, 0.25), transparent 70%);
+  animation: gameMeshGlow 10s ease-in-out infinite alternate;
   z-index: 0;
+}
+
+@keyframes gameMeshGlow {
+  0% {
+    filter: hue-rotate(0deg);
+  }
+  100% {
+    filter: hue-rotate(60deg);
+  }
 }
 
 .game-shell {

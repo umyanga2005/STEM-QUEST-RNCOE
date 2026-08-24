@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { useState } from 'react'
 import { useQuestionList, useDeleteQuestion, useCreateQuestionVersion } from '../queries/queries.js'
+import AdminActivityPreviewModal from '../../../pages/AdminActivityPreviewModal.jsx'
 
 /**
  * Admin Question Builder — list (Task 5.10, versioned editing 5.13).
@@ -28,6 +29,7 @@ export default function QuestionList({ onDeleted, onRetry }) {
   const deleteMutation = useDeleteQuestion()
   const versionMutation = useCreateQuestionVersion()
   const [versionError, setVersionError] = useState(null)
+  const [previewQuestion, setPreviewQuestion] = useState(null)
   const questions = data?.questions ?? []
 
   const handleDelete = async (id) => {
@@ -95,6 +97,14 @@ export default function QuestionList({ onDeleted, onRetry }) {
             <StatusPill status={q.status} />
           </span>
           <span className="aq-list__actions">
+            <button
+              type="button"
+              className="aq-btn aq-btn--bare"
+              onClick={() => setPreviewQuestion(q)}
+              title="Preview Activity"
+            >
+              👁 Preview
+            </button>
             <Link className="aq-btn" to={`/admin/questions/${q.id}/edit`}>
               Edit
             </Link>
@@ -123,6 +133,13 @@ export default function QuestionList({ onDeleted, onRetry }) {
       ))}
       {deleteMutation.isError ? <p className="aq-note aq-note--error">{deleteMutation.error?.message}</p> : null}
       {versionError ? <p className="aq-note aq-note--error">{versionError}</p> : null}
+
+      {previewQuestion ? (
+        <AdminActivityPreviewModal
+          question={previewQuestion}
+          onClose={() => setPreviewQuestion(null)}
+        />
+      ) : null}
     </div>
   )
 }

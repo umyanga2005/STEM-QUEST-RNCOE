@@ -1,0 +1,116 @@
+# 🎮 STEM QUEST — Complete Gaming Upgrade Build Plan
+
+## ✅ Asset Mapping (Your ChatGPT PNGs → Project Files)
+
+| Your File | Content Identified | Rename To | Destination |
+|---|---|---|---|
+| `ChatGPT Image …10_35_36 AM.png` | 🔵 Science lab — atoms, DNA, telescopes, blue | `science-bg.png` | `src/assets/streams/` |
+| `ChatGPT Image …10_35_40 AM.png` | 🟣 Tech — circuit board, robots, purple neon | `tech-bg.png` | `src/assets/streams/` |
+| `ChatGPT Image …10_35_47 AM.png` | 🟠 Engineering — gears, cranes, orange/red | `engineering-bg.png` | `src/assets/streams/` |
+| `ChatGPT Image …10_36_47 AM.png` | 🟡 Maths — Σ π √ ∞, gold equations | `maths-bg.png` | `src/assets/streams/` |
+| `ChatGPT Image …10_39_16 AM.png` | 🔴 Locked padlock — red glow, metallic | `level-locked.png` | `src/assets/game/` |
+| `ChatGPT Image …10_40_57 AM.png` | 🟢 Available star — green glow, gold ring | `level-available.png` | `src/assets/game/` |
+| `ChatGPT Image …10_43_11 AM.png` | 🏆 Completed badge — gold star + checkmark | `level-complete.png` | `src/assets/game/` |
+| `ChatGPT Image …10_44_09 AM.png` | 🎉 Victory confetti explosion | `victory-bg.png` | `src/assets/game/` |
+
+> ⚠️ **Still needed (generate with ChatGPT):**
+> `gameover-bg.png` — "Dark space background, cracked purple energy field, encouraging mood, no text"
+
+## ✅ Video Background Mapping (Your 5 MP4s → Project Files)
+
+| Your File | Purpose | Rename To | Destination | Used In |
+|---|---|---|---|---|
+| `Animation_Prompt__Animate_the.mp4` | Stream portal BG loop | `science-loop.mp4` | `src/assets/streams/` | Science stream card |
+| `Animation_Prompt__Animate_the(1).mp4` | Stream portal BG loop | `tech-loop.mp4` | `src/assets/streams/` | Technology stream card |
+| `Animation_Prompt__Animate_the(2).mp4` | Stream portal BG loop | `engineering-loop.mp4` | `src/assets/streams/` | Engineering stream card |
+| `Animation_Prompt__Animate_the(3).mp4` | Stream portal BG loop | `maths-loop.mp4` | `src/assets/streams/` | Mathematics stream card |
+| `Animation_Prompt___Animate.mp4` | Game HUD background loop | `game-hud-bg.mp4` | `src/assets/game/` | StudentGamePage HUD |
+
+> **Note:** MP4s will be used as `<video autoPlay loop muted playsInline>` inside stream portal cards as animated backgrounds — the PNG serves as fallback poster.
+
+---
+
+## 📋 RENAME COMMANDS (run in terminal)
+
+```bash
+cd "/home/gmhc26/Documents/RNCOE/STEM QUEST/src/assets"
+
+# Stream backgrounds
+cp "ChatGPT Image Aug 24, 2026, 10_35_36 AM.png" streams/science-bg.png
+cp "ChatGPT Image Aug 24, 2026, 10_35_40 AM.png" streams/tech-bg.png
+cp "ChatGPT Image Aug 24, 2026, 10_35_47 AM.png" streams/engineering-bg.png
+cp "ChatGPT Image Aug 24, 2026, 10_36_47 AM.png" streams/maths-bg.png
+
+# Level icons
+cp "ChatGPT Image Aug 24, 2026, 10_39_16 AM.png" game/level-locked.png
+cp "ChatGPT Image Aug 24, 2026, 10_40_57 AM.png" game/level-available.png
+cp "ChatGPT Image Aug 24, 2026, 10_43_11 AM.png" game/level-complete.png
+cp "ChatGPT Image Aug 24, 2026, 10_44_09 AM.png" game/victory-bg.png
+
+# Animated video loops
+cp "Animation_Prompt__Animate_the.mp4"    streams/science-loop.mp4
+cp "Animation_Prompt__Animate_the(1).mp4" streams/tech-loop.mp4
+cp "Animation_Prompt__Animate_the(2).mp4" streams/engineering-loop.mp4
+cp "Animation_Prompt__Animate_the(3).mp4" streams/maths-loop.mp4
+cp "Animation_Prompt___Animate.mp4"       game/game-hud-bg.mp4
+```
+
+---
+
+## 🏗️ FILES TO BUILD (in order)
+
+### STEP 1 — stream-icons.jsx (update with image imports)
+**File:** `src/pages/stream-icons.jsx`
+- Import each PNG icon by slug
+- Export `<StreamPortalIcon slug={} />` — renders the PNG with glow animation
+
+### STEP 2 — StudentMissionPage.jsx (full gaming redesign)
+**File:** `src/pages/StudentMissionPage.jsx`
+- StreamPicker → **Portal cards** each with `<video>` loop + PNG poster
+- LevelStep → **World-map path nodes** using level-locked/available/complete PNGs
+- ReadyPanel → **Countdown 3→2→1** animation + floating stream icon
+- NEW: **StudentGameResultsPage** component (victory/gameover screen)
+
+### STEP 3 — student-mission.css (already written ✅, needs video-bg rule added)
+
+### STEP 4 — StudentGamePage.jsx (add HUD chrome)
+**File:** `src/pages/StudentGamePage.jsx`
+- Add top HUD bar: `[StreamIcon] [LevelName] [Timer ⏱️] [Hearts ❤️❤️❤️] [Score 🏆]`
+- Add `<video>` background loop per stream (game-hud-bg.mp4)
+- Slide-in animation between questions
+
+### STEP 5 — student-game.css (add HUD + video bg styles)
+
+### STEP 6 — LeaderboardPage.jsx (animation upgrades)
+- Crown 👑 on rank #1 entry
+- Score counter tick-up animation
+- Slide-in for new entries
+- Live dot pulse animation
+
+### STEP 7 — AdminActivityPreviewModal.jsx (proper implementation)
+- Glassmorphic dark modal overlay
+- Shows question prompt + activity type + metadata badges
+
+---
+
+## 🎨 Final Asset Structure (after rename)
+
+```
+src/assets/
+  streams/
+    science-bg.png       ✅ ready
+    tech-bg.png          ✅ ready
+    engineering-bg.png   ✅ ready
+    maths-bg.png         ✅ ready
+    science-loop.mp4     ✅ ready
+    tech-loop.mp4        ✅ ready
+    engineering-loop.mp4 ✅ ready
+    maths-loop.mp4       ✅ ready
+  game/
+    level-locked.png     ✅ ready
+    level-available.png  ✅ ready
+    level-complete.png   ✅ ready
+    victory-bg.png       ✅ ready
+    gameover-bg.png      ⚠️ generate with ChatGPT
+    game-hud-bg.mp4      ✅ ready
+```

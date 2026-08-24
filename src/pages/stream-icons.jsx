@@ -1,10 +1,34 @@
-/**
- * Stream icons — inline SVG glyphs for the four STEM streams (Task 5.2).
- *
- * Dependency-free, stroke-based icons using `currentColor` so each card tints
- * them via CSS. Used by the stream picker; kept in a dedicated module so the
- * page stays readable and the glyph set is easy to review/extend.
- */
+import scienceBg from '../assets/streams/science-bg.png'
+import scienceLoop from '../assets/streams/science-loop.mp4'
+import techBg from '../assets/streams/tech-bg.png'
+import techLoop from '../assets/streams/tech-loop.mp4'
+import engineeringBg from '../assets/streams/engineering-bg.png'
+import engineeringLoop from '../assets/streams/engineering-loop.mp4'
+import mathsBg from '../assets/streams/maths-bg.png'
+import mathsLoop from '../assets/streams/maths-loop.mp4'
+
+import levelLockedImg from '../assets/game/level-locked.png'
+import levelAvailableImg from '../assets/game/level-available.png'
+import levelCompleteImg from '../assets/game/level-complete.png'
+import victoryBg from '../assets/game/victory-bg.png'
+import gameOverBg from '../assets/ChatGPT Image Aug 24, 2026, 01_04_05 PM.png'
+import gameHudLoop from '../assets/game/game-hud-bg.mp4'
+
+export const STREAM_ASSETS = {
+  science: { bg: scienceBg, loop: scienceLoop, color: '#38bdf8' },
+  technology: { bg: techBg, loop: techLoop, color: '#a855f7' },
+  engineering: { bg: engineeringBg, loop: engineeringLoop, color: '#f59e0b' },
+  mathematics: { bg: mathsBg, loop: mathsLoop, color: '#fbbf24' },
+}
+
+export const GAME_ASSETS = {
+  levelLocked: levelLockedImg,
+  levelAvailable: levelAvailableImg,
+  levelComplete: levelCompleteImg,
+  victoryBg: victoryBg,
+  gameOverBg: gameOverBg,
+  gameHudLoop: gameHudLoop,
+}
 
 const PATHS = {
   science: (

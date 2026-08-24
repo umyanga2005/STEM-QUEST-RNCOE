@@ -92,6 +92,8 @@ function Field({ field, error, children }) {
 export default function StudentRegisterPage() {
   const navigate = useNavigate()
   const reduceMotion = useReducedMotion()
+  const [mode, setMode] = useState('register') // register | kiosk-login
+  const [kioskCodeInput, setKioskCodeInput] = useState('')
   const [values, setValues] = useState({ initials: '', name: '', school: '', grade: '' })
   const [fieldErrors, setFieldErrors] = useState({})
   const [photo, setPhoto] = useState(null)
@@ -102,6 +104,18 @@ export default function StudentRegisterPage() {
   const [avatarUrl, setAvatarUrl] = useState(null)
   const [returning, setReturning] = useState(() => tokenStorage.read())
   const me = useStudentMe(returning)
+
+  const handleKioskCodeLogin = (e) => {
+    e.preventDefault()
+    if (!kioskCodeInput.trim()) {
+      setServerMessage('Please enter a valid Kiosk Code.')
+      return
+    }
+    // Store synthetic session token for kiosk code entry
+    const mockToken = 'kiosk-session-' + kioskCodeInput.trim().toUpperCase()
+    tokenStorage.write(mockToken)
+    navigate('/student/mission')
+  }
 
   const controller = useMemo(
     () => createRegistrationController({ api: studentApiClient, storage: tokenStorage }),
@@ -213,9 +227,55 @@ export default function StudentRegisterPage() {
         >
           <header className="sr-header">
             <h1 id="sr-title">STEM QUEST</h1>
-            <p className="sr-tagline">Student Registration</p>
+            <p className="sr-tagline">Kiosk Student Portal</p>
           </header>
 
+          <div className="sr-tabs" role="tablist" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.2rem' }}>
+            <button
+              type="button"
+              className={`sr-button ${mode === 'register' ? 'sr-button--primary' : 'sr-button--ghost'}`}
+              style={{ flex: 1, padding: '0.5rem' }}
+              onClick={() => { setMode('register'); setServerMessage(null); }}
+            >
+              New Student
+            </button>
+            <button
+              type="button"
+              className={`sr-button ${mode === 'kiosk-login' ? 'sr-button--primary' : 'sr-button--ghost'}`}
+              style={{ flex: 1, padding: '0.5rem' }}
+              onClick={() => { setMode('kiosk-login'); setServerMessage(null); }}
+            >
+              🔑 Kiosk Code Login
+            </button>
+          </div>
+
+          {mode === 'kiosk-login' ? (
+            <form className="sr-form" onSubmit={handleKioskCodeLogin}>
+              <div className="sr-field">
+                <label className="sr-field__label" htmlFor="sr-kiosk-code-input">
+                  Enter your Kiosk Code (e.g. SQ-8A2F)
+                </label>
+                <input
+                  id="sr-kiosk-code-input"
+                  type="text"
+                  placeholder="SQ-8A2F"
+                  className="sr-field__control"
+                  style={{ textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}
+                  value={kioskCodeInput}
+                  onChange={(e) => setKioskCodeInput(e.target.value.toUpperCase())}
+                  required
+                />
+                <p className="sr-field__hint">Your code is given at registration or available from the admin teacher.</p>
+              </div>
+
+              {serverMessage ? <p className="sr-error">{serverMessage}</p> : null}
+
+              <button type="submit" className="sr-button sr-button--primary" disabled={submitting}>
+                {submitting ? 'Logging in…' : 'Enter Mission'}
+              </button>
+            </form>
+          ) : (
+          <>
           <div className="sr-progress" role="presentation">
             <span className="sr-progress__step sr-progress__step--active">1 · Register</span>
             <span className="sr-progress__divider" aria-hidden="true" />
@@ -275,6 +335,8 @@ export default function StudentRegisterPage() {
             </button>
             <p className="sr-footnote">No email or password needed. Your details stay private.</p>
           </form>
+          </>
+          )}
         </motion.section>
       )}
     </main>

@@ -282,8 +282,12 @@
 }
 
 .lb-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 3.5rem 1.5rem;
   color: var(--color-text-muted);
 }
 
@@ -313,4 +317,198 @@
   .lb-card {
     padding: 1.25rem;
   }
+}
+
+/* 4-Quadrant Fullscreen TV Display Layout */
+.lb-page--fullscreen {
+  padding: 1.5rem;
+  width: 100vw;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.lb-fullscreen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 1.25rem;
+  padding: 0 0.5rem;
+}
+
+.lb-fullscreen-header h1 {
+  margin: 0;
+  font-size: clamp(1.4rem, 4vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  background: linear-gradient(135deg, #ffffff, var(--color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lb-quad-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  width: 100%;
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .lb-quad-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lb-quadrant {
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 20px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+}
+
+.lb-quadrant__head {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.85rem;
+}
+
+.lb-quadrant__icon {
+  width: 32px;
+  height: 32px;
+  color: var(--color-accent);
+}
+
+.lb-quadrant__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.lb-quadrant__sub {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.lb-quadrant__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+}
+
+.lb-quad-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: rgba(24, 34, 60, 0.5);
+  padding: 0.6rem 0.85rem;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.lb-quad-row--self {
+  background: rgba(45, 212, 191, 0.15);
+  border: 1px solid var(--color-accent);
+}
+
+.lb-quad-row__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.lb-quad-row__info {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.lb-bar-bg {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.lb-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
+  transition: width 0.4s ease;
+}
+
+.lb-quadrant__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+/* ─── Live Dot Pulse ────────────────────────────────── */
+.lb-live__dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  margin-right: 0.4rem;
+  flex-shrink: 0;
+}
+
+.lb-live--on .lb-live__dot {
+  animation: liveDotPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes liveDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1);   box-shadow: 0 0 0 0   rgba(45, 212, 191, 0.7); }
+  50%       { opacity: 0.6; transform: scale(1.3); box-shadow: 0 0 0 6px rgba(45, 212, 191, 0); }
+}
+
+/* ─── Crown + Rank #1 gold glow ─────────────────────── */
+.lb-crown {
+  font-size: 1.3rem;
+  animation: crownBounce 2.5s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes crownBounce {
+  0%, 100% { transform: translateY(0)    rotate(-5deg); }
+  50%       { transform: translateY(-4px) rotate(5deg);  }
+}
+
+.lb-quad-row--first {
+  border-color: rgba(251, 191, 36, 0.45) !important;
+  background: rgba(251, 191, 36, 0.06) !important;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.12);
+}
+
+.lb-name--first {
+  color: #fbbf24;
+  font-weight: 900;
+  text-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+}
+
+.lb-bar-fill--first {
+  background: linear-gradient(90deg, #f59e0b, #fbbf24, #fcd34d);
+  box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+}
+
+/* ─── Quadrant hint ──────────────────────────────────── */
+.lb-quadrant__hint {
+  display: block;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin-top: 0.4rem;
 }

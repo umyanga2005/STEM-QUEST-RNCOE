@@ -17,15 +17,27 @@ const AdminQuestionsPage = lazy(() => import('./pages/AdminQuestionsPage.jsx'))
 const AdminQuestionEditorPage = lazy(() => import('./pages/AdminQuestionEditorPage.jsx'))
 const AdminReviewQueuePage = lazy(() => import('./pages/AdminReviewQueuePage.jsx'))
 const AdminReviewDetailPage = lazy(() => import('./pages/AdminReviewDetailPage.jsx'))
-const AdminPlaceholderPage = lazy(() => import('./pages/AdminPlaceholderPage.jsx'))
+
+const AdminStudentsPage = lazy(() => import('./pages/AdminStudentsPage.jsx'))
+const AdminProgressPage = lazy(() => import('./pages/AdminProgressPage.jsx'))
+const AdminLeaderboardsPage = lazy(() => import('./pages/AdminLeaderboardsPage.jsx'))
+const AdminAchievementsPage = lazy(() => import('./pages/AdminAchievementsPage.jsx'))
+const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage.jsx'))
+
 const AdminAuthProvider = lazy(() => import('./features/admin-auth/auth/admin-auth-provider.jsx'))
 
 import StudentNav from './components/StudentNav.jsx'
 
 const withFallback = (element) => (
-  <Suspense fallback={<div />}>
+  <Suspense fallback={<div className="sm-status">Loading…</div>}>
     {element}
     <StudentNav />
+  </Suspense>
+)
+
+const withAdminFallback = (element) => (
+  <Suspense fallback={<div className="adm-loading">Loading…</div>}>
+    {element}
   </Suspense>
 )
 
@@ -33,7 +45,7 @@ export const APP_ROUTES = [
   {
     path: '/student/register',
     title: 'Student Registration',
-    description: 'Future sign-up / login flow for students.',
+    description: 'Sign-up / login flow for students.',
     component: <StudentRegisterPage />,
   },
   {
@@ -69,13 +81,9 @@ export const APP_ROUTES = [
   {
     path: '/certificate',
     title: 'Certificate',
-    description: 'Future certificate view for completed sessions.',
+    description: 'Certificate view for completed sessions.',
   },
 ]
-
-const admin = (title, description) => (
-  <AdminPlaceholderPage title={title} description={description} />
-)
 
 export const router = createBrowserRouter([
   {
@@ -90,7 +98,7 @@ export const router = createBrowserRouter([
   })),
   {
     path: '/admin/login',
-    element: withFallback(
+    element: withAdminFallback(
       <AdminAuthProvider>
         <AdminLoginPage />
       </AdminAuthProvider>
@@ -98,23 +106,23 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    element: withFallback(
+    element: withAdminFallback(
       <AdminAuthProvider>
         <AdminShell />
       </AdminAuthProvider>
     ),
     children: [
-      { index: true, element: withFallback(<AdminDashboardPage />) },
-      { path: 'questions', element: withFallback(<AdminQuestionsPage />) },
-      { path: 'questions/review', element: withFallback(<AdminReviewQueuePage />) },
-      { path: 'questions/:id/review', element: withFallback(<AdminReviewDetailPage />) },
-      { path: 'questions/new', element: withFallback(<AdminQuestionEditorPage />) },
-      { path: 'questions/:id/edit', element: withFallback(<AdminQuestionEditorPage />) },
-      { path: 'students', element: withFallback(admin('Students', 'Browse, search and manage student accounts. Coming soon.')) },
-      { path: 'progress', element: withFallback(admin('Progress', 'Track student progress and level completions. Coming soon.')) },
-      { path: 'leaderboards', element: withFallback(admin('Leaderboards', 'Review leaderboard rankings and best scores. Coming soon.')) },
-      { path: 'achievements', element: withFallback(admin('Badges & Certificates', 'Review badges and manage certificate revocation. Coming soon.')) },
-      { path: 'settings', element: withFallback(admin('Settings', 'Configure the STEM QUEST experience. Coming soon.')) },
+      { index: true, element: withAdminFallback(<AdminDashboardPage />) },
+      { path: 'questions', element: withAdminFallback(<AdminQuestionsPage />) },
+      { path: 'questions/review', element: withAdminFallback(<AdminReviewQueuePage />) },
+      { path: 'questions/:id/review', element: withAdminFallback(<AdminReviewDetailPage />) },
+      { path: 'questions/new', element: withAdminFallback(<AdminQuestionEditorPage />) },
+      { path: 'questions/:id/edit', element: withAdminFallback(<AdminQuestionEditorPage />) },
+      { path: 'students', element: withAdminFallback(<AdminStudentsPage />) },
+      { path: 'progress', element: withAdminFallback(<AdminProgressPage />) },
+      { path: 'leaderboards', element: withAdminFallback(<AdminLeaderboardsPage />) },
+      { path: 'achievements', element: withAdminFallback(<AdminAchievementsPage />) },
+      { path: 'settings', element: withAdminFallback(<AdminSettingsPage />) },
     ],
   },
   {

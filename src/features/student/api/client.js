@@ -41,6 +41,9 @@ export const studentApiClient = Object.freeze({
   registerStudent({ initials, name, school, grade }) {
     return request('/register', { method: 'POST', json: { initials, name, school, grade } })
   },
+  kioskLogin(loginCode) {
+    return request('/kiosk-login', { method: 'POST', json: { loginCode } })
+  },
   getMe(token) {
     return request('/me', { token })
   },

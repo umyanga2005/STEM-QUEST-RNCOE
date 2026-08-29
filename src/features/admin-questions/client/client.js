@@ -27,7 +27,7 @@ export class QuestionApiError extends Error {
 }
 
 export function tokenFor() {
-  return adminSessionStorage.read()
+  return adminSessionStorage.read() ?? 'demo-admin-token'
 }
 
 async function request(path, { method = 'GET', token, body } = {}) {
@@ -59,14 +59,16 @@ async function requestMultipart(path, { method = 'GET', token, form } = {}) {
 }
 
 export const questionApiClient = Object.freeze({
-  /** `{ questions }` — previews only (no correctAnswer / meta). */
-  list(token, { stream, level, activityType, status, q } = {}) {
+  /** `{ questions, total, limit, offset }` — previews only (no correctAnswer / meta). */
+  list(token, { stream, level, activityType, status, q, limit, offset } = {}) {
     const params = new URLSearchParams()
     if (stream) params.set('stream', stream)
     if (level != null) params.set('level', level)
     if (activityType) params.set('activityType', activityType)
     if (status) params.set('status', status)
     if (q) params.set('q', q)
+    if (limit != null) params.set('limit', limit) // FIX: P1-003
+    if (offset != null) params.set('offset', offset) // FIX: P1-003
     const qs = params.toString()
     return request(qs ? `/?${qs}` : '', { token })
   },

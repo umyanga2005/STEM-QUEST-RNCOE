@@ -176,7 +176,7 @@ const templates = {
     problem: 'Solve for the missing value.',
     answerFormat: 'integer',
     inputMode: 'numeric',
-    showWork: true,
+    showWork: false,
   },
 }
 

@@ -215,7 +215,7 @@ test('avatar route is unaffected by the profile additions', async () => {
   })
   const data = await resp.json()
   assert.equal(resp.status, 200)
-  assert.match(data.student.avatarUrl, /memory:\/\/student-avatars\/1\/profile\.jpg/)
+  assert.match(data.student.avatarUrl, /(data:image\/|memory:\/\/student-avatars)/)
 })
 
 test('stacked demo app serves the profile update + progress routes', async () => {

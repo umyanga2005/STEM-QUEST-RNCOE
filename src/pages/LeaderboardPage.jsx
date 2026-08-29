@@ -20,6 +20,36 @@ export function LiveBadge({ live }) {
   )
 }
 
+export function LeaderboardStatus({ isLoading, isError, isEmpty, onRetry }) {
+  if (isLoading) return <div className="lb-status" role="status">Loading leaderboards…</div>
+  if (isError) {
+    return (
+      <div className="lb-status lb-status--error" role="alert">
+        <p>We couldn’t load the leaderboards right now.</p>
+        <button type="button" onClick={onRetry}>Try again</button>
+      </div>
+    )
+  }
+  if (isEmpty) {
+    return (
+      <div className="lb-status lb-status--empty" role="alert">
+        <p>No leaderboards are available right now.</p>
+      </div>
+    )
+  }
+  return null
+}
+
+export function LeaderboardBoard({ leaderboards, selectedStreamId, onSelectStream, reduceMotion }) {
+  return (
+    <div className="lb-quad-grid" style={reduceMotion ? { transform: 'none' } : undefined}>
+      {leaderboards.map((board) => (
+        <QuadrantBoard key={board.stream.id} stream={board.stream} entries={board.entries} />
+      ))}
+    </div>
+  )
+}
+
 function AnimatedScore({ score, reduceMotion }) {
   const [displayed, setDisplayed] = useState(0)
   const prevScore = useRef(0)

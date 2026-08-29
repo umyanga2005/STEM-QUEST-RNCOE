@@ -1,274 +1,387 @@
+/* ──────────────────────────────────────────────────────────
+   Scenario Challenge Activity — WOW Gaming UI (Story scroll)
+   ────────────────────────────────────────────────────────── */
+
 .scenario-activity {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
+  position: relative;
 }
 
 .scenario-sr-live {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
-}
-
-.scenario-mission {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
+  white-space: nowrap; border: 0;
 }
 
 .scenario-prompt {
-  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
   margin: 0;
   line-height: 1.35;
-}
-
-.scenario-progress {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
-}
-
-.scenario-text {
-  margin: 0;
-  padding: 0.8rem 1rem;
-  border-radius: 0.65rem;
-  background: var(--color-surface-raised);
-  border: 1px solid rgba(159, 168, 202, 0.22);
-  font-size: 1rem;
-  line-height: 1.55;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(234,179,8,0.4);
 }
 
 .scenario-instructions {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
+  margin: -0.25rem 0 0;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.92rem;
 }
 
+/* ── Mission header ───────────────────────────────────────── */
+.scenario-mission {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.scenario-progress {
+  display: flex;
+}
+
+.scenario-progress-value {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(234,179,8,0.7);
+}
+
+.scenario-text {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: rgba(255,255,255,0.75);
+  margin: 0;
+}
+
+/* ── Scenario illustration ───────────────────────────────── */
 .scenario-media {
   margin: 0;
   display: flex;
-  gap: 0.6rem;
-  overflow-x: auto;
-  padding-bottom: 0.25rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.scenario-media-empty {
+  display: none;
 }
 
 .scenario-media-img {
-  max-height: 11rem;
-  width: auto;
-  object-fit: contain;
-  border-radius: 0.6rem;
-  border: 1px solid rgba(159, 168, 202, 0.22);
+  max-width: 100%;
+  max-height: 220px;
+  border-radius: 16px;
+  border: 1px solid rgba(234,179,8,0.2);
+  object-fit: cover;
 }
 
-.scenario-decision {
+/* ── Decision / consequence / outcome cards ──────────────── */
+.scenario-decision,
+.scenario-consequence,
+.scenario-outcome {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(20,15,0,0.92), rgba(12,9,2,0.95));
+  border: 1.5px solid rgba(234,179,8,0.2);
+  box-shadow: 0 0 30px rgba(234,179,8,0.06), inset 0 1px 0 rgba(255,255,255,0.04);
+  animation: storySlideIn 0.4s cubic-bezier(.25,.46,.45,.94);
+}
+
+@keyframes storySlideIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .scenario-decision-title,
 .scenario-consequence-title,
 .scenario-outcome-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(234,179,8,0.6);
   margin: 0;
+}
+
+.scenario-decision-text,
+.scenario-consequence-text,
+.scenario-outcome-text {
   font-size: 1.05rem;
-}
-
-.scenario-decision-text {
+  line-height: 1.7;
+  color: #fef9c3;
   margin: 0;
-  font-size: 1.02rem;
-  line-height: 1.5;
-}
-
-.scenario-options {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-}
-
-.scenario-option {
-  min-height: 44px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.3rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.6rem;
-  border: 1px solid rgba(159, 168, 202, 0.45);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: border-color 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
-}
-
-.scenario-option-text {
-  font-size: 0.98rem;
-  font-weight: 600;
-  line-height: 1.35;
-}
-
-.scenario-option-action {
-  font-size: 0.82rem;
-  color: var(--color-text-muted);
-}
-
-.scenario-option:disabled {
-  cursor: not-allowed;
-}
-
-.scenario-option:hover:not(:disabled) {
-  box-shadow: 0 0 0 2px rgba(79, 139, 255, 0.18);
-}
-
-.scenario-option:focus-visible,
-.scenario-continue-button:focus-visible,
-.scenario-restart-button:focus-visible,
-.scenario-submit-button:focus-visible,
-.scenario-hint-button:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(79, 139, 255, 0.3);
-}
-
-.scenario-consequence,
-.scenario-outcome {
-  display: flex;
-  flex-direction: column;
-  gap: 0.55rem;
-  padding: 0.85rem 1rem;
-  border-radius: 0.65rem;
-  background: rgba(45, 212, 191, 0.1);
-  border: 1px solid rgba(45, 212, 191, 0.35);
 }
 
 .scenario-consequence-option,
 .scenario-outcome-option {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #eab308;
   margin: 0;
-  font-weight: 600;
-  font-size: 0.98rem;
-}
-
-.scenario-consequence-text,
-.scenario-outcome-text {
-  margin: 0;
-  font-size: 0.98rem;
-  line-height: 1.5;
 }
 
 .scenario-outcome-summary {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.5);
+  font-style: italic;
   margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.92rem;
 }
 
-.scenario-controls {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
-}
-
+/* ── Continue / restart ───────────────────────────────────── */
 .scenario-continue-button,
-.scenario-restart-button,
-.scenario-submit-button,
-.scenario-hint-button {
+.scenario-restart-button {
   min-height: 44px;
-  padding: 0.55rem 1.1rem;
-  border-radius: 0.6rem;
-  border: 1px solid transparent;
+  padding: 0.55rem 1.4rem;
+  border-radius: 12px;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  font-weight: 800;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.scenario-continue-button,
-.scenario-submit-button {
-  background: var(--color-accent);
-  color: #0b0e1a;
-  font-weight: 600;
+.scenario-continue-button {
+  border: none;
+  background: linear-gradient(135deg, #ca8a04, #eab308);
+  color: #1a0f00;
+}
+
+.scenario-continue-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(234,179,8,0.4);
 }
 
 .scenario-restart-button {
+  border: 1.5px solid rgba(255,255,255,0.15);
   background: transparent;
-  border-color: rgba(159, 168, 202, 0.45);
-  color: var(--color-text-muted);
+  color: rgba(255,255,255,0.6);
 }
 
-.scenario-hint-button {
-  background: transparent;
-  border-color: rgba(159, 168, 202, 0.45);
-  color: var(--color-text);
+.scenario-restart-button:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.4);
+  color: #fff;
 }
 
 .scenario-continue-button:disabled,
-.scenario-restart-button:disabled,
-.scenario-submit-button:disabled,
-.scenario-hint-button:disabled {
-  opacity: 0.55;
+.scenario-restart-button:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
-}
-
-.scenario-continue-button:hover:not(:disabled),
-.scenario-submit-button:hover:not(:disabled),
-.scenario-restart-button:hover:not(:disabled),
-.scenario-hint-button:hover:not(:disabled) {
-  box-shadow: 0 0 0 2px rgba(79, 139, 255, 0.18);
 }
 
 .scenario-tools {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
-.scenario-hints {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+/* ── Choice buttons ──────────────────────────────────────── */
+.scenario-options-label {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+}
+
+.scenario-options {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.75rem;
+}
+
+.scenario-option {
+  position: relative;
+  width: 100%;
+  min-height: 60px;
+  padding: 1rem 1.25rem;
+  border-radius: 18px;
+  border: 1.5px solid rgba(234,179,8,0.25);
+  background: linear-gradient(135deg, rgba(22,18,4,0.92), rgba(14,11,2,0.92));
+  color: #fef3c7;
+  font: inherit;
+  font-size: 0.97rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(.34,1.56,.64,1),
+              box-shadow 150ms ease,
+              border-color 150ms ease;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+  overflow: hidden;
+  line-height: 1.4;
+}
+
+/* Both are plain <span>s, which default to inline and would otherwise run
+   the option text and the "Choose this path" hint together on one line. */
+.scenario-option-text {
+  display: block;
+}
+
+.scenario-option-action {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(234,179,8,0.35);
+}
+
+.scenario-option::before {
+  content: '▶';
+  position: absolute;
+  right: 1.1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: rgba(234,179,8,0.3);
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.scenario-option:hover:not(:disabled) {
+  border-color: rgba(234,179,8,0.65);
+  box-shadow: 0 6px 22px rgba(0,0,0,0.45), 0 0 18px rgba(234,179,8,0.2);
+  transform: translateX(4px);
+  color: #fff;
+}
+
+.scenario-option:hover:not(:disabled)::before {
+  color: #eab308;
+  transform: translateY(-50%) translateX(2px);
+}
+
+.scenario-option.is-selected {
+  border-color: #eab308;
+  background: linear-gradient(135deg, rgba(234,179,8,0.18), rgba(245,158,11,0.12));
+  box-shadow: 0 0 22px rgba(234,179,8,0.35);
+  color: #fff;
+}
+
+.scenario-option:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* Consequence preview on hover (tooltip-style) */
+.scenario-consequence-preview {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+/* ── Controls ────────────────────────────────────────────── */
+.scenario-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
+.scenario-hint-button,
+.scenario-reset-button {
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scenario-hint-button:hover:not(:disabled) {
+  border-color: #60a5fa; color: #60a5fa;
+  background: rgba(79,139,255,0.1);
+}
+
+.scenario-reset-button:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.4); color: #fff;
+}
+
+.scenario-submit-button {
+  margin-left: auto;
+  min-height: 52px;
+  padding: 0.7rem 2rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #ca8a04, #eab308);
+  color: #1a0f00;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease;
+  box-shadow: 0 6px 20px rgba(234,179,8,0.4);
+}
+
+.scenario-submit-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(234,179,8,0.55);
+}
+
+.scenario-submit-button:disabled,
+.scenario-hint-button:disabled,
+.scenario-reset-button:disabled {
+  opacity: 0.4; cursor: not-allowed;
+}
+
+/* Hints */
+.scenario-hints {
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.5rem;
 }
 
 .scenario-hint {
-  display: flex;
-  gap: 0.6rem;
-  align-items: baseline;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.6rem;
-  background: rgba(79, 139, 255, 0.1);
-  border: 1px solid rgba(79, 139, 255, 0.3);
-  font-size: 0.95rem;
+  display: flex; gap: 0.7rem; align-items: baseline;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  background: rgba(234,179,8,0.07);
+  border: 1px solid rgba(234,179,8,0.22);
+  font-size: 0.92rem;
+  color: #fef9c3;
 }
 
 .scenario-hint-level {
   flex: 0 0 auto;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-accent);
+  font-size: 0.7rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: #eab308;
+  background: rgba(234,179,8,0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
 }
 
 .scenario-submitted {
-  padding: 0.8rem 1rem;
-  border-radius: 0.6rem;
-  background: rgba(45, 212, 191, 0.1);
-  border: 1px solid rgba(45, 212, 191, 0.35);
-  font-size: 0.92rem;
-  line-height: 1.45;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.3);
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.scenario-submit-button:focus-visible,
+.scenario-hint-button:focus-visible,
+.scenario-reset-button:focus-visible,
+.scenario-option:focus-visible {
+  outline: 2px solid #eab308;
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .scenario-option {
-    transition: none;
+  .scenario-decision, .scenario-consequence, .scenario-outcome, .scenario-option {
+    animation: none; transition: none;
   }
 }

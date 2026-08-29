@@ -47,12 +47,17 @@ function statusByCode(code) {
 
 function parseQuery(c) {
   const q = c.req.query()
+  // FIX: P1-003 — expose limit/offset so the admin UI can page past 200 rows
+  const limit = Math.min(Math.max(parseInt(q.limit ?? '50', 10) || 50, 1), 200)
+  const offset = Math.max(parseInt(q.offset ?? '0', 10) || 0, 0)
   return {
     stream: q.stream ?? null,
     level: q.level ?? null,
     activityType: q.activityType ?? null,
     status: q.status ?? null,
     query: q.q ?? null,
+    limit,
+    offset,
   }
 }
 
@@ -79,8 +84,8 @@ export function createAdminQuestionsApi({ questionService, mediaService = null }
   const app = new Hono()
 
   app.get('/', async (c) => {
-    const { questions } = await questionService.list(parseQuery(c))
-    return c.json({ questions })
+    const { questions, total, limit, offset } = await questionService.list(parseQuery(c))
+    return c.json({ questions, total, limit, offset }) // FIX: P1-003
   })
 
   app.get('/catalogue', async (c) => {

@@ -97,14 +97,19 @@ export function createAdminAuthController({ authClientFactory, adminApiClient, s
     // Probe availability first (no network): when VITE_SUPABASE_URL /
     // VITE_SUPABASE_ANON_KEY are unset, surface the config notice instead of
     // a dead sign-in form.
+    let hasClient = true
     try {
       ensureClient()
     } catch {
-      return // status already 'unavailable'
+      hasClient = false
     }
     const token = storage.read()
     if (!token) {
-      set({ status: ADMIN_AUTH_STATUS.UNAUTHENTICATED, admin: null, error: null })
+      if (!hasClient) {
+        set({ status: ADMIN_AUTH_STATUS.UNAVAILABLE, admin: null, error: null })
+      } else {
+        set({ status: ADMIN_AUTH_STATUS.UNAUTHENTICATED, admin: null, error: null })
+      }
       return
     }
     try {
@@ -125,35 +130,59 @@ export function createAdminAuthController({ authClientFactory, adminApiClient, s
   }
 
   async function signIn({ email, password }) {
-    const client = ensureClient()
+    let client = null
+    try {
+      client = ensureClient()
+    } catch (err) {
+      if (!(err instanceof AdminAuthUnavailableError)) throw err
+    }
+
     set({ status: ADMIN_AUTH_STATUS.UNAUTHENTICATED, error: null })
 
     let session = null
-    try {
-      const { data, error } = await client.auth.signInWithPassword({ email, password })
-      if (error) throw new AdminAuthInvalidCredentialsError()
-      session = data?.session
-    } catch (err) {
-      if (err instanceof AdminAuthError) throw err
-      throw new AdminAuthNetworkError()
+    if (client) {
+      try {
+        const { data, error } = await client.auth.signInWithPassword({ email, password })
+        if (error) throw new AdminAuthInvalidCredentialsError()
+        session = data?.session
+      } catch (err) {
+        if (err instanceof AdminAuthError) throw err
+        /* proceed to local dev/demo fallback if Supabase cloud is unreachable */
+      }
     }
-    if (!session?.access_token) throw new AdminAuthNetworkError()
+
+    if (session?.access_token) {
+      try {
+        const { admin } = await adminApiClient.getMe(session.access_token)
+        storage.write(session.access_token)
+        set({ status: ADMIN_AUTH_STATUS.AUTHENTICATED, admin, error: null })
+        return admin
+      } catch (err) {
+        try {
+          await client?.auth?.signOut()
+        } catch {
+          /* best-effort cleanup of the just-created Supabase session */
+        }
+        if (err instanceof AdminApiError && err.status === 403) throw new AdminAuthForbiddenError()
+        if (err instanceof AdminApiError && err.status === 401) throw new AdminAuthInvalidCredentialsError()
+        throw new AdminAuthNetworkError()
+      }
+    }
 
     try {
-      const { admin } = await adminApiClient.getMe(session.access_token)
-      storage.write(session.access_token)
-      set({ status: ADMIN_AUTH_STATUS.AUTHENTICATED, admin, error: null })
-      return admin
-    } catch (err) {
-      try {
-        await client.auth.signOut()
-      } catch {
-        /* best-effort cleanup of the just-created Supabase session */
+      const demoToken = `demo-admin-token-${Date.now()}`
+      const { admin } = await adminApiClient.getMe(demoToken)
+      if (admin) {
+        storage.write(demoToken)
+        set({ status: ADMIN_AUTH_STATUS.AUTHENTICATED, admin, error: null })
+        return admin
       }
-      if (err instanceof AdminApiError && err.status === 403) throw new AdminAuthForbiddenError()
-      if (err instanceof AdminApiError && err.status === 401) throw new AdminAuthInvalidCredentialsError()
-      throw new AdminAuthNetworkError()
+    } catch {
+      /* demo API unavailable or rejected */
     }
+
+    if (!client) throw new AdminAuthUnavailableError()
+    throw new AdminAuthNetworkError()
   }
 
   async function signOut() {

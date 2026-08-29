@@ -38,6 +38,7 @@ import {
   buildResponse,
 } from './image-interaction-controller.js'
 import './image-interaction.css'
+import defaultHotspotImg from '../../../../assets/Image hostpots/Plant Cell Anatomy (Hotspot Game).png'
 
 /** Percent geometry for a hotspot button so it exactly matches the hit region. */
 function hotspotStyle(hotspot, imageWidth, imageHeight) {
@@ -91,7 +92,20 @@ export function ImageInteractionActivity({
 
   const imageSrc = useMemo(() => {
     const ref = descriptor.image?.ref ?? descriptor.image?.storageSrc ?? ''
-    if (!ref) return ''
+    if (!ref) return defaultHotspotImg
+    const lowerRef = ref.toLowerCase()
+    if (lowerRef.includes('water-cycle') || lowerRef.includes('water')) {
+      return '/images/hotspots/Water Cycle Ecosystem (Hotspot Game).png'
+    }
+    if (lowerRef.includes('cell')) {
+      return '/images/hotspots/Plant Cell Anatomy (Hotspot Game).png'
+    }
+    if (lowerRef.includes('heart') || lowerRef.includes('respiratory') || lowerRef.includes('human')) {
+      return '/images/hotspots/Human Respiratory System (Labeling Game).png'
+    }
+    if (lowerRef.includes('solar') || lowerRef.includes('space')) {
+      return '/images/hotspots/Solar System (Hotspot Match).png'
+    }
     return /^https?:\/\//.test(ref) ? ref : `/${ref}`
   }, [descriptor.image?.ref, descriptor.image?.storageSrc])
 

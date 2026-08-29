@@ -42,7 +42,8 @@ export function hashSessionToken(token) {
  */
 export function generateLoginCode() {
   const bytes = randomBytes(LOGIN_CODE_LENGTH)
-  return Array.from(bytes, (b) => LOGIN_CODE_ALPHABET[b % LOGIN_CODE_ALPHABET.length]).join('')
+  const code = Array.from(bytes, (b) => LOGIN_CODE_ALPHABET[b % LOGIN_CODE_ALPHABET.length]).join('')
+  return `SQ-${code}`
 }
 
 export default {

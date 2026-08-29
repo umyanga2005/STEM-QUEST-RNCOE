@@ -66,6 +66,7 @@ export function useMissionSelection(token) {
     streamsQuery,
     streams,
     selectedStream,
+    selectedStreamId,
     selectedLevelId: state.selectedLevelId,
     levelsQuery,
     canBegin: canBegin(state),

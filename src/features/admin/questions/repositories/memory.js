@@ -65,12 +65,15 @@ export class MemoryQuestionRepository {
     this.store = store
   }
 
+  // FIX: P1-003 — mirrors the Supabase repo's { data, total } pagination shape
   async list(filters = {}) {
-    const rows = this.store.questions
+    const matched = this.store.questions
       .filter((r) => matchesFilters(r, filters))
       .sort((a, b) => String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? '')))
-      .slice(0, filters.limit ?? 200)
-    return rows.map((r) => projectRow(r, this.store))
+    const offset = filters.offset ?? 0
+    const limit = filters.limit ?? 50
+    const page = matched.slice(offset, offset + limit)
+    return { data: page.map((r) => projectRow(r, this.store)), total: matched.length }
   }
 
   async findById(id) {

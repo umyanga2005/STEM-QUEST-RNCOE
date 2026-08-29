@@ -5,7 +5,7 @@ import './admin.css'
 
 const NAV_ITEMS = [
   { to: '/admin', label: 'Dashboard', icon: '📊', end: true },
-  { to: '/admin/questions', label: 'Question Builder', icon: '📚' },
+  { to: '/admin/questions', label: 'Question Builder', icon: '📚', end: true }, // FIX: P2-005 — was matching /admin/questions/review too
   { to: '/admin/questions/review', label: 'Review Queue', icon: '🔍' },
   { to: '/admin/students', label: 'Students', icon: '👥' },
   { to: '/admin/progress', label: 'Progress', icon: '📈' },

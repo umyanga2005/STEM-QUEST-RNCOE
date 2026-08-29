@@ -15,10 +15,10 @@
  */
 export function loadServerConfig(env = globalThis.process?.env ?? {}) {
   const supabaseUrl = env.SUPABASE_URL
-  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY
+  const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY ?? env.SUPABASE_SECRET_KEY
   if (!supabaseUrl || !serviceRoleKey) {
     throw new Error(
-      'Supabase server config missing: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY ' +
+      'Supabase server config missing: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY ' +
         'must be set server-side (never VITE_*).'
     )
   }

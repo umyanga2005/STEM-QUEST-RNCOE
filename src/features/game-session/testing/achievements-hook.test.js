@@ -32,6 +32,23 @@ const CODE = ['SQ-AAAAAA-BBBBBB']
 function buildStack({ achievementsServiceFactory = (service) => service } = {}) {
   const gameStore = createMemoryStore()
   seedStoreFromBaseData(gameStore, demoBaseData())
+  if (gameStore.questions.length === 0) {
+    for (let i = 1; i <= 3; i += 1) {
+      gameStore.questions.push({
+        id: i,
+        streamId: 1,
+        levelId: 1,
+        activityType: 'drag-drop',
+        prompt: 'Test prompt',
+        status: 'published',
+        payload: {
+          items: [{ id: 'i1', label: 'Item 1' }],
+          zones: [{ id: 'z1', label: 'Zone 1' }],
+        },
+        correctAnswer: { mappings: [{ itemId: 'i1', zoneId: 'z1' }] },
+      })
+    }
+  }
   const base = gameStore.questions[0]
   for (const levelId of [2, 3, 4, 5]) {
     for (let i = 0; i < 3; i += 1) {

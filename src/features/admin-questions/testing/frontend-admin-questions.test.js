@@ -309,7 +309,7 @@ const PREVIEW_ROW = {
 
 function withQuery(ui, data) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-  client.setQueryData(['admin', 'questions', 'list', '{}'], data)
+  client.setQueryData(['admin', 'questions', 'list', '{"limit":50,"offset":0}'], data)
   return renderToStaticMarkup(
     React.createElement(
       QueryClientProvider,
@@ -431,7 +431,7 @@ test('AdminQuestionsPage wires a New question link to the editor route', async (
   const { vite, mod } = await loadComponent('/src/pages/AdminQuestionsPage.jsx')
   try {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    client.setQueryData(['admin', 'questions', 'list', '{}'], { questions: [] })
+    client.setQueryData(['admin', 'questions', 'list', '{"limit":50,"offset":0}'], { questions: [] })
     const html = renderToStaticMarkup(
       React.createElement(
         QueryClientProvider,

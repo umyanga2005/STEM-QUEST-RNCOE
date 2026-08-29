@@ -75,7 +75,8 @@ export function createRegistrationController({ api, storage }) {
         const result = await api.uploadAvatar({ token, file })
         emit({ phase: 'success', avatarWarning: false, avatarUrl: result.student.avatarUrl })
         return { ok: true, avatarUrl: result.student.avatarUrl }
-      } catch {
+      } catch (err) {
+        console?.error?.('[avatar upload]', err?.message, err)
         emit({ phase: 'success', avatarWarning: true, avatarUrl: null })
         return { ok: false, avatarUrl: null }
       }

@@ -299,6 +299,9 @@
   border-radius: 14px;
   background: var(--color-surface);
   padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
 .adm-panel p {
@@ -403,6 +406,58 @@
   color: #fca5a5;
 }
 
+/* FIX: P2-003 — filter bar (stream/level/type/status/search) */
+.aq-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.aq-select,
+.aq-search {
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--color-surface-raised);
+  border-radius: 8px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 0.85rem;
+}
+
+.aq-search {
+  flex: 1;
+  min-width: 160px;
+}
+
+.aq-list__stream,
+.aq-list__level {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+/* FIX: P1-003 — pagination controls */
+.aq-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-surface-raised);
+}
+
+.aq-pagination__label {
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+}
+
+.aq-pagination__controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .aq-list {
   display: flex;
   flex-direction: column;
@@ -411,7 +466,7 @@
 
 .aq-list__row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 150px 90px 60px 90px 120px;
+  grid-template-columns: minmax(0, 1fr) 140px 90px 50px 80px 60px 90px auto; /* FIX: P2-003 — added Stream + Level columns */
   gap: 0.75rem;
   align-items: center;
   padding: 0.6rem 0.75rem;
@@ -420,7 +475,7 @@
   font-size: 0.88rem;
 }
 
-.aq-list__row + .aq-list__row:hover {
+.aq-list__row+.aq-list__row:hover {
   border-color: var(--color-accent);
 }
 
@@ -455,16 +510,35 @@
   display: flex;
   gap: 0.4rem;
   justify-content: flex-end;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.aq-btn--bare {
+  background: rgba(79, 139, 255, 0.12);
+  border: 1px solid rgba(79, 139, 255, 0.3);
+  color: #60a5fa;
+}
+
+.aq-btn--bare:hover:not(:disabled) {
+  background: rgba(79, 139, 255, 0.25);
+  border-color: #60a5fa;
+  color: #ffffff;
 }
 
 .aq-type {
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  display: inline-block;
+  max-width: 100%;
+  font-size: 0.68rem; /* FIX: P2-006 — was wrapping "scenario challenge" to two lines */
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--color-accent-strong);
   border: 1px solid var(--color-accent);
   border-radius: 999px;
   padding: 0.1rem 0.5rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .aq-status {
@@ -588,8 +662,7 @@
   color: var(--color-text-muted);
 }
 
-.aq-empty,
-.aq-error {
+.aq-empty {
   padding: 2rem 1rem;
   text-align: center;
   color: var(--color-text-muted);
@@ -611,9 +684,17 @@
 }
 
 .aq-error {
+  padding: 1rem 1.25rem;
   border: 1px solid rgba(248, 113, 113, 0.4);
-  border-radius: 9px;
-  margin: 1rem 0;
+  border-radius: 12px;
+  background: rgba(248, 113, 113, 0.08);
+  color: #fca5a5;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0;
 }
 
 .aq-editor {
@@ -1048,11 +1129,18 @@
     grid-template-columns: 1fr;
   }
 
+  /* FIX: P2-003/P2-004 — the row now has 8 columns (Prompt/Type/Stream/Level/
+     Grade/Difficulty/Status/Actions); at narrow widths show only Prompt,
+     Status and Actions so the grid doesn't overflow the viewport. */
   .aq-list__row {
-    grid-template-columns: minmax(0, 1fr) 130px 80px 60px 90px;
+    grid-template-columns: minmax(0, 1fr) 90px auto;
   }
 
-  .aq-list__row > :nth-child(2) {
+  .aq-list__row> :nth-child(2),
+  .aq-list__row> :nth-child(3),
+  .aq-list__row> :nth-child(4),
+  .aq-list__row> :nth-child(5),
+  .aq-list__row> :nth-child(6) {
     display: none;
   }
 }
@@ -1083,7 +1171,9 @@
 }
 
 @keyframes admSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Mobile Top Header */
@@ -1346,7 +1436,8 @@
   font-size: 0.92rem;
 }
 
-.adm-table th, .adm-table td {
+.adm-table th,
+.adm-table td {
   padding: 1rem 1.1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
@@ -1584,4 +1675,81 @@
   color: var(--color-text-muted);
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+   admin-patch.css  — additions for AdminStudentsPage live data (Issue #1)
+   Append these rules to the END of admin.css
+   ────────────────────────────────────────────────────────────────────────── */
 
+/* ── Loading skeleton shimmer ─────────────────────────────────────────── */
+@keyframes adm-shimmer {
+  0% {
+    background-position: -400px 0;
+  }
+
+  100% {
+    background-position: 400px 0;
+  }
+}
+
+.adm-skeleton {
+  background: linear-gradient(90deg,
+      rgba(255, 255, 255, 0.04) 25%,
+      rgba(255, 255, 255, 0.10) 50%,
+      rgba(255, 255, 255, 0.04) 75%);
+  background-size: 800px 100%;
+  animation: adm-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   admin-patch.css — score-distribution bar chart (Issue #7)
+   No external chart library — plain flex columns with a height-scaled fill.
+   ────────────────────────────────────────────────────────────────────────── */
+.adm-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9rem;
+  height: 180px;
+  padding-top: 0.5rem;
+}
+
+.adm-bar-chart__col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  height: 100%;
+}
+
+.adm-bar-chart__count {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.adm-bar-chart__track {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.adm-bar-chart__fill {
+  width: 100%;
+  min-height: 3px;
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, var(--color-accent), var(--color-accent-strong));
+  transition: height 0.4s ease;
+}
+
+.adm-bar-chart__label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-align: center;
+}

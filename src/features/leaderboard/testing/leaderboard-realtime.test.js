@@ -61,7 +61,8 @@ test('first subscriber opens exactly one channel over one client', () => {
   unsub()
 })
 
-test('duplicate subscriptions share one socket and tear down on the last unsubscribe', () => {
+test('duplicate subscriptions share one socket and tear down on the last unsubscribe', (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
   const fake = makeFake()
   const controller = createLeaderboardRealtimeController({ createClient: () => fake.client })
   const unsubA = controller.subscribe({ onEvent: () => {} })
@@ -74,8 +75,30 @@ test('duplicate subscriptions share one socket and tear down on the last unsubsc
   assert.equal(fake.calls.disconnectCount, 0, 'socket stays while a subscriber remains')
 
   unsubB()
-  assert.equal(fake.calls.disconnectCount, 1, 'socket disconnects when the last subscriber leaves')
+  // Teardown is debounced (StrictMode double-invoke guard) — it only fires
+  // once the grace period elapses with no subscribers left.
+  assert.equal(fake.calls.disconnectCount, 0, 'socket stays open during the teardown grace period')
+  t.mock.timers.tick(300)
+  assert.equal(fake.calls.disconnectCount, 1, 'socket disconnects once the grace period elapses')
   assert.equal(fake.calls.unsubscribed, true)
+})
+
+test('a resubscribe within the teardown grace period reuses the same socket', (t) => {
+  t.mock.timers.enable({ apis: ['setTimeout'] })
+  const fake = makeFake()
+  const controller = createLeaderboardRealtimeController({ createClient: () => fake.client })
+  const unsubA = controller.subscribe({ onEvent: () => {} })
+
+  unsubA()
+  assert.equal(fake.calls.disconnectCount, 0, 'teardown not yet due')
+
+  // Simulates React StrictMode's dev-only mount → cleanup → mount: a second
+  // subscriber arrives before the grace period elapses.
+  controller.subscribe({ onEvent: () => {} })
+  t.mock.timers.tick(300)
+
+  assert.equal(fake.calls.disconnectCount, 0, 'the still-active subscriber keeps the socket open')
+  assert.equal(fake.calls.channels.length, 1, 'no second channel/socket was created')
 })
 
 test('postgres_changes events reach every listener (cache invalidation fan-out)', () => {

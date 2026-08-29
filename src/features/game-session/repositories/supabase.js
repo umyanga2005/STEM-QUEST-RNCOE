@@ -191,14 +191,31 @@ export class SupabaseQuestionRepository {
 
   Q = () => this.client.from('questions')
 
-  async getEligibleQuestions({ streamId, levelId }) {
-    const { data, error } = await this.Q()
+  async getEligibleQuestions({ streamId, levelId, minDifficulty = null }) {
+    let query = this.Q()
       .select('*, activity_types(slug)')
       .eq('stream_id', streamId)
       .eq('level_id', levelId)
       .eq('status', 'published')
+    if (minDifficulty !== null) query = query.gte('difficulty', minDifficulty)
+    const { data, error } = await query
     if (error) throw this.#err(error, 'getEligibleQuestions')
-    return (data ?? []).map(rowToQuestion)
+    const exact = (data ?? []).map(rowToQuestion)
+    if (exact.length >= 3) return exact
+
+    let streamQuery = this.Q()
+      .select('*, activity_types(slug)')
+      .eq('stream_id', streamId)
+      .eq('status', 'published')
+    if (minDifficulty !== null) streamQuery = streamQuery.gte('difficulty', minDifficulty)
+    const { data: streamData, error: streamError } = await streamQuery
+    if (!streamError && (streamData ?? []).length >= 3) {
+      return streamData.map(rowToQuestion)
+    }
+
+    let allQuery = this.Q().select('*, activity_types(slug)').eq('status', 'published')
+    const { data: allData } = await allQuery
+    return (allData ?? []).map(rowToQuestion)
   }
 
   async getById(id) {
@@ -246,11 +263,12 @@ export class SupabaseGameSessionRepository {
     return data ? rowToGameSession(data) : null
   }
 
-  async findActiveByStudentStream(studentId, streamId) {
+  async findActiveByStudentStream(studentId, streamId, levelId) {
     const { data, error } = await this.S()
       .select('*')
       .eq('student_id', studentId)
       .eq('stream_id', streamId)
+      .eq('level_id', levelId) // FIX: P1-006 — was missing; caused wrong-level resume
       .eq('status', 'active')
       .maybeSingle()
     if (error) throw new Error(`findActiveByStudentStream failed: ${error.message}`)
@@ -471,7 +489,12 @@ export class SupabaseSettingsRepository {
   }
 
   async getScoringConfig() {
-    const keys = ['scoring.hint_deduction', 'scoring.attempt_deduction', 'session.questions_per_session']
+    const keys = [
+      'scoring.hint_deduction',
+      'scoring.attempt_deduction',
+      'session.questions_per_session',
+      'scoring.pass_threshold', // FIX: P2-007
+    ]
     const { data, error } = await this.client
       .from('game_settings')
       .select('key, value')
@@ -482,6 +505,7 @@ export class SupabaseSettingsRepository {
       hintDeduction: toNumber(byKey.get('scoring.hint_deduction'), 5),
       attemptDeduction: toNumber(byKey.get('scoring.attempt_deduction'), 10),
       questionsPerSession: toNumber(byKey.get('session.questions_per_session'), 3),
+      passThreshold: toNumber(byKey.get('scoring.pass_threshold'), 150), // FIX: P2-007
     }
   }
 }

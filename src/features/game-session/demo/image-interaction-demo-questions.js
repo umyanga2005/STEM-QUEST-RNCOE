@@ -20,11 +20,11 @@ const IMAGE_INTERACTION_ACTIVITY_TYPE_ID = 6
 const SCIENCE_STREAM_ID = 1
 const LEVEL_1 = 1
 
-function imageInteractionQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100 }) {
+function imageInteractionQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100, streamId = 1, levelId = 1, difficulty = 1 }) {
   return {
     id,
-    streamId: SCIENCE_STREAM_ID,
-    levelId: LEVEL_1,
+    streamId,
+    levelId,
     activityTypeId: IMAGE_INTERACTION_ACTIVITY_TYPE_ID,
     activityType: 'image-interaction',
     prompt,
@@ -34,49 +34,16 @@ function imageInteractionQuestion(id, { prompt, instructions, payload, correctAn
     hints,
     basePoints,
     timerOverrideSeconds: null,
-    difficulty: 1,
+    difficulty,
     gradeMin: 6,
     gradeMax: 11,
     status: 'published',
   }
 }
 
-/** 3 published image-interaction questions (id 41..43) for Science · Level 1. */
+/** No demo questions seeded — questions are authored in Supabase DB / Admin Question Builder. */
 export function demoImageInteractionQuestions() {
-  return [
-    imageInteractionQuestion(41, {
-      prompt: 'Tap the three stages of the water cycle shown in the diagram.',
-      instructions: 'Press each region you can identify in the diagram. You can press a region again to remove it. Subtle markers show where you can tap.',
-      payload: grade6to7Payload,
-      correctAnswer: grade6to7Answer,
-      hints: [
-        { level: 1, text: 'Rain and snow falling back to the ground is called precipitation.' },
-        { level: 2, text: 'Water turns into vapour (evaporation) and gathers into clouds (condensation) before it falls again.' },
-      ],
-      basePoints: 100,
-    }),
-    imageInteractionQuestion(42, {
-      prompt: 'Place each label on the correct part of the cell diagram.',
-      instructions: 'Press a label to select it, then press the region where it belongs. A label already placed can be selected again to move it, or removed with its ✕ button.',
-      payload: grade9to11Payload,
-      correctAnswer: grade9to11Answer,
-      hints: [
-        { level: 1, text: 'The nucleus controls the cell and holds its genetic material.' },
-        { level: 2, text: 'Mitochondria release energy; the cell wall gives a plant cell its rigid shape.' },
-      ],
-      basePoints: 100,
-    }),
-    imageInteractionQuestion(43, {
-      prompt: 'Tap the two chambers of the heart shown in the diagram.',
-      instructions: 'Press each chamber you can identify. Press a region again to remove it before submitting.',
-      payload: minimalPayload,
-      correctAnswer: { mode: 'tap', requiredHotspots: ['h1', 'h2'] },
-      hints: [
-        { level: 1, text: 'The heart has two chambers shown in this diagram: one pumps blood out, the other receives it.' },
-      ],
-      basePoints: 100,
-    }),
-  ]
+  return []
 }
 
 export default { demoImageInteractionQuestions }

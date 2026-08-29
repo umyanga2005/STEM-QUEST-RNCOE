@@ -16,6 +16,18 @@ export default function AdminDashboardPage() {
   const draftCount = questions.filter((q) => q.status === 'draft').length
   const reviewCount = reviewQueue.length
 
+  // Question pool health: the game engine needs >= 3 published questions per
+  // (stream, level) to start a session (GAME_INSUFFICIENT_POOL otherwise).
+  const poolCounts = {}
+  for (const q of questions) {
+    if (q.status !== 'published') continue
+    const key = `${q.stream} · Level ${q.level}`
+    poolCounts[key] = (poolCounts[key] ?? 0) + 1
+  }
+  const lowPoolGroups = Object.entries(poolCounts)
+    .filter(([, count]) => count < 3)
+    .sort((a, b) => a[1] - b[1])
+
   return (
     <section className="adm-panel aq-page">
       <div className="aq-page__top">
@@ -52,6 +64,23 @@ export default function AdminDashboardPage() {
           <span className="adm-stat-card__sub">Awaiting Approval</span>
         </div>
       </div>
+
+      {!loadingQuestions && lowPoolGroups.length > 0 ? (
+        <div className="adm-section-box" style={{ marginTop: '1.5rem' }}>
+          <h4>⚠️ Question Pool Health</h4>
+          <p className="adm-subtitle">
+            These stream/level combinations have fewer than 3 published questions — students
+            cannot start a session there until more are published.
+          </p>
+          <ul style={{ margin: '0.5rem 0 0', paddingLeft: '1.25rem' }}>
+            {lowPoolGroups.map(([group, count]) => (
+              <li key={group} style={{ color: '#fbbf24' }}>
+                {group} — {count} published question{count === 1 ? '' : 's'}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       <div className="adm-grid-2" style={{ marginTop: '1.5rem' }}>
         <div className="adm-section-box">

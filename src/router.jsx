@@ -90,6 +90,10 @@ export const router = createBrowserRouter([
     path: '/',
     element: <Navigate to="/student/register" replace />,
   },
+  {
+    path: '/student',
+    element: <Navigate to="/student/register" replace />, // FIX: P3-001
+  },
   ...APP_ROUTES.map(({ path, title, description, component }) => ({
     path,
     element: component

@@ -82,6 +82,18 @@ export function createStudentApi({ service, progressionService = null }) {
     return c.json(result, 201)
   })
 
+  app.post('/api/student/kiosk-login', async (c) => {
+    const body = await readJson(c)
+    const ipAddress = c.req.header('x-forwarded-for')?.split(',')[0]?.trim() || null
+    const userAgent = c.req.header('user-agent') || null
+    const result = await service.loginByKioskCode({
+      loginCode: body?.loginCode,
+      ipAddress,
+      userAgent,
+    })
+    return c.json(result, 200)
+  })
+
   app.get('/api/student/me', async (c) => {
     const result = await service.getMe({ token: bearerToken(c) })
     return c.json(result)

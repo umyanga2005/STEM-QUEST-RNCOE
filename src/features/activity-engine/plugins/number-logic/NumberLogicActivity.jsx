@@ -383,23 +383,7 @@ export function NumberLogicActivity({
         />
       )}
 
-      {descriptor.showWork ? (
-        <div className="nl-work">
-          <label className="nl-work-label" htmlFor="nl-work-area">
-            Show your work
-          </label>
-          <textarea
-            id="nl-work-area"
-            className="nl-work-area"
-            rows={3}
-            placeholder="Jot your reasoning here (not submitted)."
-            value={work}
-            disabled={disabled || submitted}
-            onChange={(e) => setWork(e.target.value)}
-          />
-          <span className="nl-work-note">This scratch area is not part of your answer.</span>
-        </div>
-      ) : null}
+
 
       <div className="nl-controls">
         {hints.length > 0 ? (

@@ -167,6 +167,8 @@ class Builder {
     this.filters = []
     this.orClauses = []
     this._limit = null
+    this._range = null // FIX: P1-003 — supports .range(from, to) pagination
+    this._count = null // FIX: P1-003 — supports select(cols, { count: 'exact' })
     this._order = null
     this.selectParts = { columns: null, embedded: [] }
     this.hasSelect = false
@@ -176,9 +178,10 @@ class Builder {
     this.patch = null
   }
 
-  select(cols) {
+  select(cols, { count = null } = {}) {
     this.selectParts = parseSelect(cols)
     this.hasSelect = true
+    this._count = count // FIX: P1-003
     return this
   }
 
@@ -204,6 +207,11 @@ class Builder {
 
   limit(n) {
     this._limit = n
+    return this
+  }
+
+  range(from, to) {
+    this._range = { from, to } // FIX: P1-003
     return this
   }
 
@@ -340,21 +348,24 @@ class Builder {
         return 0
       })
     }
+    const total = rows.length // FIX: P1-003 — captured before limit/range slicing
     if (this._limit !== null) rows = rows.slice(0, this._limit)
+    if (this._range !== null) rows = rows.slice(this._range.from, this._range.to + 1) // FIX: P1-003
     const data = rows.map((r) => this.#project(r))
+    const count = this._count === 'exact' ? total : null // FIX: P1-003
     if (this._single === 'single') {
       return data.length === 1
-        ? { data: data[0], error: null }
+        ? { data: data[0], error: null, count }
         : { data: null, error: { message: 'JSON object requested, multiple (or no) rows returned', code: 'PGRST116' } }
     }
     if (this._single === 'maybe') {
       return data.length === 0
-        ? { data: null, error: null }
+        ? { data: null, error: null, count }
         : data.length === 1
-          ? { data: data[0], error: null }
+          ? { data: data[0], error: null, count }
           : { data: null, error: { message: 'query returned more than one row', code: 'PGRST116' } }
     }
-    return { data, error: null }
+    return { data, error: null, count }
   }
 
   #run() {

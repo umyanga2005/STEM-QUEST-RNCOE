@@ -51,11 +51,20 @@ function defaultCreateClient() {
  * Creates a refcounted realtime controller. `createClient` is injectable so
  * tests can drive a fake socket; the production path uses `defaultCreateClient`.
  */
+// Grace period before actually tearing down the shared socket once the last
+// subscriber leaves. React 18/19 StrictMode double-invokes mount effects in
+// dev (mount → cleanup → mount, synchronously); without this delay the
+// cleanup from the first (discarded) mount closes the socket while it's
+// still mid-handshake, producing "WebSocket is closed before the connection
+// is established" even though a real subscriber remounts a moment later.
+const TEARDOWN_GRACE_MS = 250
+
 export function createLeaderboardRealtimeController({ createClient }) {
   let client = null
   let channel = null
   let subscribers = 0
   let unavailable = false
+  let teardownTimer = null
   const listeners = new Set()
 
   function emit(payload) {
@@ -67,6 +76,10 @@ export function createLeaderboardRealtimeController({ createClient }) {
   }
 
   function ensureSubscribed() {
+    if (teardownTimer) {
+      clearTimeout(teardownTimer)
+      teardownTimer = null
+    }
     if (channel || unavailable) return
     let created
     try {
@@ -103,19 +116,23 @@ export function createLeaderboardRealtimeController({ createClient }) {
     return () => {
       listeners.delete(listener)
       subscribers -= 1
-      if (subscribers <= 0 && channel) {
-        try {
-          channel.unsubscribe?.()
-        } catch {
-          /* socket already closed */
-        }
-        channel = null
-        try {
-          client?.disconnect?.()
-        } catch {
-          /* ignore */
-        }
-        client = null
+      if (subscribers <= 0 && channel && !teardownTimer) {
+        teardownTimer = setTimeout(() => {
+          teardownTimer = null
+          if (subscribers > 0 || !channel) return
+          try {
+            channel.unsubscribe?.()
+          } catch {
+            /* socket already closed */
+          }
+          channel = null
+          try {
+            client?.disconnect?.()
+          } catch {
+            /* ignore */
+          }
+          client = null
+        }, TEARDOWN_GRACE_MS)
       }
     }
   }

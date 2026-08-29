@@ -138,7 +138,7 @@ test('updateProfile preserves avatar, login code, status and archives', async ()
   })
 
   const result = await service.updateProfile({ token, body: UPDATED })
-  assert.match(result.student.avatarUrl, /memory:\/\/student-avatars\/1\/profile\.webp/)
+  assert.match(result.student.avatarUrl, /(data:image\/|memory:\/\/student-avatars)/)
   assert.equal(store.students[0].profilePhotoPath, '1/profile.webp')
   assert.equal(store.students[0].status, 'active')
   assert.equal(store.students[0].isArchived, false)

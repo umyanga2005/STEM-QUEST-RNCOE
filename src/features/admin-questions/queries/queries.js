@@ -23,6 +23,7 @@ export function useQuestionList(filters = {}, { enabled = true } = {}) {
     enabled: enabled && Boolean(token),
     retry: 1,
     staleTime: 30 * 1000,
+    refetchInterval: 20 * 1000,
   })
 }
 

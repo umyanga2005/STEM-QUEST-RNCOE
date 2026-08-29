@@ -113,8 +113,8 @@ test('protected shell renders nav placeholders + identity only when authenticate
   try {
     const html = renderWith(mod.provider.default, fakeController(AUTHENTICATED), mod.shell.default, { entry: '/admin' })
     assert.match(html, /STEM QUEST/)
-    assert.match(html, /Admin Console/)
-    for (const label of ['Dashboard', 'Questions', 'Students', 'Progress', 'Leaderboards', 'Badges &amp; Certificates', 'Settings']) {
+    assert.match(html, /Administrator Console/)
+    for (const label of ['Dashboard', 'Question Builder', 'Students', 'Progress', 'Leaderboards', 'Badges &amp; Certs', 'Settings']) {
       assert.ok(html.includes(label), `nav placeholder "${label}" renders`)
     }
     assert.match(html, /Console Admin/)
@@ -140,7 +140,7 @@ test('protected shell shows a loading screen while restoring a session', async (
   const { vite, mod } = await loadModules()
   try {
     const html = renderWith(mod.provider.default, fakeController({ status: 'loading', admin: null, error: null }), mod.shell.default, { entry: '/admin' })
-    assert.match(html, /Loading/)
+    assert.match(html, /Verifying administrator session/)
     assert.ok(!html.includes('Sign out'))
   } finally {
     await vite.close()
@@ -149,10 +149,17 @@ test('protected shell shows a loading screen while restoring a session', async (
 
 test('dashboard index page welcomes the server-derived admin', async () => {
   const { vite, mod } = await loadModules()
+  const { QueryClient, QueryClientProvider } = await vite.ssrLoadModule('@tanstack/react-query')
+  const queryClient = new QueryClient()
   try {
-    const html = renderWith(mod.provider.default, fakeController(AUTHENTICATED), mod.dashboard.default)
-    assert.match(html, /Welcome, Console Admin/)
-    assert.match(html, /administrator session is active/)
+    const html = renderToStaticMarkup(
+      React.createElement(
+        QueryClientProvider,
+        { client: queryClient },
+        React.createElement(mod.provider.default, { controller: fakeController(AUTHENTICATED) }, React.createElement(mod.dashboard.default))
+      )
+    )
+    assert.match(html, /Console Admin/)
   } finally {
     await vite.close()
   }

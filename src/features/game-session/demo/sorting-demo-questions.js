@@ -15,11 +15,11 @@ const SORTING_ACTIVITY_TYPE_ID = 4
 const SCIENCE_STREAM_ID = 1
 const LEVEL_1 = 1
 
-function sortingQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100 }) {
+function sortingQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100, streamId = 1, levelId = 1, difficulty = 1 }) {
   return {
     id,
-    streamId: SCIENCE_STREAM_ID,
-    levelId: LEVEL_1,
+    streamId,
+    levelId,
     activityTypeId: SORTING_ACTIVITY_TYPE_ID,
     activityType: 'sorting',
     prompt,
@@ -29,58 +29,16 @@ function sortingQuestion(id, { prompt, instructions, payload, correctAnswer, hin
     hints,
     basePoints,
     timerOverrideSeconds: null,
-    difficulty: 1,
+    difficulty,
     gradeMin: 6,
     gradeMax: 11,
     status: 'published',
   }
 }
 
-/** 3 published sorting questions (id 21..23) for Science · Level 1. */
+/** No demo questions seeded — questions are authored in Supabase DB / Admin Question Builder. */
 export function demoSortingQuestions() {
-  return [
-    sortingQuestion(21, {
-      prompt: 'Sort each material into Recyclable or Compostable.',
-      instructions: 'Select an item, then tap the group it belongs to. Every item must be placed before you can submit.',
-      payload: grade6to7Payload,
-      correctAnswer: grade6to7Answer,
-      hints: [
-        { level: 1, text: 'Think about what happens to each item after it is collected.' },
-        { level: 2, text: 'Some items rot; others get melted down and remade.' },
-      ],
-      basePoints: 100,
-    }),
-    sortingQuestion(22, {
-      prompt: 'Sort each element into Non-metal or Metal.',
-      instructions: 'Select an item, then tap the group it belongs to. You can change a placement before submitting.',
-      payload: grade9to11Payload,
-      correctAnswer: {
-        assignments: [
-          { itemId: 'i1', categoryId: 'c1' },
-          { itemId: 'i2', categoryId: 'c1' },
-          { itemId: 'i3', categoryId: 'c1' },
-          { itemId: 'i4', categoryId: 'c1' },
-          { itemId: 'i5', categoryId: 'c2' },
-          { itemId: 'i6', categoryId: 'c2' },
-        ],
-      },
-      hints: [
-        { level: 1, text: 'Think about how each element conducts electricity and heat.' },
-        { level: 2, text: 'Most metals are shiny solids that conduct well.' },
-      ],
-      basePoints: 100,
-    }),
-    sortingQuestion(23, {
-      prompt: 'Sort the recycling items again to check your memory.',
-      instructions: 'Select an item, then tap the group it belongs to. Everything must be placed before you can submit.',
-      payload: grade6to7Payload,
-      correctAnswer: { ...grade6to7Answer },
-      hints: [
-        { level: 1, text: 'Compare each item with the group labels.' },
-      ],
-      basePoints: 100,
-    }),
-  ]
+  return []
 }
 
 export default { demoSortingQuestions }

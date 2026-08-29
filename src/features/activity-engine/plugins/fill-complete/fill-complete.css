@@ -1,42 +1,149 @@
+/* ──────────────────────────────────────────────────────────
+   Fill / Complete Activity — WOW Gaming UI (Blue/Science)
+   ────────────────────────────────────────────────────────── */
+
 .fill-activity {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
+  position: relative;
 }
 
 .fill-sr-live {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+  white-space: nowrap; border: 0;
 }
 
 .fill-prompt {
-  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
   margin: 0;
   line-height: 1.35;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(56,189,248,0.4);
 }
 
 .fill-instructions {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
+  margin: -0.25rem 0 0;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.92rem;
 }
 
+/* ── Passage with blanks ─────────────────────────────────── */
+.fill-content {
+  font-size: 1.05rem;
+  line-height: 2.2;
+  color: rgba(255,255,255,0.9);
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: rgba(8,18,40,0.8);
+  border: 1px solid rgba(56,189,248,0.15);
+  backdrop-filter: blur(8px);
+}
+
+.fill-segment-wrap {
+  display: inline;
+}
+
+.fill-blank {
+  display: inline-flex;
+  align-items: baseline;
+  margin: 0 0.25rem;
+  vertical-align: middle;
+}
+
+/* Inline fill field (text input) */
+.fill-blank-field {
+  display: inline-flex;
+  align-items: center;
+  min-width: 90px;
+  padding: 0.2rem 0.7rem;
+  border-radius: 8px;
+  border: 1.5px solid rgba(56,189,248,0.5);
+  background: rgba(56,189,248,0.08);
+  color: #7dd3fc;
+  font: inherit;
+  font-size: 0.97rem;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 0 8px rgba(56,189,248,0.15), inset 0 1px 3px rgba(0,0,0,0.2);
+  vertical-align: middle;
+}
+
+.fill-blank-field:focus-within {
+  border-color: #38bdf8;
+  background: rgba(56,189,248,0.14);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.2), 0 0 15px rgba(56,189,248,0.25);
+  color: #e0f2fe;
+}
+
+/* The actual typed input sits inside .fill-blank-field, which supplies the
+   box/border; the input itself stays transparent so it blends into that box. */
+.fill-blank-input {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  min-width: 48px;
+  outline: none;
+}
+
+.fill-blank-input::placeholder {
+  color: rgba(56,189,248,0.4);
+}
+
+.fill-blank-input:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.fill-blank-affix {
+  color: rgba(125,211,252,0.7);
+  font-weight: 700;
+}
+
+/* .fill-blank-label is redundant with the surrounding passage text, so it's
+   kept screen-reader-only rather than shown inline before every blank. */
+.fill-blank-label {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+.fill-blank-hint-mark {
+  margin-left: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #34d399;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fill-blank-hint-mark:empty {
+  display: none;
+}
+
+/* ── Progress indicator ──────────────────────────────────── */
 .fill-progress {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  gap: 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .fill-progress-pips {
@@ -45,203 +152,224 @@
 }
 
 .fill-pip {
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 8px; height: 8px;
   border-radius: 50%;
-  background: rgba(159, 168, 202, 0.35);
-  transition: background 160ms ease, box-shadow 160ms ease;
+  background: rgba(56,189,248,0.2);
+  transition: background 0.2s ease;
 }
 
 .fill-pip.is-filled {
-  background: var(--color-accent);
-  box-shadow: 0 0 0 2px rgba(45, 212, 191, 0.25);
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56,189,248,0.6);
 }
 
-.fill-content {
-  padding: 1rem 1.1rem;
-  border-radius: 0.65rem;
-  border: 1px solid rgba(159, 168, 202, 0.22);
-  background: var(--color-surface-raised);
-  font-size: clamp(1.05rem, 2.2vw, 1.3rem);
-  line-height: 2.1;
-  color: var(--color-text);
+/* Word bank */
+.fill-word-bank {
+  padding: 1rem;
+  border-radius: 18px;
+  border: 1.5px dashed rgba(56,189,248,0.25);
+  background: rgba(5,15,35,0.6);
 }
 
-.fill-segment-wrap {
-  display: inline;
-}
-
-.fill-segment-text {
-  white-space: pre-wrap;
-}
-
-.fill-blank {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: stretch;
-  vertical-align: middle;
-  margin: 0 0.15rem;
-  min-height: 44px;
-}
-
-.fill-blank-label {
-  font-size: 0.7rem;
+.fill-word-bank__label {
+  font-size: 0.72rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
-  color: var(--color-text-muted);
-  line-height: 1.2;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  margin: 0 0 0.65rem;
 }
 
-.fill-blank-field {
+.fill-word-bank__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.fill-bank-chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  border-bottom: 2px solid rgba(159, 168, 202, 0.5);
-  padding: 0.1rem 0.25rem;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
-}
-
-.fill-blank:focus-within .fill-blank-field {
-  border-color: var(--color-accent);
-  box-shadow: 0 2px 0 0 rgba(45, 212, 191, 0.35);
-}
-
-.fill-blank.is-answered .fill-blank-field {
-  border-color: var(--color-accent);
-}
-
-.fill-blank-affix {
-  font-size: 0.95em;
-  color: var(--color-text-muted);
-  white-space: nowrap;
-}
-
-.fill-blank-input {
-  min-width: 6.5rem;
-  max-width: 100%;
-  padding: 0.25rem 0.35rem;
-  border: 0;
-  background: transparent;
-  color: var(--color-text);
+  min-height: 40px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(56,189,248,0.35);
+  background: linear-gradient(135deg, rgba(8,22,45,0.9), rgba(5,14,30,0.9));
+  color: #7dd3fc;
   font: inherit;
-  font-size: 0.95em;
-  line-height: 1.4;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 150ms cubic-bezier(.34,1.56,.64,1), box-shadow 150ms ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+
+.fill-bank-chip:hover:not(:disabled) {
+  border-color: #38bdf8;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3), 0 0 12px rgba(56,189,248,0.25);
+  transform: translateY(-2px) scale(1.04);
+  color: #e0f2fe;
+}
+
+.fill-bank-chip.is-used {
+  opacity: 0.25;
+  filter: grayscale(0.5);
+  pointer-events: none;
+}
+
+.fill-bank-chip:disabled { cursor: not-allowed; opacity: 0.5; }
+
+/* Standalone fill inputs (non-inline) */
+.fill-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.fill-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.fill-field-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.04em;
+}
+
+.fill-input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  border: 1.5px solid rgba(56,189,248,0.35);
+  background: rgba(8,20,45,0.85);
+  color: #bae6fd;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 700;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.fill-blank-input:disabled {
+.fill-input::placeholder { color: rgba(56,189,248,0.3); }
+
+.fill-input:focus {
+  border-color: #38bdf8;
+  background: rgba(56,189,248,0.08);
+  box-shadow: 0 0 0 3px rgba(56,189,248,0.2), 0 0 20px rgba(56,189,248,0.2);
+  color: #e0f2fe;
+}
+
+.fill-input:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.55;
 }
 
-.fill-blank-hint-mark {
-  font-size: 0.7rem;
-  color: var(--color-accent);
-  line-height: 1.2;
-}
-
+/* Controls */
 .fill-controls {
   display: flex;
   flex-wrap: wrap;
+  gap: 0.75rem;
   align-items: center;
-  gap: 0.5rem;
+  margin-top: 1rem;
 }
 
 .fill-hint-button,
-.fill-reset-button,
-.fill-submit-button {
+.fill-reset-button {
   min-height: 44px;
   padding: 0.55rem 1.1rem;
-  border-radius: 0.6rem;
-  border: 1px solid transparent;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.fill-hint-button {
-  background: transparent;
-  border-color: rgba(159, 168, 202, 0.45);
-  color: var(--color-text);
+.fill-hint-button:hover:not(:disabled) {
+  border-color: #60a5fa; color: #60a5fa;
+  background: rgba(79,139,255,0.1);
 }
 
-.fill-reset-button {
-  background: transparent;
-  border-color: rgba(159, 168, 202, 0.45);
-  color: var(--color-text-muted);
+.fill-reset-button:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.4); color: #fff;
 }
 
 .fill-submit-button {
   margin-left: auto;
-  background: var(--color-accent);
-  color: #0b0e1a;
-  font-weight: 600;
+  min-height: 52px;
+  padding: 0.7rem 2rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+  color: #0c1a2e;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease;
+  box-shadow: 0 6px 20px rgba(56,189,248,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.fill-submit-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(56,189,248,0.55);
 }
 
 .fill-submit-button:disabled,
 .fill-hint-button:disabled,
 .fill-reset-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  opacity: 0.4; cursor: not-allowed;
 }
 
-.fill-hint-button:hover:not(:disabled),
-.fill-reset-button:hover:not(:disabled),
-.fill-hint-button:focus-visible,
-.fill-reset-button:focus-visible,
-.fill-submit-button:focus-visible {
-  box-shadow: 0 0 0 3px rgba(79, 139, 255, 0.25);
-  outline: none;
-}
-
+/* Hints */
 .fill-hints {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.5rem;
 }
 
 .fill-hint {
-  display: flex;
-  gap: 0.6rem;
-  align-items: baseline;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.6rem;
-  background: rgba(79, 139, 255, 0.1);
-  border: 1px solid rgba(79, 139, 255, 0.3);
-  font-size: 0.95rem;
+  display: flex; gap: 0.7rem; align-items: baseline;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  background: rgba(56,189,248,0.07);
+  border: 1px solid rgba(56,189,248,0.22);
+  font-size: 0.92rem;
+  color: #bae6fd;
 }
 
 .fill-hint-level {
   flex: 0 0 auto;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-accent);
+  font-size: 0.7rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: #38bdf8;
+  background: rgba(56,189,248,0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
 }
 
 .fill-submitted {
-  padding: 0.8rem 1rem;
-  border-radius: 0.6rem;
-  background: rgba(45, 212, 191, 0.1);
-  border: 1px solid rgba(45, 212, 191, 0.35);
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-
-@media (min-width: 720px) {
-  .fill-content {
-    font-size: clamp(1.15rem, 2.2vw, 1.45rem);
-    line-height: 2.4;
-    padding: 1.25rem 1.5rem;
-  }
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.3);
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+  font-style: italic;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fill-pip,
-  .fill-blank-field {
+  .fill-blank-field, .fill-bank-chip, .fill-input {
     transition: none;
   }
 }

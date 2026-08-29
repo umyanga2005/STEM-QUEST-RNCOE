@@ -70,10 +70,12 @@ test('game-session repository: create → find → update → score lifecycle', 
   const found = await repos.gameSessionRepository.findById(session.id)
   assert.equal(found.sessionCode, 'ABC123XY')
 
-  const active = await repos.gameSessionRepository.findActiveByStudentStream(7, 1)
+  const active = await repos.gameSessionRepository.findActiveByStudentStream(7, 1, 1) // FIX: P1-006
   assert.equal(active.id, session.id)
-  const otherStream = await repos.gameSessionRepository.findActiveByStudentStream(7, 2)
+  const otherStream = await repos.gameSessionRepository.findActiveByStudentStream(7, 2, 1) // FIX: P1-006
   assert.equal(otherStream, null)
+  const otherLevel = await repos.gameSessionRepository.findActiveByStudentStream(7, 1, 2) // FIX: P1-006
+  assert.equal(otherLevel, null)
 
   const updated = await repos.gameSessionRepository.setTotalScore(session.id, 250)
   assert.equal(updated.totalScore, 250)

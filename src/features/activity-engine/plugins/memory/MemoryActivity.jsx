@@ -56,7 +56,7 @@ function cardLabel(card) {
 /** One card in the deck grid / recall pool. */
 function MemoryCard({ card, selected = false, placed = false, disabled = false, onToggle }) {
   const label = card.ariaLabel || cardLabel(card)
-  const classes = ['memory-card']
+  const classes = ['memory-card', 'memory-item-card']
   if (selected) classes.push('is-selected')
   if (placed) classes.push('is-placed')
   return (
@@ -71,7 +71,7 @@ function MemoryCard({ card, selected = false, placed = false, disabled = false, 
         <img className="memory-card-img" src={imageSource(card.imageRef)} alt="" draggable={false} />
       ) : null}
       {card.text ? <span className="memory-card-text">{card.text}</span> : null}
-      <span className="memory-card-name">{label}</span>
+      {!card.text && label ? <span className="memory-card-name">{label}</span> : null}
     </button>
   )
 }
@@ -234,7 +234,7 @@ export function MemoryActivity({
             Observe the deck below. Remember which cards belong together ({groupSizeText}).
             The cards will hide when the countdown ends.
           </p>
-          <div className="memory-deck" role="group" aria-label="Deck to memorize">
+          <div className="memory-deck memory-items-grid" role="group" aria-label="Deck to memorize">
             {cards.map((card) => (
               <MemoryCard key={card.id} card={card} disabled={disabled || submitted} />
             ))}
@@ -262,7 +262,7 @@ export function MemoryActivity({
             {groupMax > groupMin ? ` Groups hold ${groupMin}–${groupMax} cards.` : ` Each group holds exactly ${groupMin} cards.`}
           </p>
 
-          <div className="memory-pool" role="group" aria-label="Cards to group">
+          <div className="memory-pool memory-items-grid" role="group" aria-label="Cards to group">
             {pool.map((cardId) => {
               const card = cards.find((c) => c.id === cardId)
               if (!card) return null

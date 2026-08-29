@@ -80,6 +80,7 @@ function toSelectionQuestion(q) {
     streamId: String(q.streamId),
     levelId: String(q.levelId),
     activityType: q.activityType,
+    prompt: q.prompt, // FIX: P3-007 — lets selection avoid duplicate prompts within a round
   }
 }
 
@@ -160,11 +161,24 @@ export class GameSessionService {
 
     // Resume an existing active session for the same (student, stream) rather
     // than violating the concurrent-active guard (partial index D-028).
-    const active = await this.gameSessionRepository.findActiveByStudentStream(sid, stid)
+    const active = await this.gameSessionRepository.findActiveByStudentStream(sid, stid, lid) // FIX: P1-006
     if (active) return this.sessionState(active)
 
     // 4. eligible pool; 5. recent-question history; 6. secure seed.
-    const pool = await this.questionRepository.getEligibleQuestions({ streamId: stid, levelId: lid })
+    // The final level of a stream draws from hard (difficulty >= 3) questions
+    // only, falling back to the full pool when that isn't deep enough yet
+    // (never blocks the level — same principle as repeat avoidance in
+    // selectRoundQuestions).
+    const streamLevels = await this.levelRepository.listForStream(stid)
+    const maxLevelNumber = Math.max(...streamLevels.map((l) => l.number))
+    const isFinalLevel = level.number >= maxLevelNumber
+    const hardPool = isFinalLevel
+      ? await this.questionRepository.getEligibleQuestions({ streamId: stid, levelId: lid, minDifficulty: 3 })
+      : null
+    const pool =
+      hardPool && hardPool.length >= 3
+        ? hardPool
+        : await this.questionRepository.getEligibleQuestions({ streamId: stid, levelId: lid })
     const recent = (await this.gameSessionRepository.getRecentQuestionIds(sid, { lastSessions: DEFAULT_LAST_SESSIONS })).map(String)
     const seed = generateSessionSeed()
 
@@ -421,7 +435,8 @@ export class GameSessionService {
       .sort((a, b) => b - a)[0]
     const totalTimeMs = lastAnsweredAt ? Math.max(0, lastAnsweredAt - session.startedAt) : null
     const completedAt = this.now()
-    const result = totalScore >= 150 ? 'passed' : 'attempted'
+    const { passThreshold } = await this.settingsRepository.getScoringConfig() // FIX: P2-007
+    const result = totalScore >= passThreshold ? 'passed' : 'attempted' // FIX: P2-007
 
     await this.gameSessionRepository.update(session.id, {
       status: 'completed',

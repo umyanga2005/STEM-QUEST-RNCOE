@@ -11,7 +11,7 @@ import levelLockedImg from '../assets/game/level-locked.png'
 import levelAvailableImg from '../assets/game/level-available.png'
 import levelCompleteImg from '../assets/game/level-complete.png'
 import victoryBg from '../assets/game/victory-bg.png'
-import gameOverBg from '../assets/ChatGPT Image Aug 24, 2026, 01_04_05 PM.png'
+import gameOverBg from '../assets/game/gameover-bg.png'
 import gameHudLoop from '../assets/game/game-hud-bg.mp4'
 
 export const STREAM_ASSETS = {

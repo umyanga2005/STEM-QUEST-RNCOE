@@ -41,7 +41,6 @@ function BlankField({
   const inputMode = blank.type === 'number' ? 'decimal' : 'text'
   return (
     <label className={`fill-blank${answered ? ' is-answered' : ''}`} htmlFor={inputId}>
-      <span className="fill-blank-label">{labelText}</span>
       <span className="fill-blank-field">
         {blank.prefix ? (
           <span className="fill-blank-affix" aria-hidden="true">
@@ -67,9 +66,6 @@ function BlankField({
             {blank.suffix}
           </span>
         ) : null}
-      </span>
-      <span className="fill-blank-hint-mark" aria-hidden="true">
-        {answered ? 'answered' : ''}
       </span>
     </label>
   )

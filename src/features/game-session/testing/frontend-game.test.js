@@ -415,8 +415,8 @@ test('session complete panel shows score, code, time and breakdown', async () =>
         onBackToMission: () => {},
       })
     )
-    assert.match(html, /Mission passed/)
-    assert.match(html, /Final score <strong>220<\/strong> \/ 300/)
+    assert.match(html, /MISSION VICTORY!/)
+    assert.match(html, /Final Score: <strong>220<\/strong> \/ 300/)
     assert.match(html, /ABC123/)
     assert.match(html, /1m 37s/, 'total time is human readable')
     assert.equal((html.match(/Round \d/g) ?? []).length, 3, 'all three rounds in the breakdown')

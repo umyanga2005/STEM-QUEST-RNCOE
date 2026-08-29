@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { useQueryClient } from '@tanstack/react-query'
-import { useQuestionCatalogue, useQuestionDetail, useCreateQuestion, useUpdateQuestion, useSubmitForReview } from '../queries/queries.js'
+import { useQuestionCatalogue, useQuestionDetail, useCreateQuestion, useUpdateQuestion, useSubmitForReview, useCreateQuestionVersion } from '../queries/queries.js'
 import { buildQuestionTemplate, QUESTION_ACTIVITY_LABELS } from '../templates/templates.js'
 import { validateClientDraft } from '../validation/validate-draft.js'
 import VisualFormFor from '../visual-editor/index.jsx'
@@ -31,6 +31,18 @@ const DIFFICULTIES = [1, 2, 3, 4, 5]
 const FEEDBACK_KEYS = ['correct', 'partial', 'incorrect', 'timeout']
 const MAX_HINTS = 3
 
+const DEFAULT_STREAMS = [
+  { slug: 'science', name: 'Science' },
+  { slug: 'technology', name: 'Technology' },
+  { slug: 'engineering', name: 'Engineering' },
+  { slug: 'mathematics', name: 'Mathematics' },
+]
+
+const DEFAULT_ACTIVITY_TYPES = Object.keys(QUESTION_ACTIVITY_LABELS).map((slug) => ({
+  slug,
+  name: QUESTION_ACTIVITY_LABELS[slug],
+}))
+
 export default function QuestionEditor({ questionId = null }) {
   const { id } = useParams()
   const editingId = questionId ?? id ?? null
@@ -41,6 +53,8 @@ export default function QuestionEditor({ questionId = null }) {
   const createMutation = useCreateQuestion()
   const updateMutation = useUpdateQuestion(editingId)
   const submitMutation = useSubmitForReview()
+  const versionMutation = useCreateQuestionVersion() // FIX: P3-006
+  const [versionError, setVersionError] = useState(null) // FIX: P3-006
   const queryClient = useQueryClient()
 
   // Lazy-initialise from the query cache so SSR renders are deterministic
@@ -65,8 +79,14 @@ export default function QuestionEditor({ questionId = null }) {
     }
   }, [editingId, detailQuery.data])
 
-  const streams = useMemo(() => catalogueQuery.data?.streams ?? [], [catalogueQuery.data])
-  const activityTypes = useMemo(() => catalogueQuery.data?.activityTypes ?? [], [catalogueQuery.data])
+  const streams = useMemo(
+    () => (catalogueQuery.data?.streams?.length ? catalogueQuery.data.streams : DEFAULT_STREAMS),
+    [catalogueQuery.data]
+  )
+  const activityTypes = useMemo(
+    () => (catalogueQuery.data?.activityTypes?.length ? catalogueQuery.data.activityTypes : DEFAULT_ACTIVITY_TYPES),
+    [catalogueQuery.data]
+  )
 
   const integrityErrors = useMemo(
     () =>
@@ -85,6 +105,18 @@ export default function QuestionEditor({ questionId = null }) {
   )
 
   const readOnly = draft?.status === 'published' || draft?.status === 'archived'
+
+  // FIX: P3-006 — lets an admin reach the version-clone flow directly from a
+  // published question's own editor, not only from the list row's button.
+  const handleCreateVersion = async () => {
+    setVersionError(null)
+    try {
+      const { question } = await versionMutation.mutateAsync(editingId)
+      navigate(`/admin/questions/${question.id}/edit`)
+    } catch (err) {
+      setVersionError(err.message ?? 'The question could not be versioned.')
+    }
+  }
 
   // Task 5.13 — a draft can move into review when it is not already pending or
   // approved. Editing a pending/approved draft clears its review state first.
@@ -181,8 +213,22 @@ export default function QuestionEditor({ questionId = null }) {
     >
       <div className="aq-editor__main">
         {readOnly ? (
-          <p className="aq-note aq-note--error">Published and archived questions are read-only (D-044). Duplicate this question or edit a draft.</p>
+          <p className="aq-note aq-note--error">
+            Published and archived questions are read-only (D-044). Duplicate this question or edit a draft.
+            {draft?.status === 'published' ? (
+              <button
+                type="button"
+                className="aq-btn aq-btn--submit"
+                style={{ marginLeft: '0.75rem' }}
+                disabled={versionMutation.isPending}
+                onClick={handleCreateVersion}
+              >
+                Create editable version
+              </button>
+            ) : null}
+          </p>
         ) : null}
+        {versionError ? <p className="aq-note aq-note--error">{versionError}</p> : null}
 
         <Section title="Basic information">
           <Field label="Activity type">

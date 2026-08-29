@@ -24,11 +24,11 @@ const PATTERN_ACTIVITY_TYPE_ID = 7
 const SCIENCE_STREAM_ID = 1
 const LEVEL_1 = 1
 
-function patternQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100 }) {
+function patternQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100, streamId = 1, levelId = 1, difficulty = 1 }) {
   return {
     id,
-    streamId: SCIENCE_STREAM_ID,
-    levelId: LEVEL_1,
+    streamId,
+    levelId,
     activityTypeId: PATTERN_ACTIVITY_TYPE_ID,
     activityType: 'pattern',
     prompt,
@@ -38,50 +38,16 @@ function patternQuestion(id, { prompt, instructions, payload, correctAnswer, hin
     hints,
     basePoints,
     timerOverrideSeconds: null,
-    difficulty: 1,
+    difficulty,
     gradeMin: 6,
     gradeMax: 11,
     status: 'published',
   }
 }
 
-/** 3 published pattern questions (id 44..46) for Science · Level 1. */
+/** No demo questions seeded — questions are authored in Supabase DB / Admin Question Builder. */
 export function demoPatternQuestions() {
-  return [
-    patternQuestion(44, {
-      prompt: 'Continue the sequence: 2, 4, 6, …',
-      instructions: 'Choose the next element from the bank. The sequence grows by adding 2 each time.',
-      payload: minimalPayload,
-      correctAnswer: validCorrectAnswer,
-      hints: [
-        { level: 1, text: 'Compare consecutive elements: 2 → 4 → 6. What changes each step?' },
-        { level: 2, text: 'Each element is 2 more than the one before it, so the next even number follows 6.' },
-      ],
-      basePoints: 100,
-    }),
-    patternQuestion(45, {
-      prompt: 'Complete the shape pattern: circle, square, circle, square, …',
-      instructions: 'Choose the next shape from the bank. The shapes alternate.',
-      payload: grade6to7Payload,
-      correctAnswer: { type: 'candidate', acceptableIds: ['c1'] },
-      hints: [
-        { level: 1, text: 'The shapes alternate between two kinds.' },
-        { level: 2, text: 'The sequence is circle, square, circle, square — which shape comes after square?' },
-      ],
-      basePoints: 100,
-    }),
-    patternQuestion(46, {
-      prompt: 'Find the missing element in the sequence: 1, 4, ?',
-      instructions: 'Type the element that belongs in the hidden position. Hint: these are the square numbers.',
-      payload: grade9to11Payload,
-      correctAnswer: { type: 'numeric', value: 9, tolerance: 0 },
-      hints: [
-        { level: 1, text: '1, 4 and the missing value are consecutive square numbers (1², 2², …).' },
-        { level: 2, text: '4 is 2 × 2. The missing element is the next square in the list.' },
-      ],
-      basePoints: 100,
-    }),
-  ]
+  return []
 }
 
 export default { demoPatternQuestions }

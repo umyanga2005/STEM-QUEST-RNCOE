@@ -133,7 +133,7 @@ export const ROUND_STATUS = Object.freeze({
  * @property {(studentId: number, opts?: { lastSessions?: number }) => Promise<number[]>} getRecentQuestionIds
  *           - question ids seen in the last N sessions (repeat avoidance).
  * @property {(id: number) => Promise<GameSession|null>} findById
- * @property {(studentId: number, streamId: number) => Promise<GameSession|null>} findActiveByStudentStream
+ * @property {(studentId: number, streamId: number, levelId: number) => Promise<GameSession|null>} findActiveByStudentStream
  * @property {(session: object) => Promise<GameSession>} createSession
  *           - session = { sessionCode, studentId, streamId, levelId, seed,
  *             selectedQuestionIds, startedAt, metadata }

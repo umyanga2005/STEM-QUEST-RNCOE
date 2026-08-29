@@ -167,6 +167,8 @@ export function DragDropActivity({
   const visibleHints = hints.slice(0, hintsRevealed)
   const draggingItem = dragItem !== null ? descriptor.items.find((i) => i.id === dragItem) : null
 
+  const unplacedCount = descriptor.items.filter((item) => placements[item.id] === null).length
+
   return (
     <div className="drag-drop-activity" data-activity="drag-drop">
       <div aria-live="polite" className="drag-drop-sr-live">
@@ -178,12 +180,14 @@ export function DragDropActivity({
 
       <div className="drag-drop-board">
         <section
-          className="drag-drop-tray"
+          className={`drag-drop-tray${unplacedCount === 0 ? ' is-empty' : ''}`}
           data-zone-id={TRAY_ZONE}
           onClick={handleTrayClick}
           aria-label="Item tray"
         >
-          <h3 className="drag-drop-section-label">Items</h3>
+          <h3 className="drag-drop-section-label">
+            Items {unplacedCount === 0 ? '— All Placed ✓' : ''}
+          </h3>
           <div className="drag-drop-items">
             {descriptor.items.map((item) => {
               const placedIn = placements[item.id]

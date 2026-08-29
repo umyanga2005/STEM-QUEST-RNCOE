@@ -24,6 +24,7 @@ export const QUESTIONS_PER_SESSION = 3
  * @property {string} streamId
  * @property {string} levelId
  * @property {string} activityType
+ * @property {string} [prompt] - used to avoid duplicate prompts within a round (P3-007)
  */
 
 /**
@@ -74,10 +75,16 @@ export function selectRoundQuestions({
   const chosen = []
 
   /** Excludes recent ids, but falls back to the full group if that would
-   * empty it — repeat avoidance never blocks the level (§8). */
+   * empty it — repeat avoidance never blocks the level (§8). Also excludes
+   * questions whose prompt text duplicates one already chosen for this
+   * round (FIX: P3-007), with the same never-block-the-level fallback. */
   const candidates = (qs) => {
     const nonRecent = qs.filter((q) => !recent.has(q.id))
-    return nonRecent.length > 0 ? nonRecent : qs
+    const afterRecent = nonRecent.length > 0 ? nonRecent : qs
+    const usedPrompts = new Set(chosen.map((q) => q.prompt).filter(Boolean))
+    const nonDuplicatePrompt =
+      usedPrompts.size > 0 ? afterRecent.filter((q) => !usedPrompts.has(q.prompt)) : afterRecent
+    return nonDuplicatePrompt.length > 0 ? nonDuplicatePrompt : afterRecent
   }
 
   // 1) Diversity pass: one per distinct activity type, in shuffled type

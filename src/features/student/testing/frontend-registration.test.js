@@ -334,7 +334,7 @@ test('registration page static-renders with labelled fields and aria status', as
     const html = renderToStaticMarkup(element)
 
     assert.match(html, /STEM QUEST/, 'page title renders')
-    assert.match(html, /Student Registration/)
+    assert.match(html, /Kiosk Student Portal/)
     for (const field of REGISTRATION_FIELDS) {
       const id = `sr-field-${field.name}`
       assert.ok(html.includes(`for="${id}"`), `${field.name} label is connected`)

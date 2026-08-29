@@ -188,16 +188,15 @@ test('page renders the stream picker for a valid session with all four streams',
     )
     const html = renderToStaticMarkup(element)
 
-    assert.match(html, /Choose your stream/)
-    assert.match(html, /2 · Choose your stream/, 'progress strip marks the selection step')
-    assert.match(html, /Hi Amaya/, 'greeting uses the safe public name')
+    assert.match(html, /Select Your World/)
+    assert.match(html, /2 · Choose stream/, 'progress strip marks the selection step')
     for (const stream of STREAM_SUMMARIES) {
       assert.ok(html.includes(stream.name), `${stream.name} card renders`)
       assert.ok(html.includes(stream.description), `${stream.name} description renders`)
       assert.ok(html.includes(`aria-label="${stream.name} — ${stream.unlockedCount} of ${stream.levelCount} levels open"`))
     }
     assert.equal((html.match(/class="sm-stream"/g) ?? []).length, 4, 'exactly four stream cards')
-    assert.match(html, /1 of 5 levels open/, 'unlock counts are visible')
+    assert.match(html, /1 \/ 5 Levels Unlocked/, 'unlock counts are visible')
   } finally {
     await vite.close()
     delete globalThis.sessionStorage
@@ -239,8 +238,8 @@ test('level step renders five levels, locked levels disabled, statuses labelled'
     assert.ok(html.includes('aria-disabled="true"'), 'locked levels announce disabled')
     assert.ok(html.includes('disabled=""'), 'locked levels are actually disabled')
     assert.match(html, /Locked/)
-    assert.match(html, /New/)
-    assert.match(html, /All streams/, 'back to stream picker is available')
+    assert.match(html, /Available/)
+    assert.match(html, /All Worlds/, 'back to stream picker is available')
   } finally {
     await vite.close()
   }

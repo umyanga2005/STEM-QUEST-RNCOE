@@ -23,7 +23,23 @@ import { StudentService } from '../../student/service/student-service.js'
 function buildStack() {
   const gameStore = createMemoryStore()
   seedStoreFromBaseData(gameStore, demoBaseData())
-  // Add level-2 and level-3 questions so progression-unlocked levels play.
+  if (gameStore.questions.length === 0) {
+    for (let i = 1; i <= 6; i += 1) {
+      gameStore.questions.push({
+        id: i,
+        streamId: 1,
+        levelId: 1,
+        activityType: 'drag-drop',
+        prompt: 'Mock drag drop prompt',
+        status: 'published',
+        payload: {
+          items: [{ id: 'i1', label: 'Item 1' }],
+          zones: [{ id: 'z1', label: 'Zone 1' }],
+        },
+        correctAnswer: { mappings: [{ itemId: 'i1', zoneId: 'z1' }] },
+      })
+    }
+  }
   const base = gameStore.questions[0]
   for (let i = 0; i < 4; i += 1) {
     gameStore.questions.push({ ...base, id: 2000 + i, levelId: 2 })

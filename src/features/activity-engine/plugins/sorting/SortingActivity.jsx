@@ -37,6 +37,7 @@ function SortChip({
   categoryLabel,
   selected,
   placed,
+  dragging,
   disabled,
   draggable,
   onSelect,
@@ -46,7 +47,11 @@ function SortChip({
 }) {
   const image = item.image
   return (
-    <div className={`sorting-chip${selected ? ' is-selected' : ''}${placed ? ' is-placed' : ''}`}>
+    <div
+      className={`sorting-chip${selected ? ' is-selected' : ''}${placed ? ' is-placed' : ''}${
+        dragging ? ' is-dragging' : ''
+      }`}
+    >
       <button
         type="button"
         className="sorting-chip-button"
@@ -206,7 +211,7 @@ export function SortingActivity({
       {descriptor.prompt ? <h2 className="sorting-prompt">{descriptor.prompt}</h2> : null}
       {descriptor.instructions ? <p className="sorting-instructions">{descriptor.instructions}</p> : null}
 
-      <section className="sorting-tray" aria-label="Unassigned items">
+      <section className={`sorting-tray${unassigned.length === 0 ? ' is-empty' : ''}`} aria-label="Unassigned items">
         <h3 className="sorting-section-title">Unassigned items</h3>
         {unassigned.length === 0 ? (
           <p className="sorting-empty-note">All items are placed. Review the groups, then submit.</p>
@@ -218,6 +223,7 @@ export function SortingActivity({
                   item={itemById[itemId]}
                   selected={state.selectedItem === itemId}
                   placed={false}
+                  dragging={dragSource === itemId}
                   disabled={disabled || submitted}
                   draggable={!reducedMotion && !disabled && !submitted}
                   onSelect={() => handleSelect(itemId)}
@@ -282,6 +288,7 @@ export function SortingActivity({
                         categoryLabel={category.ariaLabel}
                         selected={state.selectedItem === itemId}
                         placed
+                        dragging={dragSource === itemId}
                         disabled={disabled || submitted}
                         draggable={!reducedMotion && !disabled && !submitted}
                         onSelect={() => handleSelect(itemId)}

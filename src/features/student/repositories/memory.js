@@ -65,7 +65,12 @@ class MemoryStudentRepository {
   }
 
   async findByLoginCode(loginCode) {
-    return this.store.students.find((s) => s.loginCode === loginCode) ?? null
+    const wanted = loginCode.trim().toUpperCase()
+    return (
+      this.store.students.find(
+        (s) => s.loginCode && s.loginCode.trim().toUpperCase() === wanted
+      ) ?? null
+    )
   }
 
   async create(row) {

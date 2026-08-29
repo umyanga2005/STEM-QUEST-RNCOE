@@ -73,8 +73,9 @@ test('registers a student, returns an opaque token once, and issues a session', 
 
   assert.equal(typeof result.token, 'string')
   assert.ok(result.token.length >= 32, 'token must have ample entropy length')
-  assert.equal(result.loginCode.length, 6)
-  assert.ok([...result.loginCode].every((ch) => LOGIN_CODE_ALPHABET.has(ch)), 'login code alphabet')
+  assert.equal(result.loginCode.length, 9)
+  const bareCode = result.loginCode.replace(/^SQ-/, '')
+  assert.ok([...bareCode].every((ch) => LOGIN_CODE_ALPHABET.has(ch)), 'login code alphabet')
   assert.equal(result.expiresAt, clock.now() + 3600 * 1000, 'default TTL 3600s')
   assert.equal(result.student.name, 'Amaya Silva')
   assert.equal(result.student.school, 'Colombo High')
@@ -389,7 +390,7 @@ test('avatarUrl stays null when no photo exists and /me reflects stored photo', 
   assert.equal((await service.getMe({ token })).student.avatarUrl, null)
   await service.uploadAvatar({ token, file: fakeFile({ mimeType: 'image/webp' }) })
   const me = await service.getMe({ token })
-  assert.match(me.student.avatarUrl, /memory:\/\/student-avatars\/1\/profile\.webp/)
+  assert.match(me.student.avatarUrl, /^data:image\/webp;base64,/)
 })
 
 test('hashSessionToken is deterministic SHA-256', () => {

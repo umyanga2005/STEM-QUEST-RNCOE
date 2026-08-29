@@ -92,10 +92,11 @@ export class SupabaseStudentRepository {
   }
 
   async findByLoginCode(loginCode) {
+    const clean = loginCode.trim()
     const { data, error } = await this.client
       .from('students')
       .select('*')
-      .eq('login_code', loginCode)
+      .ilike('login_code', clean)
       .maybeSingle()
     if (error) throw new Error(`student findByLoginCode failed: ${error.message}`)
     return data ? rowToStudent(data) : null

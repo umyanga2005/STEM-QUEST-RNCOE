@@ -248,21 +248,23 @@ export class QuestionService {
   }
 
   /** Lists questions as authoring DTOs (previews: no correctAnswer). */
-  async list({ stream = null, level = null, activityType = null, status = null, query = null } = {}) {
-    const filters = await this.#listFilters({ stream, level, activityType, status, query })
-    const rows = await this.questionRepository.list(filters)
+  // FIX: P1-003 — accepts limit/offset and returns total so the UI can page
+  // through all questions instead of only ever seeing the first 200.
+  async list({ stream = null, level = null, activityType = null, status = null, query = null, limit = 50, offset = 0 } = {}) {
+    const filters = await this.#listFilters({ stream, level, activityType, status, query, limit, offset })
+    const { data: rows, total } = await this.questionRepository.list(filters)
     const questions = rows.map((row) => {
       const dto = rowToQuestionDto(row, { activitySchemaVersion: this.schemaVersionFor(row) })
       delete dto.correctAnswer
       delete dto.meta
       return dto
     })
-    return { questions }
+    return { questions, total, limit: filters.limit, offset: filters.offset }
   }
 
   /** Resolves the list query into repository filters (catalogue validated). */
-  async #listFilters({ stream = null, level = null, activityType = null, status = null, query = null } = {}) {
-    const filters = {}
+  async #listFilters({ stream = null, level = null, activityType = null, status = null, query = null, limit = 50, offset = 0 } = {}) {
+    const filters = { limit, offset }
     if (stream != null) {
       const s = await this.catalogueRepository.findStreamBySlug(stream)
       if (!s) throw questionError.catalogUnknown(`stream "${stream}"`)
@@ -358,7 +360,7 @@ export class QuestionService {
    */
   async reviewQueue({ stream = null, level = null, activityType = null } = {}) {
     const filters = await this.#listFilters({ stream, level, activityType, status: 'draft' })
-    const rows = await this.questionRepository.list({ ...filters, limit: 500 })
+    const { data: rows } = await this.questionRepository.list({ ...filters, limit: 500 }) // FIX: P1-003 — repo.list() now returns { data, total }
     const questions = rows
       .filter((row) => row.meta?.review?.state === 'pending')
       .map((row) => {

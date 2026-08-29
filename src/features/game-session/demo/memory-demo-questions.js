@@ -20,11 +20,11 @@ const MEMORY_ACTIVITY_TYPE_ID = 8
 const SCIENCE_STREAM_ID = 1
 const LEVEL_1 = 1
 
-function memoryQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100 }) {
+function memoryQuestion(id, { prompt, instructions, payload, correctAnswer, hints, basePoints = 100, streamId = 1, levelId = 1, difficulty = 1 }) {
   return {
     id,
-    streamId: SCIENCE_STREAM_ID,
-    levelId: LEVEL_1,
+    streamId,
+    levelId,
     activityTypeId: MEMORY_ACTIVITY_TYPE_ID,
     activityType: 'memory',
     prompt,
@@ -34,50 +34,16 @@ function memoryQuestion(id, { prompt, instructions, payload, correctAnswer, hint
     hints,
     basePoints,
     timerOverrideSeconds: null,
-    difficulty: 1,
+    difficulty,
     gradeMin: 6,
     gradeMax: 11,
     status: 'published',
   }
 }
 
-/** 3 published memory questions (id 47..49) for Science · Level 1. */
+/** No demo questions seeded — questions are authored in Supabase DB / Admin Question Builder. */
 export function demoMemoryQuestions() {
-  return [
-    memoryQuestion(47, {
-      prompt: 'Memorize the science formula pairs, then rebuild them from memory.',
-      instructions: 'Study the four cards while the timer counts down. When the timer ends you will rebuild the two pairs.',
-      payload: minimalPayload,
-      correctAnswer: { groups: [{ groupId: 'g1', cardIds: ['c1', 'c2'] }, { groupId: 'g2', cardIds: ['c3', 'c4'] }] },
-      hints: [
-        { level: 1, text: 'Each formula is paired with the name of the substance it represents.' },
-        { level: 2, text: 'H2O is water, and CO2 is carbon dioxide.' },
-      ],
-      basePoints: 100,
-    }),
-    memoryQuestion(48, {
-      prompt: 'Memorize the animal–food-type pairs, then rebuild them from memory.',
-      instructions: 'Study the four cards while the timer counts down, then pair each animal with what it eats.',
-      payload: grade6to7Payload,
-      correctAnswer: { groups: [{ groupId: 'g1', cardIds: ['c1', 'c2'] }, { groupId: 'g2', cardIds: ['c3', 'c4'] }] },
-      hints: [
-        { level: 1, text: 'Each animal is paired with the kind of food it eats.' },
-        { level: 2, text: 'A lion is a carnivore and a rabbit is a herbivore.' },
-      ],
-      basePoints: 100,
-    }),
-    memoryQuestion(49, {
-      prompt: 'Memorize the equivalent expression pairs, then rebuild them from memory.',
-      instructions: 'Study the six cards while the timer counts down, then rebuild the three pairs of equivalent expressions.',
-      payload: grade9to11Payload,
-      correctAnswer: validCorrectAnswer,
-      hints: [
-        { level: 1, text: 'Each pair contains two expressions that simplify to the same value.' },
-        { level: 2, text: '2x + 4 is the same as 2(x + 2).' },
-      ],
-      basePoints: 100,
-    }),
-  ]
+  return []
 }
 
 export default { demoMemoryQuestions }

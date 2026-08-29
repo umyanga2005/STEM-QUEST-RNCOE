@@ -50,13 +50,21 @@ class MemoryQuestionRepository {
     this.store = store
   }
 
-  async getEligibleQuestions({ streamId, levelId }) {
-    return this.store.questions.filter(
+  async getEligibleQuestions({ streamId, levelId, minDifficulty = null }) {
+    const published = this.store.questions.filter(
       (q) =>
-        q.streamId === streamId &&
-        q.levelId === levelId &&
-        q.status === 'published'
+        (q.status ?? 'published') === 'published' &&
+        (minDifficulty === null || (q.difficulty ?? 1) >= minDifficulty)
     )
+    const exact = published.filter(
+      (q) => String(q.streamId) === String(streamId) && String(q.levelId) === String(levelId)
+    )
+    if (exact.length >= 3) return exact
+
+    const streamMatches = published.filter((q) => String(q.streamId) === String(streamId))
+    if (streamMatches.length >= 3) return streamMatches
+
+    return published
   }
 
   async getById(id) {
@@ -82,12 +90,13 @@ class MemoryGameSessionRepository {
     return this.store.gameSessions.find((s) => s.id === id) ?? null
   }
 
-  async findActiveByStudentStream(studentId, streamId) {
+  async findActiveByStudentStream(studentId, streamId, levelId) {
     return (
       this.store.gameSessions.find(
         (s) =>
           s.studentId === studentId &&
           s.streamId === streamId &&
+          s.levelId === levelId && // FIX: P1-006 — was missing; caused wrong-level resume
           s.status === 'active'
       ) ?? null
     )
@@ -287,6 +296,7 @@ class MemorySettingsRepository {
       hintDeduction: num('scoring.hint_deduction', 5),
       attemptDeduction: num('scoring.attempt_deduction', 10),
       questionsPerSession: num('session.questions_per_session', 3),
+      passThreshold: num('scoring.pass_threshold', 150), // FIX: P2-007
     }
   }
 }

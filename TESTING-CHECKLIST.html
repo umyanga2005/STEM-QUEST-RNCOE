@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>STEM QUEST — Manual QA Checklist</title>
+<style>
+  :root {
+    --bg: #0b0f1e;
+    --panel: #141b30;
+    --panel-2: #1a2340;
+    --border: rgba(255,255,255,0.10);
+    --text: #eef1fb;
+    --muted: #93a0c4;
+    --accent: #4f8bff;
+    --accent2: #2dd4bf;
+    --ok: #4ade80;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --badge5: #a855f7;
+    --badge6: #f59e0b;
+    --badge7: #38bdf8;
+    --badge8: #f87171;
+    --badge1: #34d399;
+    --badge2: #60a5fa;
+    --badge3: #fbbf24;
+    --badge4: #f472b6;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  a { color: var(--accent2); }
+
+  /* ── Top bar ─────────────────────────────────────────────────────── */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.85rem 1.25rem;
+    background: rgba(11,15,30,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .topbar h1 { font-size: 1.05rem; margin: 0; white-space: nowrap; }
+  .topbar .sub { color: var(--muted); font-size: 0.8rem; }
+  .progress-wrap {
+    flex: 1; min-width: 160px;
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .progress-track {
+    flex: 1; height: 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.08); overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    transition: width 0.25s ease;
+  }
+  .progress-label { font-size: 0.78rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .btn {
+    appearance: none; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text);
+    padding: 0.5rem 0.9rem; border-radius: 10px;
+    font-size: 0.82rem; font-weight: 700; cursor: pointer;
+    white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent2); }
+  .btn--primary { background: linear-gradient(120deg, var(--accent), var(--accent2)); color: #071021; border: none; }
+  .btn--reset { color: var(--bad); }
+
+  /* ── Layout ──────────────────────────────────────────────────────── */
+  .layout { display: flex; align-items: flex-start; max-width: 1200px; margin: 0 auto; }
+  nav.toc {
+    position: sticky; top: 62px;
+    width: 230px; flex-shrink: 0;
+    max-height: calc(100vh - 62px);
+    overflow-y: auto;
+    padding: 1rem 0.75rem 3rem;
+    font-size: 0.82rem;
+  }
+  nav.toc a {
+    display: flex; justify-content: space-between; gap: 0.5rem;
+    padding: 0.4rem 0.6rem; border-radius: 8px;
+    color: var(--muted); text-decoration: none;
+  }
+  nav.toc a:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+  nav.toc a .count { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 0.72rem; }
+  nav.toc a.done .count { color: var(--ok); }
+
+  main { flex: 1; min-width: 0; padding: 1.25rem 1.5rem 6rem; }
+
+  .intro {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 14px;
+    padding: 1.1rem 1.3rem; margin-bottom: 1.75rem; font-size: 0.9rem; color: var(--muted);
+  }
+  .intro h2 { margin: 0 0 0.5rem; color: var(--text); font-size: 1rem; }
+  .intro code {
+    background: rgba(255,255,255,0.08); color: var(--accent2);
+    padding: 0.1rem 0.4rem; border-radius: 5px; font-size: 0.85em;
+  }
+  .intro ul { margin: 0.5rem 0 0; padding-left: 1.2rem; }
+
+  section.block {
+    scroll-margin-top: 72px;
+    margin-bottom: 2.25rem;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--panel);
+    overflow: hidden;
+  }
+  section.block > header {
+    padding: 1rem 1.3rem;
+    display: flex; align-items: center; gap: 0.7rem; flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel-2);
+  }
+  section.block > header h2 { margin: 0; font-size: 1.02rem; }
+  section.block > header .section-note { color: var(--muted); font-size: 0.82rem; flex-basis: 100%; }
+  .badge {
+    font-size: 0.68rem; font-weight: 800; letter-spacing: 0.03em;
+    padding: 0.18rem 0.55rem; border-radius: 999px; color: #071021;
+  }
+  .steps { padding: 0.4rem 0.6rem 0.9rem; }
+
+  .step {
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 0.15rem 0.75rem;
+    padding: 0.7rem 0.7rem;
+    border-radius: 10px;
+  }
+  .step:hover { background: rgba(255,255,255,0.03); }
+  .step input[type="checkbox"] {
+    grid-row: 1 / span 2;
+    width: 19px; height: 19px; margin-top: 0.15rem;
+    accent-color: var(--accent2);
+    cursor: pointer;
+  }
+  .step .action { font-weight: 600; }
+  .step .action .fixbadge {
+    margin-left: 0.4rem; font-size: 0.62rem; font-weight: 800;
+    padding: 0.12rem 0.4rem; border-radius: 999px; color: #071021; white-space: nowrap;
+  }
+  .step .expect { color: var(--muted); font-size: 0.85rem; margin-top: 0.15rem; }
+  .step .expect b { color: var(--text); font-weight: 700; }
+  .step textarea {
+    grid-column: 2; margin-top: 0.45rem;
+    width: 100%; min-height: 38px; resize: vertical;
+    background: rgba(0,0,0,0.25); color: var(--text);
+    border: 1px solid var(--border); border-radius: 8px;
+    padding: 0.45rem 0.6rem; font-size: 0.83rem; font-family: inherit;
+  }
+  .step textarea::placeholder { color: #5c6790; }
+  .step.checked { opacity: 0.55; }
+  .step.checked .action { text-decoration: line-through; text-decoration-color: rgba(255,255,255,0.35); }
+  .step.has-note { opacity: 1; }
+  .step.has-note textarea { border-color: var(--warn); }
+
+  footer.done {
+    text-align: center; color: var(--muted); font-size: 0.8rem;
+    padding: 2rem 1rem 4rem;
+  }
+
+  #copyToast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--ok); color: #071021; font-weight: 700;
+    padding: 0.6rem 1.1rem; border-radius: 10px; font-size: 0.85rem;
+    opacity: 0; pointer-events: none; transition: all 0.25s ease; z-index: 50;
+  }
+  #copyToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 880px) {
+    nav.toc { display: none; }
+    main { padding: 1rem 1rem 6rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🧪 STEM QUEST — Manual QA Checklist</h1>
+  <span class="sub">test in Chrome, tick as you go</span>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-label" id="progressLabel">0 / 0</span>
+  </div>
+  <button class="btn btn--primary" id="copyBtn">📋 Copy report</button>
+  <button class="btn btn--reset" id="resetBtn">Reset</button>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="toc"></nav>
+
+  <main>
+    <div class="intro">
+      <h2>Before you start</h2>
+      <ul>
+        <li>Start the frontend: <code>npm run dev</code> — open the printed URL (usually <code>http://localhost:5173</code>, may shift to <code>5174</code> if the port's busy).</li>
+        <li>Start the API in a second terminal: <code>npm run api</code> (demo API on <code>:4100</code>).</li>
+        <li>Need an admin login? <code>node scripts/create-admin.mjs you@example.com yourPassword "Your Name"</code> (reads <code>SUPABASE_URL</code> / <code>SUPABASE_SERVICE_ROLE_KEY</code> from <code>.env</code>).</li>
+        <li>Colored badges mark steps tied to a specific fix from this session — e.g. <span class="badge" style="background:var(--badge5)">FIX #5</span> Portal animation, <span class="badge" style="background:var(--badge7)">FIX #7</span> Admin data pages. Everything else is a general regression pass.</li>
+        <li>Check a box as you confirm it works. If something's off, jot a note in the box below that step — the note stays even if you leave it unchecked. Your progress is saved in this browser (localStorage) as you go.</li>
+        <li>When you're done, click <b>📋 Copy report</b> — it copies a Markdown summary of every unchecked step and every note to your clipboard. Paste that back to me and I'll work through it.</li>
+      </ul>
+    </div>
+
+    <div id="sections"></div>
+
+    <footer class="done">That's the full pass. Copy the report above and hand it back whenever you're ready — partial passes are fine too.</footer>
+  </main>
+</div>
+
+<div id="copyToast">Copied to clipboard ✓</div>
+
+<script>
+/* ────────────────────────────────────────────────────────────────────
+   Data: one entry per section. Each step = { a: action, e: expected, fix?: "5" }
+   fix keys map to a color via FIX_COLORS below; omit for plain regression steps.
+──────────────────────────────────────────────────────────────────── */
+const FIX_COLORS = {
+  '1': 'var(--badge1)', '2': 'var(--badge2)', '3': 'var(--badge3)', '4': 'var(--badge4)',
+  '5': 'var(--badge5)', '6': 'var(--badge6)', '7': 'var(--badge7)', '8': 'var(--badge8)',
+};
+
+const SECTIONS = [
+  {
+    id: 'register', title: '1 · Student Registration', note: '/student/register',
+    steps: [
+      { a: 'Open the app fresh (clear localStorage/sessionStorage or use an incognito tab).', e: 'Lands on "New Student" tab of the registration page.' },
+      { a: 'Fill the New Student form: initials, full name, school, grade, and (optionally) a profile photo.', e: 'Photo picker lets you choose/remove an image; submit is disabled until required fields are valid.' },
+      { a: 'Submit an invalid form (e.g. blank name).', e: 'Inline field errors appear (role="alert"), no crash.' },
+      { a: 'Submit a valid registration.', e: 'Success panel shows a generated Kiosk Login Code, optional photo, and "Continue to your mission" / "View your profile" actions.' },
+      { a: 'Reload the page after registering.', e: 'A "Welcome back, {name}" banner appears with Continue / View profile / Start new registration.' },
+      { a: 'Switch to the "🔑 Kiosk Code Login" tab and log in with the code you just got.', e: 'Logs in successfully and routes into the app (mission page).' },
+      { a: 'Try an invalid kiosk code.', e: 'Clear error message, no crash, can retry.' },
+    ],
+  },
+  {
+    id: 'mission', title: '2 · Stream Selection & Portal Animation', note: '/student/mission — covers Fix #5', badge: '5',
+    steps: [
+      { a: 'From the mission page, confirm all 4 stream cards render (Science, Technology, Engineering, Mathematics) with their background video/art and unlocked-level counts.', e: 'All 4 render; each shows "{n} / {total} Levels Unlocked".' },
+      { a: 'Click a stream card.', fix: '5', e: 'A full-screen colored vortex/flash burst plays (rings spin, particles burst outward, a white flash pulse, the stream badge pops in) — the level map is NOT visible yet.' },
+      { a: 'Watch the animation finish.', fix: '5', e: 'The vortex dissolves away and the level map for that stream is revealed underneath, already loaded.' },
+      { a: 'Confirm the vortex color matches the stream (e.g. blue for Science, purple for Technology, orange for Engineering, yellow for Mathematics).', fix: '5', e: 'Colors match STREAM_ASSETS per stream.' },
+      { a: 'Enable "Reduce motion" in your OS/Chrome accessibility settings, reload, and pick a stream again.', fix: '5', e: 'No vortex plays — it switches to the level map instantly (no flash/burst).' },
+      { a: 'Click "← All Worlds" from the level map.', e: 'Returns cleanly to the stream picker (no leftover overlay).' },
+    ],
+  },
+  {
+    id: 'levelmap', title: '3 · Level Map', note: 'Winding path map — Fix #2', badge: '2',
+    steps: [
+      { a: 'Look at the level map layout.', fix: '2', e: 'Levels are laid out on a winding SVG bezier path (alternating left/right), Candy-Crush style — not a flat vertical list.' },
+      { a: 'Check locked levels.', e: 'Locked levels show a lock icon/state and are not clickable.' },
+      { a: 'Check the currently-available level.', e: 'Highlighted/glowing on the path, clickable.' },
+      { a: 'Check a completed level (if you have one).', e: 'Shows a star/complete icon and remains clickable to replay.' },
+      { a: 'Click an available level.', e: 'Advances to the "Ready for Launch?" panel with a 3-2-1 countdown, then starts the mission.' },
+    ],
+  },
+  {
+    id: 'gameplay', title: '4 · Gameplay Session', note: '/student/game — general play + Fix #3 (Play Again)',
+    steps: [
+      { a: 'Play through a full mission (3 rounds) with a mix of correct/incorrect/partial answers.', e: 'HUD shows question progress, score, hearts, and a countdown timer throughout.' },
+      { a: 'Let the timer run out on one round without answering.', e: 'Handles the timeout gracefully (submits as incorrect/timed-out), no crash.' },
+      { a: 'Finish the mission.', e: 'Reaches the Session Complete panel with final score, session code, time, and round breakdown.' },
+      { a: 'Click "Play again".', fix: '3', e: 'A brand-new session starts immediately — hearts reset to full, first question loads. (Previously this silently did nothing after the first playthrough.)' },
+      { a: 'Play again a 2nd and 3rd time in a row from the same tab.', fix: '3', e: 'Keeps working every time, not just the first retry.' },
+      { a: 'Mid-mission, try to navigate away (browser back, or click a nav link).', e: 'A "Leave your mission?" guard dialog appears with Stay / Leave mission.' },
+    ],
+  },
+  {
+    id: 'hearts', title: '5 · Hearts / Lives', note: 'HUD hearts — Fix #4', badge: '4',
+    steps: [
+      { a: 'Start a fresh mission and check the hearts in the HUD.', fix: '4', e: 'Shows 3 filled ❤️ hearts.' },
+      { a: 'Answer a round completely wrong (0% correctness).', fix: '4', e: 'One heart flips to a broken/lost state (🖤) — driven by the actual round result, not a static display.' },
+      { a: 'Answer a round fully correct.', fix: '4', e: 'No heart is lost.' },
+      { a: 'Lose all 3 hearts across a session.', fix: '4', e: 'Hearts display correctly caps at 0 remaining, no crash or negative count.' },
+      { a: 'Click Play Again after losing hearts.', fix: '4', e: 'Hearts reset to 3 full for the new session.' },
+    ],
+  },
+  {
+    id: 'results', title: '6 · Round Result Feedback', note: 'Confetti / shake — Fix #6', badge: '6',
+    steps: [
+      { a: 'Answer a round fully correct.', fix: '6', e: 'A confetti/particle burst plays around the result badge, plus a bouncy "pop" on the badge itself.' },
+      { a: 'Answer a round fully wrong (0% correctness).', fix: '6', e: 'The whole result panel shakes briefly — no confetti.' },
+      { a: 'Answer a round partially correct.', e: 'Plain fade-in only — no confetti, no shake (this is intentional, not a bug).' },
+      { a: 'Enable Reduce Motion and repeat a correct/wrong answer.', fix: '6', e: 'Neither confetti nor shake plays — just the normal fade.' },
+      { a: 'Check the feedback text/explanation shown with each result.', e: 'Title/message/explanation/guidance render when the question provides them.' },
+    ],
+  },
+  {
+    id: 'profile', title: '7 · Student Profile', note: '/student/profile',
+    steps: [
+      { a: 'Open the profile page.', e: '"Hi {name}" header, Profile / Progress / Statistics cards render.' },
+      { a: 'Click "Edit profile", change a field, Save.', e: 'Updates persist and reflect immediately.' },
+      { a: 'Click Cancel mid-edit instead.', e: 'Discards changes, no partial save.' },
+      { a: 'Upload/replace the profile photo.', e: 'New photo shows without a full page reload.' },
+      { a: 'Check the Progress card.', e: 'Overall completion bar + per-stream cards with level pips and "Play Level N" / "View stream" actions that route correctly.' },
+      { a: 'Check the Statistics card.', e: 'Levels completed, streams completed, total attempts, best score all show sane numbers.' },
+    ],
+  },
+  {
+    id: 'achievements', title: '8 · Student Achievements', note: '/student/achievements',
+    steps: [
+      { a: 'Open the achievements page.', e: 'Badges grid (earned vs locked) and Certificates list render.' },
+      { a: 'Earn a badge/certificate by completing a stream, then revisit this page.', e: 'New badge/certificate appears.' },
+      { a: 'Click "Download PDF" on an earned certificate.', e: 'A PDF downloads/opens with correct student/stream info.' },
+      { a: 'Use the "Verify a certificate" tool with a real code.', e: 'Shows valid + issue details.' },
+      { a: 'Use it with a bogus code.', e: 'Shows a clear not-found/invalid state, no crash.' },
+    ],
+  },
+  {
+    id: 'leaderboard-public', title: '9 · Public Leaderboard', note: '/leaderboards',
+    steps: [
+      { a: 'Open the public leaderboard in a new tab.', e: 'Four quadrants (one per stream) render with a live-status badge (Live / Reconnecting… / Live updates off).' },
+      { a: 'Check the top scorers per stream.', e: 'Top 5 shown per stream, #1 has a crown, scores count up on load.' },
+      { a: 'With an empty stream (no scores yet, if applicable).', e: '"No scores logged yet" empty state instead of a blank/broken quadrant.' },
+      { a: 'Complete a mission in another tab and watch this tab.', e: 'Leaderboard updates live (or refetches) without a manual reload.' },
+      { a: 'Click "Back to your mission" / "Join the quest".', e: 'Routes correctly based on whether you have an active session.' },
+    ],
+  },
+  {
+    id: 'nav', title: '10 · Student Bottom Navigation', note: 'Mission 🎯 · Leaderboard 🏆 · Profile 👤 · Badges 🎖️',
+    steps: [
+      { a: 'Check the bottom nav is visible on Mission, Profile, and Achievements pages.', e: 'All 4 links present, current page highlighted.' },
+      { a: 'Check it is hidden during an active game session.', e: 'Not shown on /student/game.' },
+      { a: 'Check it is hidden on registration and all /admin/* routes.', e: 'Correctly absent on both.' },
+      { a: 'Click through all 4 nav links.', e: 'Each routes to the right page.' },
+    ],
+  },
+  {
+    id: 'admin-login', title: '11 · Admin Login', note: '/admin/login',
+    steps: [
+      { a: 'Visit /admin/login while signed out.', e: 'Email + password form renders.' },
+      { a: 'Submit wrong credentials.', e: 'Clear inline error, form stays usable.' },
+      { a: 'Submit correct admin credentials.', e: 'Redirects into the admin console (dashboard).' },
+      { a: 'Visit any /admin/* page directly while signed out.', e: 'Redirected to /admin/login automatically.' },
+      { a: 'If VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY were unset (optional, skip if not testing this), reload login.', e: 'Shows a "not configured" notice instead of a broken form.' },
+    ],
+  },
+  {
+    id: 'admin-shell', title: '12 · Admin Shell & Navigation', note: 'Sidebar / mobile nav / sign out',
+    steps: [
+      { a: 'Check the sidebar links: Dashboard, Question Builder, Review Queue, Students, Progress, Leaderboards, Badges & Certs, Settings.', e: 'All present, current page highlighted.' },
+      { a: 'Shrink the browser to mobile width.', e: 'Sidebar collapses behind a hamburger menu with a backdrop; opens/closes correctly.' },
+      { a: 'Check the admin identity block at the bottom of the sidebar.', e: 'Shows admin initial avatar, name, role.' },
+      { a: 'Click "Sign out".', e: 'Clears the session and redirects to /admin/login; visiting an admin page afterward redirects again.' },
+    ],
+  },
+  {
+    id: 'admin-dashboard', title: '13 · Admin Dashboard', note: '/admin (index)',
+    steps: [
+      { a: 'Open the dashboard.', e: '4 stat cards render: Question Bank total, Published, Drafts, Review Queue count — should reflect real numbers.' },
+      { a: 'Click "+ New Question".', e: 'Routes to the question editor in create mode.' },
+      { a: 'Click each Quick Action (Question Builder, Review Queue, Student Management, Public Leaderboards ↗).', e: 'All route correctly; Review Queue shows the live pending count badge; Public Leaderboards opens in a new tab.' },
+      { a: 'Check the "System Status" list.', e: 'Renders without error (note: currently static/hardcoded text, not live — flag if you want this made live).' },
+    ],
+  },
+  {
+    id: 'admin-questions', title: '14 · Question Builder, Review Queue & Editor', note: '/admin/questions, /new, /:id/edit, /questions/review, /:id/review',
+    steps: [
+      { a: 'Open the Question Builder list.', e: 'Existing questions list, "+ New question" button visible.' },
+      { a: 'Create a new question end-to-end (pick activity type, fill grade/difficulty/streams/hints/feedback).', e: 'Live Preview pane updates as you type; "Validate" catches incomplete fields; Save/Submit-for-review works.' },
+      { a: 'Edit a draft question.', e: 'Loads existing values, saves changes.' },
+      { a: 'Open a published or archived question.', e: 'Opens read-only — no save/edit controls offered.' },
+      { a: 'Open the Review Queue.', e: 'Table of pending questions with a "Review" link per row and a refetch control.' },
+      { a: 'Open a review detail and Approve, then Publish it.', e: 'Status-gated buttons update correctly at each stage (approve → publish → archive), with busy/disabled states while a request is in flight.' },
+      { a: 'Reject a question with a note.', e: 'Note is required/saved, question returns to draft or rejected state as designed.' },
+    ],
+  },
+  {
+    id: 'admin-students', title: '15 · Admin Students', note: '/admin/students — Fix #1 (live data)', badge: '1',
+    steps: [
+      { a: 'Open Admin → Students.', fix: '1', e: 'Table loads real registered students from the database (not the old hardcoded mock rows).' },
+      { a: 'Check columns: name, kiosk code, grade, registered date, missions played, status.', fix: '1', e: 'All populate with real values; mission count matches actual game sessions for that student.' },
+      { a: 'Use the search box by name and by kiosk code.', e: 'Filters correctly; "No students match" empty state on no results.' },
+      { a: 'Click "📋 Copy" next to a kiosk code.', e: 'Copies to clipboard, shows "✓ Copied!" briefly.' },
+      { a: 'Click "↺ Refresh".', e: 'Re-fetches without a full page reload.' },
+      { a: 'Register a brand-new student in another tab, then Refresh here.', e: 'New student appears in the list.' },
+    ],
+  },
+  {
+    id: 'admin-progress', title: '16 · Admin Progress', note: '/admin/progress — Fix #7 (live data)', badge: '7',
+    steps: [
+      { a: 'Open Admin → Progress.', fix: '7', e: 'Loading state briefly shows skeleton cards, then real data (not the old hardcoded 88%/76%/64%/92% mock numbers).' },
+      { a: 'Check the 4 stream stat cards.', fix: '7', e: 'Missions played, pass rate bar, avg score, active students — all reflect real game_sessions data.' },
+      { a: 'Check the Score Distribution chart.', fix: '7', e: 'Custom bar chart across 6 score buckets (0–50 … 251–300) reflects real completed-session scores; shows an empty state if no completed sessions exist yet.' },
+      { a: 'Check the Stream Performance table below it.', fix: '7', e: 'Per-stream missions/completed/pass-rate/avg-score/active-students match the cards above.' },
+      { a: 'Click "↺ Refresh".', fix: '7', e: 'Re-fetches live.' },
+      { a: 'Temporarily sign out and back in (or clear the admin session) — does the page ever error out instead of loading?', fix: '7', e: 'Shows a clear error banner with "Try again", not a blank/broken page.' },
+    ],
+  },
+  {
+    id: 'admin-leaderboards', title: '17 · Admin Leaderboards', note: '/admin/leaderboards — Fix #7 (live data)', badge: '7',
+    steps: [
+      { a: 'Open Admin → Leaderboards.', fix: '7', e: '"Realtime Channel Status" box still shows, plus 4 new stream summary cards (top score + ranked-student count) with real numbers.' },
+      { a: 'Check the "Top 10 — All Streams" table.', fix: '7', e: 'Real rows: rank, student display name, stream, score, achieved date — pulled from the same leaderboard_entries table the public board uses.' },
+      { a: 'Click "View Public Board ↗".', e: 'Opens /leaderboards in a new tab.' },
+      { a: 'Compare a top score here against the public leaderboard page for the same stream.', fix: '7', e: 'Numbers match.' },
+    ],
+  },
+  {
+    id: 'admin-achievements', title: '18 · Admin Achievements', note: '/admin/achievements — Fix #7 (live data + real verify)', badge: '7',
+    steps: [
+      { a: 'Open Admin → Badges & Certificates.', fix: '7', e: '"Recently Issued Certificates" and "Recently Awarded Badges" tables load with real rows (or a clear empty state if none exist yet).' },
+      { a: 'Use the Certificate Verification tool with a real certificate code from the table above.', fix: '7', e: 'Returns the real student name, stream, and issue date (previously this always faked a "valid" result for any code typed).' },
+      { a: 'Try a made-up code.', fix: '7', e: 'Shows a clear "not found" state.' },
+      { a: 'If you have a revoked certificate to test with.', fix: '7', e: 'Shows "✗ REVOKED" rather than valid.' },
+    ],
+  },
+  {
+    id: 'admin-settings', title: '19 · Admin Settings', note: '/admin/settings — display-only',
+    steps: [
+      { a: 'Open Admin → Settings.', e: 'Environment Config and Kiosk Parameters panels render without error.' },
+      { a: 'Check the values shown make sense for this deployment.', e: 'Note: this page is currently static/hardcoded display text, not live-editable — flag if you want real settings management here.' },
+    ],
+  },
+  {
+    id: 'cleanup', title: '20 · Cleanup Sanity Check', note: 'Fix #8 — orphaned App.jsx removed', badge: '8',
+    steps: [
+      { a: 'Confirm the app still boots fine end-to-end after src/App.jsx and src/App.css were deleted.', fix: '8', e: 'No blank screen, no console error referencing "App.jsx" or "App.css" anywhere in the app.' },
+      { a: 'Run a production build.', fix: '8', e: '`npm run build` no longer fails on the App.jsx/App.css removal (any remaining build error should be about unrelated missing image assets only — flag separately if you hit one).' },
+    ],
+  },
+  {
+    id: 'known-gaps', title: '21 · Known Incomplete Areas', note: 'Not fixed this round — just confirm they fail gracefully',
+    steps: [
+      { a: 'Visit /certificate directly.', e: 'This route has no real implementation yet — a generic placeholder page should show (title/description/"← Back to home"), not a crash.' },
+      { a: 'Visit a nonexistent route, e.g. /this-does-not-exist.', e: 'Falls back to the same graceful placeholder, not a white screen.' },
+    ],
+  },
+];
+
+/* ────────────────────────────────────────────────────────────────────
+   Render + state (localStorage-backed)
+──────────────────────────────────────────────────────────────────── */
+const STORAGE_KEY = 'stemquest-qa-checklist-v1';
+let state = {};
+try { state = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { state = {}; }
+
+function save() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+
+const sectionsEl = document.getElementById('sections');
+const tocEl = document.getElementById('toc');
+let totalSteps = 0;
+
+SECTIONS.forEach((section) => {
+  const sectionEl = document.createElement('section');
+  sectionEl.className = 'block';
+  sectionEl.id = section.id;
+
+  const header = document.createElement('header');
+  header.innerHTML = `<h2>${section.title}</h2>` +
+    (section.badge ? `<span class="badge" style="background:${FIX_COLORS[section.badge]}">FIX #${section.badge}</span>` : '') +
+    (section.note ? `<span class="section-note">${section.note}</span>` : '');
+  sectionEl.appendChild(header);
+
+  const stepsWrap = document.createElement('div');
+  stepsWrap.className = 'steps';
+
+  section.steps.forEach((step, i) => {
+    totalSteps++;
+    const stepId = `${section.id}__${i}`;
+    if (!state[stepId]) state[stepId] = { checked: false, note: '' };
+
+    const stepEl = document.createElement('div');
+    stepEl.className = 'step';
+    stepEl.dataset.id = stepId;
+
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = !!state[stepId].checked;
+    cb.addEventListener('change', () => {
+      state[stepId].checked = cb.checked;
+      save();
+      refreshStepClass(stepEl, stepId);
+      updateProgress();
+    });
+
+    const actionEl = document.createElement('div');
+    actionEl.className = 'action';
+    actionEl.innerHTML = step.a + (step.fix ? `<span class="fixbadge" style="background:${FIX_COLORS[step.fix]}">#${step.fix}</span>` : '');
+
+    const expectEl = document.createElement('div');
+    expectEl.className = 'expect';
+    expectEl.innerHTML = '<b>Expected:</b> ' + step.e;
+
+    const noteEl = document.createElement('textarea');
+    noteEl.placeholder = 'Notes / issues found here (optional)…';
+    noteEl.value = state[stepId].note || '';
+    noteEl.addEventListener('input', () => {
+      state[stepId].note = noteEl.value;
+      save();
+      refreshStepClass(stepEl, stepId);
+      updateProgress();
+    });
+
+    stepEl.appendChild(cb);
+    stepEl.appendChild(actionEl);
+    stepEl.appendChild(expectEl);
+    stepEl.appendChild(noteEl);
+    refreshStepClass(stepEl, stepId);
+    stepsWrap.appendChild(stepEl);
+  });
+
+  sectionEl.appendChild(stepsWrap);
+  sectionsEl.appendChild(sectionEl);
+
+  const tocLink = document.createElement('a');
+  tocLink.href = `#${section.id}`;
+  tocLink.dataset.section = section.id;
+  tocLink.innerHTML = `<span>${section.title.replace(/^\d+\s*·\s*/, '')}</span><span class="count">0/${section.steps.length}</span>`;
+  tocEl.appendChild(tocLink);
+});
+
+function refreshStepClass(stepEl, stepId) {
+  const s = state[stepId];
+  stepEl.classList.toggle('checked', !!s.checked && !s.note);
+  stepEl.classList.toggle('has-note', !!s.note);
+}
+
+function updateProgress() {
+  let done = 0;
+  SECTIONS.forEach((section) => {
+    let sectionDone = 0;
+    section.steps.forEach((_, i) => {
+      if (state[`${section.id}__${i}`]?.checked) sectionDone++;
+    });
+    const link = tocEl.querySelector(`a[data-section="${section.id}"] .count`);
+    if (link) link.textContent = `${sectionDone}/${section.steps.length}`;
+    tocEl.querySelector(`a[data-section="${section.id}"]`)?.classList.toggle('done', sectionDone === section.steps.length);
+    done += sectionDone;
+  });
+  document.getElementById('progressFill').style.width = totalSteps ? `${(done / totalSteps) * 100}%` : '0%';
+  document.getElementById('progressLabel').textContent = `${done} / ${totalSteps}`;
+}
+updateProgress();
+
+/* ────────────────────────────────────────────────────────────────────
+   Copy report — Markdown summary of unchecked steps + all notes
+──────────────────────────────────────────────────────────────────── */
+document.getElementById('copyBtn').addEventListener('click', () => {
+  const lines = ['# STEM QUEST QA report', ''];
+  let anyContent = false;
+
+  SECTIONS.forEach((section) => {
+    const items = [];
+    section.steps.forEach((step, i) => {
+      const s = state[`${section.id}__${i}`];
+      if (!s) return;
+      if (!s.checked || s.note) {
+        items.push(`- [${s.checked ? 'x' : ' '}] ${step.a}${s.note ? `\n      note: ${s.note}` : ''}`);
+      }
+    });
+    if (items.length) {
+      anyContent = true;
+      lines.push(`## ${section.title}`, ...items, '');
+    }
+  });
+
+  if (!anyContent) lines.push('_Everything checked, no notes left. 🎉_');
+
+  const text = lines.join('\n');
+  const toast = document.getElementById('copyToast');
+  const showToast = () => { toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 1800); };
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(showToast).catch(() => fallbackCopy(text, showToast));
+  } else {
+    fallbackCopy(text, showToast);
+  }
+});
+
+function fallbackCopy(text, done) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch {}
+  document.body.removeChild(ta);
+  done();
+}
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  if (!confirm('Clear all checked boxes and notes? This cannot be undone.')) return;
+  state = {};
+  save();
+  location.reload();
+});
+</script>
+</body>
+</html>

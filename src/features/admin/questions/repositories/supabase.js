@@ -17,17 +17,19 @@ export class SupabaseQuestionRepository {
     this.client = client
   }
 
-  async list({ streamId = null, levelId = null, activityTypeId = null, status = null, query = null, limit = 200 } = {}) {
-    let q = this.client.from('questions').select(QUESTION_SELECT)
+  // FIX: P1-003 — was hardcoded limit=200 with no offset/total, so only the
+  // first 200 of 1001 questions were ever reachable.
+  async list({ streamId = null, levelId = null, activityTypeId = null, status = null, query = null, limit = 50, offset = 0 } = {}) {
+    let q = this.client.from('questions').select(QUESTION_SELECT, { count: 'exact' })
     if (streamId != null) q = q.eq('stream_id', streamId)
     if (levelId != null) q = q.eq('level_id', levelId)
     if (activityTypeId != null) q = q.eq('activity_type_id', activityTypeId)
     if (status != null) q = q.eq('status', status)
     if (query) q = q.ilike('prompt', `%${query}%`)
-    q = q.order('updated_at', { ascending: false }).limit(limit)
-    const { data, error } = await q
+    q = q.order('updated_at', { ascending: false }).range(offset, offset + limit - 1)
+    const { data, error, count } = await q
     if (error) throw new Error(`questions list failed: ${error.message}`)
-    return data ?? []
+    return { data: data ?? [], total: count ?? 0 }
   }
 
   async findById(id) {

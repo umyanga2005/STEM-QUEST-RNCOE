@@ -40,48 +40,9 @@ function matchingQuestion(id, { prompt, instructions, payload, correctAnswer, hi
   }
 }
 
-/** 3 published matching questions (id 11..13) for Science · Level 1. */
+/** No demo questions seeded — questions are authored in Supabase DB / Admin Question Builder. */
 export function demoMatchingQuestions() {
-  return [
-    matchingQuestion(11, {
-      prompt: 'Match the science words to their meanings.',
-      instructions: 'Select a card on the left, then tap the target on the right that fits it. You can change or clear a match before submitting.',
-      payload: minimalPayload,
-      correctAnswer: {
-        pairs: [
-          { leftId: 'l1', rightId: 'r1' },
-          { leftId: 'l2', rightId: 'r2' },
-        ],
-      },
-      hints: [
-        { level: 1, text: 'Each formula on the left names one common substance.' },
-        { level: 2, text: 'H2O is the everyday name for water.' },
-      ],
-      basePoints: 100,
-    }),
-    matchingQuestion(12, {
-      prompt: 'Match each organ to what it does for the body.',
-      instructions: 'Select a card on the left, then tap the target on the right that fits it. Everything must be matched before you can submit.',
-      payload: grade6to7Payload,
-      correctAnswer: grade6to7Answer,
-      hints: [
-        { level: 1, text: 'Every organ has one main job in the body.' },
-        { level: 2, text: 'Focus on what the organ does, not where it sits.' },
-      ],
-      basePoints: 100,
-    }),
-    matchingQuestion(13, {
-      prompt: 'Match each equation to the law it represents.',
-      instructions: 'Select a card on the left, then tap the target on the right that fits it. One option is a decoy that matches none of these equations.',
-      payload: grade9to11Payload,
-      correctAnswer: grade9to11Answer,
-      hints: [
-        { level: 1, text: 'Each formula is a rule used in physics.' },
-        { level: 2, text: 'Think about what each symbol stands for first.' },
-      ],
-      basePoints: 100,
-    }),
-  ]
+  return []
 }
 
 export default { demoMatchingQuestions }

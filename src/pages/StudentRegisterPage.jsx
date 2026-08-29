@@ -105,16 +105,22 @@ export default function StudentRegisterPage() {
   const [returning, setReturning] = useState(() => tokenStorage.read())
   const me = useStudentMe(returning)
 
-  const handleKioskCodeLogin = (e) => {
+  const handleKioskCodeLogin = async (e) => {
     e.preventDefault()
     if (!kioskCodeInput.trim()) {
       setServerMessage('Please enter a valid Kiosk Code.')
       return
     }
-    // Store synthetic session token for kiosk code entry
-    const mockToken = 'kiosk-session-' + kioskCodeInput.trim().toUpperCase()
-    tokenStorage.write(mockToken)
-    navigate('/student/mission')
+    setServerMessage(null)
+    setPhase('submitting')
+    try {
+      const res = await studentApiClient.kioskLogin(kioskCodeInput.trim().toUpperCase())
+      tokenStorage.write(res.token)
+      navigate('/student/mission')
+    } catch (err) {
+      setServerMessage(err?.message || 'Invalid or expired Kiosk Code.')
+      setPhase('form')
+    }
   }
 
   const controller = useMemo(
@@ -212,7 +218,7 @@ export default function StudentRegisterPage() {
         <SuccessPanel
           reduceMotion={reduceMotion}
           session={session}
-          avatarUrl={avatarUrl}
+          avatarUrl={avatarUrl || (photo ? URL.createObjectURL(photo) : null)}
           avatarWarning={avatarWarning}
           onStart={startMission}
           onViewProfile={() => navigate('/student/profile')}
@@ -253,19 +259,19 @@ export default function StudentRegisterPage() {
             <form className="sr-form" onSubmit={handleKioskCodeLogin}>
               <div className="sr-field">
                 <label className="sr-field__label" htmlFor="sr-kiosk-code-input">
-                  Enter your Kiosk Code (e.g. SQ-8A2F)
+                  Enter your Kiosk Code (e.g. SQ-7K9P2X)
                 </label>
                 <input
                   id="sr-kiosk-code-input"
                   type="text"
-                  placeholder="SQ-8A2F"
+                  placeholder="SQ-7K9P2X"
                   className="sr-field__control"
                   style={{ textTransform: 'uppercase', letterSpacing: '0.1em', textAlign: 'center', fontSize: '1.2rem', fontWeight: 'bold' }}
                   value={kioskCodeInput}
                   onChange={(e) => setKioskCodeInput(e.target.value.toUpperCase())}
                   required
                 />
-                <p className="sr-field__hint">Your code is given at registration or available from the admin teacher.</p>
+                <p className="sr-field__hint">Enter the code provided during registration (with or without "SQ-").</p>
               </div>
 
               {serverMessage ? <p className="sr-error">{serverMessage}</p> : null}
@@ -380,7 +386,13 @@ function SuccessPanel({ reduceMotion, session, avatarUrl, avatarWarning, onStart
         {avatarUrl ? (
           <div className="sr-success-photo-wrap">
             <div className="sr-success-photo">
-              <img src={avatarUrl} alt="Student Profile" />
+              <img
+                src={avatarUrl}
+                alt="Student Profile Photo"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none'
+                }}
+              />
             </div>
           </div>
         ) : null}

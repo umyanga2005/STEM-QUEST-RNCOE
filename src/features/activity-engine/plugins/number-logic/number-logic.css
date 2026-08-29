@@ -1,16 +1,13 @@
-/*
- * Activity Engine — number-logic styles (Task 4.13).
- * Mobile-first: single column, 44px+ targets, readable numbers, no fixed
- * desktop layout, reduced-motion aware.
- */
+/* ──────────────────────────────────────────────────────────
+   Number / Logic Activity — WOW Gaming UI (Gold/Maths)
+   ────────────────────────────────────────────────────────── */
 
 .nl-activity {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
   width: 100%;
-  max-width: 46rem;
-  margin: 0 auto;
+  position: relative;
 }
 
 .nl-sr-live {
@@ -25,211 +22,305 @@
   border: 0;
 }
 
+/* ── Prompt ─────────────────────────────────────────────── */
 .nl-prompt {
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
   margin: 0;
-  font-size: 1.3rem;
-  line-height: 1.3;
-  color: #0b3a53;
+  line-height: 1.35;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
 }
 
 .nl-instructions {
-  margin: 0;
-  font-size: 1rem;
-  color: #3c5665;
+  margin: -0.25rem 0 0;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.92rem;
 }
 
 .nl-progress {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #1d6f8f;
-  letter-spacing: 0.02em;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
+/* ── Problem statement (the actual challenge text/parts render into) ── */
 .nl-challenge {
-  background: linear-gradient(135deg, #eaf6fb 0%, #d9eef8 100%);
-  border: 1px solid #bcdcec;
-  border-radius: 0.75rem;
-  padding: 1rem 1.1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(20, 15, 0, 0.9), rgba(12, 10, 2, 0.9));
+  border: 1.5px solid rgba(251, 191, 36, 0.2);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .nl-problem {
   margin: 0;
-  font-size: 1.15rem;
-  font-weight: 600;
-  line-height: 1.45;
-  color: #08324a;
-  white-space: pre-wrap;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #fde68a;
 }
 
-/* ---- answer surfaces ---- */
+/* ── Equation / formula display (unused by the current JSX — kept renamed
+   for consistency, but nothing in NumberLogicActivity.jsx applies these) ── */
+.nl-equation {
+  padding: 1.5rem 1.75rem;
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(20, 15, 0, 0.95), rgba(12, 10, 2, 0.95));
+  border: 1.5px solid rgba(251, 191, 36, 0.25);
+  box-shadow: 0 0 30px rgba(251, 191, 36, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  font-size: clamp(1.15rem, 2.8vw, 1.6rem);
+  font-weight: 700;
+  color: #fde68a;
+  font-family: 'Georgia', serif;
+  line-height: 1.6;
+  text-align: center;
+}
 
-.nl-field {
+.nl-equation .unknown {
+  display: inline-block;
+  min-width: 56px;
+  padding: 0.1rem 0.6rem;
+  border-radius: 8px;
+  border-bottom: 2.5px solid #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+  font-weight: 900;
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
+  animation: unknownPulse 2s ease-in-out infinite;
+}
+
+@keyframes unknownPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+  }
+
+  50% {
+    box-shadow: 0 0 18px rgba(251, 191, 36, 0.5);
+  }
+}
+
+/* Image if provided (unused — no .nl-image in the current JSX) */
+.nl-image {
+  display: block;
+  max-width: 100%;
+  max-height: 220px;
+  object-fit: contain;
+  border-radius: 16px;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+}
+
+/* ── Answer section wrapper (unused — the JSX renders fields directly
+   via .nl-field / .nl-single-row / .nl-sequence, added further below) ── */
+.nl-answers {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  min-width: 0;
-  flex: 1;
+  gap: 0.85rem;
 }
 
-.nl-field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #3c5665;
-}
-
-.nl-field-control {
+.nl-answer-row {
   display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
+.nl-answer-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Numeric/text input (calculator display style) */
 .nl-input {
   width: 100%;
-  min-height: 48px;
-  padding: 0.55rem 0.7rem;
-  font-size: 1.15rem;
-  font-variant-numeric: tabular-nums;
-  color: #0b3a53;
-  background: #ffffff;
-  border: 2px solid #bcdcec;
-  border-radius: 0.6rem;
-  transition: border-color 150ms ease, box-shadow 150ms ease;
+  min-height: 58px;
+  padding: 0.75rem 1.1rem;
+  border-radius: 14px;
+  border: 1.5px solid rgba(251, 191, 36, 0.35);
+  background: rgba(18, 12, 0, 0.9);
+  color: #fde68a;
+  font: inherit;
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-family: 'Courier New', monospace;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 2px rgba(0, 0, 0, 0.3);
+  text-align: center;
 }
 
-.nl-input:focus-visible {
-  outline: none;
-  border-color: #1d6f8f;
-  box-shadow: 0 0 0 3px rgba(29, 111, 143, 0.25);
+.nl-input::placeholder {
+  color: rgba(251, 191, 36, 0.25);
+}
+
+.nl-input:focus {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.06);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.18), 0 0 20px rgba(251, 191, 36, 0.2);
+  color: #fef3c7;
 }
 
 .nl-input:disabled {
-  background: #f0f4f6;
-  color: #7c8c94;
   cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ── Answer field(s) — wraps one .nl-input (numeric/text/fraction) ── */
+.nl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.nl-field-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.nl-field-control {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nl-field-control .nl-input {
+  flex: 1;
 }
 
 .nl-field-suffix {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: #0b3a53;
-  min-width: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: rgba(251, 191, 36, 0.6);
 }
 
 .nl-single-row {
   display: flex;
   align-items: flex-end;
-  gap: 0.75rem;
+  gap: 0.5rem;
+}
+
+.nl-single-row .nl-field {
+  flex: 1;
 }
 
 .nl-fraction-slash {
-  font-size: 1.8rem;
-  font-weight: 700;
-  color: #0b3a53;
-  padding-bottom: 0.3rem;
+  padding-bottom: 0.75rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: rgba(251, 191, 36, 0.6);
 }
 
-/* ---- sequence ---- */
-
+/* ── Sequence surface (dynamic value list) ───────────────── */
 .nl-sequence {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
 .nl-sequence-note {
   margin: 0;
-  font-size: 0.85rem;
-  color: #3c5665;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-style: italic;
 }
 
 .nl-sequence-row {
   display: flex;
   align-items: flex-end;
-  gap: 0.75rem;
+  gap: 0.6rem;
 }
 
-.nl-add-button,
-.nl-remove-button {
+.nl-sequence-row .nl-field {
+  flex: 1;
+}
+
+.nl-remove-button,
+.nl-add-button {
   min-height: 44px;
-  padding: 0.5rem 0.9rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  border-radius: 0.55rem;
-  border: 2px solid #bcdcec;
-  background: #ffffff;
-  color: #1d6f8f;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
   cursor: pointer;
-  transition: background 150ms ease, transform 120ms ease;
+  transition: all 0.2s ease;
 }
 
-.nl-add-button:hover:not(:disabled),
 .nl-remove-button:hover:not(:disabled) {
-  background: #eaf6fb;
+  border-color: #f87171;
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.1);
 }
 
-.nl-add-button:active:not(:disabled),
-.nl-remove-button:active:not(:disabled) {
-  transform: translateY(1px);
+.nl-add-button:hover:not(:disabled) {
+  border-color: #fbbf24;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
 }
 
-.nl-add-button:focus-visible,
-.nl-remove-button:focus-visible {
-  outline: none;
-  border-color: #1d6f8f;
-  box-shadow: 0 0 0 3px rgba(29, 111, 143, 0.25);
-}
-
-.nl-add-button:disabled,
-.nl-remove-button:disabled {
-  opacity: 0.5;
+.nl-remove-button:disabled,
+.nl-add-button:disabled {
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ---- multi-part ---- */
-
+/* ── Multi-step parts ─────────────────────────────────────── */
 .nl-parts {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  counter-reset: nlstep;
+  gap: 1.1rem;
 }
 
 .nl-part {
-  background: #f4f9fc;
-  border: 1px solid #d6e7f0;
-  border-radius: 0.75rem;
-  padding: 0.9rem 1rem;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  background: rgba(18, 12, 0, 0.5);
+  border: 1px solid rgba(251, 191, 36, 0.15);
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
+  gap: 0.6rem;
 }
 
 .nl-part-heading {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.6rem;
-  flex-wrap: wrap;
 }
 
 .nl-part-step {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.7rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #1d6f8f;
+  letter-spacing: 0.08em;
+  color: #1a0f00;
+  background: #fbbf24;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
 }
 
 .nl-part-label {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #0b3a53;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fde68a;
 }
 
-/* ---- show-your-work scratchpad ---- */
-
+/* ── Scratch work ─────────────────────────────────────────── */
 .nl-work {
   display: flex;
   flex-direction: column;
@@ -237,102 +328,230 @@
 }
 
 .nl-work-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #3c5665;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .nl-work-area {
   width: 100%;
-  min-height: 72px;
-  padding: 0.6rem 0.7rem;
-  font-family: inherit;
-  font-size: 1rem;
-  color: #0b3a53;
-  background: #ffffff;
-  border: 2px solid #d6e7f0;
-  border-radius: 0.6rem;
+  padding: 0.75rem 1rem;
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 8, 0, 0.6);
+  color: rgba(255, 255, 255, 0.75);
+  font: inherit;
+  font-size: 0.92rem;
   resize: vertical;
+  outline: none;
 }
 
-.nl-work-area:focus-visible {
-  outline: none;
-  border-color: #1d6f8f;
-  box-shadow: 0 0 0 3px rgba(29, 111, 143, 0.25);
+.nl-work-area:focus {
+  border-color: rgba(251, 191, 36, 0.5);
 }
 
 .nl-work-note {
-  font-size: 0.8rem;
-  color: #7c8c94;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-style: italic;
 }
 
-/* ---- controls ---- */
+/* Unit chip selector (unused — no unit-chip UI in the current JSX) */
+.nl-units {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
 
+.nl-unit-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(251, 191, 36, 0.3);
+  background: rgba(18, 12, 0, 0.8);
+  color: #fde68a;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.nl-unit-chip:hover:not(:disabled) {
+  border-color: #fbbf24;
+  background: rgba(251, 191, 36, 0.12);
+  box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
+}
+
+.nl-unit-chip.is-selected {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15));
+  color: #fff;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.35);
+}
+
+.nl-unit-chip:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* MCQ option chips (unused — number-logic is constructed-entry only, no MCQ) */
+.nl-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.nl-option {
+  min-height: 52px;
+  padding: 0.7rem 1rem;
+  border-radius: 16px;
+  border: 1.5px solid rgba(251, 191, 36, 0.25);
+  background: linear-gradient(135deg, rgba(18, 12, 0, 0.9), rgba(10, 8, 0, 0.9));
+  color: #fde68a;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: center;
+  transition: transform 150ms cubic-bezier(.34, 1.56, .64, 1), box-shadow 150ms ease, border-color 150ms ease;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.nl-option:hover:not(:disabled) {
+  border-color: rgba(251, 191, 36, 0.7);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), 0 0 14px rgba(251, 191, 36, 0.25);
+  transform: translateY(-2px) scale(1.02);
+}
+
+.nl-option.is-selected {
+  border-color: #fbbf24;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.22), rgba(245, 158, 11, 0.15));
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+  color: #fff;
+  transform: scale(1.03);
+}
+
+.nl-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Boolean True/False buttons (unused — not part of the current JSX) */
+.nl-boolean {
+  display: flex;
+  gap: 1rem;
+}
+
+.nl-bool-btn {
+  flex: 1;
+  min-height: 58px;
+  border-radius: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(15, 12, 0, 0.85);
+  color: rgba(255, 255, 255, 0.7);
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.05em;
+}
+
+.nl-bool-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+}
+
+.nl-bool-btn.true-btn.is-selected {
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.35);
+}
+
+.nl-bool-btn.false-btn.is-selected {
+  border-color: #f87171;
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.35);
+}
+
+.nl-bool-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Controls */
 .nl-controls {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.6rem;
+  gap: 0.65rem;
   align-items: center;
 }
 
 .nl-hint-button,
-.nl-reset-button,
-.nl-submit-button {
-  min-height: 48px;
-  padding: 0.55rem 1.2rem;
-  font-size: 1rem;
-  font-weight: 700;
-  border-radius: 0.6rem;
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: background 150ms ease, transform 120ms ease, box-shadow 150ms ease;
-}
-
-.nl-hint-button,
 .nl-reset-button {
-  background: #ffffff;
-  border-color: #bcdcec;
-  color: #1d6f8f;
+  min-height: 44px;
+  padding: 0.55rem 1.1rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.nl-hint-button:hover:not(:disabled),
+.nl-hint-button:hover:not(:disabled) {
+  border-color: #60a5fa;
+  color: #60a5fa;
+  background: rgba(79, 139, 255, 0.1);
+}
+
 .nl-reset-button:hover:not(:disabled) {
-  background: #eaf6fb;
+  border-color: rgba(255, 255, 255, 0.4);
+  color: #fff;
 }
 
 .nl-submit-button {
-  background: #1d6f8f;
-  color: #ffffff;
-  box-shadow: 0 2px 6px rgba(13, 74, 99, 0.3);
+  margin-left: auto;
+  min-height: 52px;
+  padding: 0.7rem 2rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #d97706, #fbbf24);
+  color: #1a0f00;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s cubic-bezier(.34, 1.56, .64, 1), box-shadow 0.2s ease;
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+  position: relative;
+  overflow: hidden;
 }
 
 .nl-submit-button:hover:not(:disabled) {
-  background: #175e79;
-}
-
-.nl-submit-button:active:not(:disabled),
-.nl-hint-button:active:not(:disabled),
-.nl-reset-button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.nl-submit-button:focus-visible,
-.nl-hint-button:focus-visible,
-.nl-reset-button:focus-visible {
-  outline: none;
-  border-color: #1d6f8f;
-  box-shadow: 0 0 0 3px rgba(29, 111, 143, 0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(251, 191, 36, 0.55);
 }
 
 .nl-submit-button:disabled,
 .nl-hint-button:disabled,
 .nl-reset-button:disabled {
-  opacity: 0.55;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* ---- hints ---- */
-
+/* Hints */
 .nl-hints {
   list-style: none;
   margin: 0;
@@ -343,50 +562,56 @@
 }
 
 .nl-hint {
-  background: #fff8e6;
-  border: 1px solid #f0dfb4;
-  border-radius: 0.6rem;
-  padding: 0.6rem 0.85rem;
-  font-size: 0.95rem;
-  color: #5c4a17;
-  line-height: 1.4;
+  display: flex;
+  gap: 0.7rem;
+  align-items: baseline;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  background: rgba(251, 191, 36, 0.07);
+  border: 1px solid rgba(251, 191, 36, 0.22);
+  font-size: 0.92rem;
+  color: #fde68a;
 }
 
 .nl-hint-level {
-  display: block;
-  font-size: 0.75rem;
-  font-weight: 700;
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #a07c1b;
-  margin-bottom: 0.15rem;
+  letter-spacing: 0.08em;
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
 }
 
-/* ---- submitted note ---- */
-
 .nl-submitted {
-  background: #eaf6fb;
-  border: 1px solid #bcdcec;
-  border-radius: 0.6rem;
-  padding: 0.7rem 0.9rem;
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(45, 212, 191, 0.08);
+  border: 1px solid rgba(45, 212, 191, 0.3);
   font-size: 0.9rem;
-  color: #1d6f8f;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.nl-submit-button:focus-visible,
+.nl-hint-button:focus-visible,
+.nl-reset-button:focus-visible,
+.nl-input:focus-visible,
+.nl-option:focus-visible {
+  outline: 2px solid #fbbf24;
+  outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .nl-input,
-  .nl-add-button,
-  .nl-remove-button,
-  .nl-hint-button,
-  .nl-reset-button,
-  .nl-submit-button {
+  .nl-option,
+  .nl-unit-chip,
+  .nl-bool-btn {
     transition: none;
-  }
-  .nl-add-button:active:not(:disabled),
-  .nl-remove-button:active:not(:disabled),
-  .nl-hint-button:active:not(:disabled),
-  .nl-reset-button:active:not(:disabled),
-  .nl-submit-button:active:not(:disabled) {
-    transform: none;
+    animation: none;
   }
 }

@@ -42,6 +42,12 @@ import { LeaderboardService } from '../../leaderboard/service/leaderboard-servic
 import { createAchievementsApi } from '../../achievements/api/server.js'
 import { createAchievementsMemoryRepositories } from '../../achievements/repositories/memory.js'
 import { AchievementsService } from '../../achievements/service/achievements-service.js'
+import { createAdminApi } from '../../admin/api/server.js'
+import { createAdminMemoryRepositories, seedAdminStore } from '../../admin/repositories/memory.js'
+import { AdminService } from '../../admin/service/admin-service.js'
+import { createQuestionMemoryRepositories, seedQuestionStore } from '../../admin/questions/repositories/memory.js'
+import { QuestionService } from '../../admin/questions/service/question-service.js'
+import { createQuestionValidator } from '../../admin/questions/validation/question-validator.js'
 
 export function createDemoApi() {
   const store = createMemoryStore()
@@ -124,12 +130,62 @@ export function createDemoApi() {
   })
   const studentApp = createStudentApi({ service: studentService, progressionService: profileProgressionService })
 
+  const adminRepos = createAdminMemoryRepositories()
+  seedAdminStore(adminRepos.store, [
+    { id: 'u1', display_name: 'Console Admin', role: 'superadmin', is_active: true }
+  ])
+  let supabaseClientForAdmin = null
+  if (!supabaseClientForAdmin) {
+    supabaseClientForAdmin = {
+      auth: {
+        getUser: async (token) => {
+          if (token) return { data: { user: { id: 'u1', email: 'admin@stem-quest.dev' } }, error: null }
+          return { data: { user: null }, error: new Error('invalid token') }
+        }
+      }
+    }
+  }
+  const adminService = new AdminService({
+    adminRepository: adminRepos.adminRepository,
+    supabaseClient: supabaseClientForAdmin
+  })
+  const questionRepos = createQuestionMemoryRepositories()
+  seedQuestionStore(questionRepos.store, {
+    streams: baseData.streams,
+    levels: baseData.levels,
+    activityTypes: baseData.activityTypes,
+    questions: store.questions.map((q) => ({
+      ...q,
+      stream_id: q.stream_id ?? q.streamId ?? 1,
+      level_id: q.level_id ?? q.levelId ?? 1,
+      activity_type_id: q.activity_type_id ?? q.activityTypeId ?? 1,
+      grade_min: q.grade_min ?? q.gradeMin ?? 6,
+      grade_max: q.grade_max ?? q.gradeMax ?? 8,
+      base_points: q.base_points ?? q.basePoints ?? 100,
+      correct_answer: q.correct_answer ?? q.correctAnswer ?? {},
+      status: q.status ?? 'published',
+      version: q.version ?? 1,
+      created_at: q.created_at ?? new Date().toISOString(),
+      updated_at: q.updated_at ?? new Date().toISOString(),
+    })),
+  })
+  const questionService = new QuestionService({
+    questionRepository: questionRepos.questionRepository,
+    catalogueRepository: questionRepos.catalogueRepository,
+    validator: createQuestionValidator(),
+    adminActionRepository: questionRepos.adminActionRepository,
+    mediaRepository: questionRepos.mediaRepository,
+  })
+  const adminApp = createAdminApi({ adminService, questionService })
+
   return {
-    app: createStackedApp({ gameApp, studentApp, studentGameApp, missionApp, leaderboardApp, achievementsApp }),
+    app: createStackedApp({ gameApp, studentApp, studentGameApp, missionApp, leaderboardApp, achievementsApp, adminApp }),
     service,
     store,
     studentService,
     missionService,
+    adminService,
+    questionService,
   }
 }
 
@@ -142,6 +198,12 @@ export function createDemoApi() {
  */
 export function createStackedApp({ gameApp, studentApp, studentGameApp = null, missionApp = null, leaderboardApp = null, achievementsApp = null, adminApp = null }) {
   const app = new Hono()
+  app.get('/', (c) =>
+    c.json({ status: 'ok', service: 'STEM QUEST API Server', message: 'STEM QUEST backend API service is operational.' })
+  )
+  app.get('/api', (c) =>
+    c.json({ status: 'ok', service: 'STEM QUEST API Server', message: 'STEM QUEST backend API service is operational.' })
+  )
   if (adminApp) app.use('/api/admin/*', (c) => adminApp.fetch(c.req.raw, c.env))
   if (achievementsApp) {
     app.use('/api/student/achievements/*', (c) => achievementsApp.fetch(c.req.raw, c.env))
@@ -159,7 +221,7 @@ export function createStackedApp({ gameApp, studentApp, studentGameApp = null, m
   return app
 }
 
-function handle(app, req, res) {
+export function handle(app, req, res) {
   const url = new URL(req.url, 'http://localhost:4100')
   const chunks = []
   req.on('data', (c) => chunks.push(c))

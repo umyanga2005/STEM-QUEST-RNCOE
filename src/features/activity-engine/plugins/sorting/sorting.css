@@ -1,322 +1,365 @@
+/* ──────────────────────────────────────────────────────────
+   Sorting Activity — WOW Gaming UI
+   ────────────────────────────────────────────────────────── */
+
 .sorting-activity {
-  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.25rem;
   width: 100%;
+  position: relative;
 }
 
 .sorting-sr-live {
   position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
-  white-space: nowrap;
-  border: 0;
+  white-space: nowrap; border: 0;
 }
 
 .sorting-prompt {
-  font-size: clamp(1.05rem, 2.4vw, 1.35rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
   margin: 0;
   line-height: 1.35;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(20,184,166,0.5);
 }
 
 .sorting-instructions {
-  margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.95rem;
-}
-
-.sorting-section-title {
-  margin: 0 0 0.4rem;
-  font-size: 0.9rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-text-muted);
+  margin: -0.25rem 0 0;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.92rem;
 }
 
 .sorting-tray {
-  padding: 0.75rem;
-  border-radius: 0.65rem;
-  border: 1px dashed rgba(159, 168, 202, 0.35);
-  background: var(--color-surface-raised);
+  min-height: 72px;
+  padding: 1rem;
+  border-radius: 20px;
+  border: 1.5px dashed rgba(20,184,166,0.3);
+  background: rgba(5,25,30,0.7);
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+}
+
+.sorting-tray.is-empty {
+  min-height: 0;
+  padding: 0.6rem 1rem;
+  border-style: solid;
+  border-color: rgba(45,212,191,0.3);
+  background: rgba(45,212,191,0.05);
+}
+
+.sorting-section-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.4);
+  margin: 0 0 0.65rem;
+}
+
+/* Rendered as a <ul>, so reset default list chrome (bullets/indent). */
+.sorting-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 44px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
 .sorting-empty-note {
   margin: 0;
-  color: var(--color-text-muted);
-  font-size: 0.9rem;
-}
-
-.sorting-chip-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.88rem;
+  font-style: italic;
 }
 
 .sorting-chip {
   display: inline-flex;
   align-items: center;
-  border-radius: 0.6rem;
-  background: var(--color-surface);
-  border: 1px solid rgba(159, 168, 202, 0.45);
-  overflow: hidden;
-  transition: border-color 140ms ease, box-shadow 140ms ease, transform 140ms ease;
+  gap: 0.45rem;
+  min-height: 44px;
+  padding: 0.4rem 0.9rem;
+  border-radius: 20px;
+  border: 1px solid rgba(79,139,255,0.35);
+  background: rgba(79,139,255,0.15);
+  color: #99f6e4;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: grab;
+  user-select: none;
+  transition: transform 150ms cubic-bezier(.34,1.56,.64,1), box-shadow 150ms ease;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+}
+
+.sorting-chip:hover {
+  border-color: #14b8a6;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4), 0 0 14px rgba(20,184,166,0.3);
+  transform: translateY(-2px) scale(1.04);
 }
 
 .sorting-chip.is-selected {
-  border-color: var(--color-accent-strong);
-  background: rgba(45, 212, 191, 0.1);
+  border-color: #2dd4bf;
+  background: linear-gradient(135deg, rgba(45,212,191,0.22), rgba(20,184,166,0.15));
+  box-shadow: 0 0 20px rgba(45,212,191,0.4);
+  transform: scale(1.05);
+  color: #fff;
 }
 
+.sorting-chip.is-dragging {
+  cursor: grabbing;
+  opacity: 0.5;
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+/* .sorting-chip provides the pill visuals; the actual interactive/disable-able
+   element is the nested <button>, which the browser would otherwise render
+   with default button chrome since it had no CSS of its own. */
 .sorting-chip-button {
-  min-height: 44px;
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.4rem 0.8rem;
-  border: 0;
+  gap: 0.45rem;
+  border: none;
   background: transparent;
-  color: var(--color-text);
+  padding: 0;
+  color: inherit;
   font: inherit;
-  font-size: 0.95rem;
-  text-align: left;
-  cursor: pointer;
-}
-
-.sorting-chip-button img {
-  width: 34px;
-  height: 34px;
-  object-fit: cover;
-  border-radius: 0.4rem;
-  flex: 0 0 auto;
-}
-
-.sorting-chip-button:hover:not(:disabled),
-.sorting-chip-button:focus-visible {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(79, 139, 255, 0.25);
-  outline: none;
+  cursor: inherit;
 }
 
 .sorting-chip-button:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+}
+
+.sorting-chip:has(.sorting-chip-button:disabled) {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sorting-chip-label {
+  white-space: nowrap;
 }
 
 .sorting-chip-clear {
-  flex: 0 0 auto;
-  width: 40px;
-  min-height: 44px;
-  border: 0;
-  border-left: 1px solid rgba(159, 168, 202, 0.3);
-  background: transparent;
-  color: var(--color-text-muted);
-  font-size: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(248,113,113,0.5);
+  background: rgba(248,113,113,0.15);
+  color: #f87171;
+  font-size: 0.7rem;
   line-height: 1;
   cursor: pointer;
 }
 
-.sorting-chip-clear:hover:not(:disabled),
-.sorting-chip-clear:focus-visible {
-  color: var(--color-accent);
-  background: rgba(79, 139, 255, 0.1);
-  outline: none;
+.sorting-chip-clear:hover:not(:disabled) {
+  background: rgba(248,113,113,0.3);
 }
 
-.sorting-chip-clear:disabled {
-  cursor: not-allowed;
-  opacity: 0.4;
-}
+.sorting-chip-clear:disabled { cursor: not-allowed; opacity: 0.5; }
 
 .sorting-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
+@media (min-width: 480px) {
+  .sorting-groups { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* The drop target is this whole <section> (onDragOver/onDrop are on it in
+   the JSX), so it gets the dashed drop-zone treatment, not just a button
+   inside it. */
 .sorting-group {
-  border-radius: 0.65rem;
-  border: 1px solid rgba(159, 168, 202, 0.22);
-  background: var(--color-surface-raised);
-  padding: 0.6rem;
-  transition: border-color 140ms ease, box-shadow 140ms ease;
+  min-height: 60px;
+  padding: 0.75rem;
+  border-radius: 20px;
+  border: 2px dashed rgba(255,255,255,0.15);
+  background: rgba(8,12,28,0.75);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .sorting-group.is-drag-over {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(79, 139, 255, 0.25);
+  border-color: #2dd4bf;
+  background: rgba(45,212,191,0.08);
+  box-shadow: 0 0 0 3px rgba(45,212,191,0.2), 0 0 25px rgba(45,212,191,0.15);
 }
 
 .sorting-group-header {
-  display: flex;
-  align-items: stretch;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .sorting-group-target {
-  flex: 1 1 auto;
-  min-height: 48px;
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.55rem 0.8rem;
-  border-radius: 0.55rem;
-  border: 1px solid rgba(45, 212, 191, 0.4);
-  background: rgba(45, 212, 191, 0.08);
-  color: var(--color-text);
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: inherit;
   font: inherit;
-  font-weight: 600;
-  font-size: 0.98rem;
-  text-align: left;
   cursor: pointer;
+  text-align: left;
 }
 
-.sorting-group-target img {
-  width: 34px;
-  height: 34px;
-  object-fit: cover;
-  border-radius: 0.4rem;
-  flex: 0 0 auto;
-}
-
-.sorting-group-target:hover:not(:disabled),
-.sorting-group-target:focus-visible {
-  border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(79, 139, 255, 0.25);
-  outline: none;
+.sorting-group-target:hover:not(:disabled) .sorting-group-label {
+  color: #2dd4bf;
 }
 
 .sorting-group-target:disabled {
   cursor: not-allowed;
-  opacity: 0.7;
+  opacity: 0.6;
+}
+
+.sorting-group-target img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
 .sorting-group-label {
-  flex: 1 1 auto;
-  line-height: 1.3;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #fff;
 }
 
 .sorting-group-count {
-  flex: 0 0 auto;
+  min-width: 1.8rem;
+  height: 1.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(20,184,166,0.2);
+  color: #2dd4bf;
   font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--color-text-muted);
+  font-weight: 900;
+  border: 1px solid rgba(20,184,166,0.3);
 }
 
 .sorting-group-empty {
-  margin: 0.25rem 0 0;
-  padding: 0.5rem;
-  border-radius: 0.45rem;
-  border: 1px dashed rgba(159, 168, 202, 0.25);
-  color: var(--color-text-muted);
+  margin: 0;
+  color: rgba(255,255,255,0.25);
   font-size: 0.85rem;
+  font-weight: 600;
+  width: 100%;
   text-align: center;
-}
-
-.sorting-group .sorting-chip-list {
-  margin-top: 0.25rem;
+  pointer-events: none;
 }
 
 .sorting-controls {
   display: flex;
   flex-wrap: wrap;
+  gap: 0.65rem;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .sorting-hint-button,
-.sorting-reset-button,
-.sorting-submit-button {
+.sorting-reset-button {
   min-height: 44px;
   padding: 0.55rem 1.1rem;
-  border-radius: 0.6rem;
-  border: 1px solid transparent;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+  font-weight: 700;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.sorting-hint-button {
-  background: transparent;
-  border-color: rgba(159, 168, 202, 0.45);
-  color: var(--color-text);
+.sorting-hint-button:hover:not(:disabled) {
+  border-color: #60a5fa; color: #60a5fa;
+  background: rgba(79,139,255,0.1);
 }
 
-.sorting-reset-button {
-  background: transparent;
-  border-color: rgba(159, 168, 202, 0.45);
-  color: var(--color-text-muted);
+.sorting-reset-button:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.4); color: #fff;
 }
 
 .sorting-submit-button {
   margin-left: auto;
-  background: var(--color-accent);
-  color: #0b0e1a;
-  font-weight: 600;
+  min-height: 52px;
+  padding: 0.7rem 2rem;
+  border-radius: 14px;
+  border: none;
+  background: linear-gradient(135deg, #14b8a6, #2dd4bf);
+  color: #052e2a;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease;
+  box-shadow: 0 6px 20px rgba(20,184,166,0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.sorting-submit-button:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(20,184,166,0.55);
 }
 
 .sorting-submit-button:disabled,
 .sorting-hint-button:disabled,
 .sorting-reset-button:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
+  opacity: 0.4; cursor: not-allowed;
 }
 
 .sorting-hints {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column; gap: 0.5rem;
 }
 
 .sorting-hint {
-  display: flex;
-  gap: 0.6rem;
-  align-items: baseline;
-  padding: 0.6rem 0.8rem;
-  border-radius: 0.6rem;
-  background: rgba(79, 139, 255, 0.1);
-  border: 1px solid rgba(79, 139, 255, 0.3);
-  font-size: 0.95rem;
+  display: flex; gap: 0.7rem; align-items: baseline;
+  padding: 0.7rem 1rem;
+  border-radius: 14px;
+  background: rgba(20,184,166,0.08);
+  border: 1px solid rgba(20,184,166,0.25);
+  font-size: 0.92rem;
+  color: #99f6e4;
 }
 
 .sorting-hint-level {
   flex: 0 0 auto;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--color-accent);
+  font-size: 0.7rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: #2dd4bf;
+  background: rgba(20,184,166,0.15);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
 }
 
 .sorting-submitted {
-  padding: 0.8rem 1rem;
-  border-radius: 0.6rem;
-  background: rgba(45, 212, 191, 0.1);
-  border: 1px solid rgba(45, 212, 191, 0.35);
-  font-size: 0.92rem;
-  line-height: 1.45;
-}
-
-@media (min-width: 720px) {
-  .sorting-groups {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-    align-items: start;
-  }
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  background: rgba(45,212,191,0.08);
+  border: 1px solid rgba(45,212,191,0.3);
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+  font-style: italic;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .sorting-chip,
-  .sorting-group {
-    transition: none;
+  .sorting-chip, .sorting-group {
+    transition: none; animation: none;
   }
 }

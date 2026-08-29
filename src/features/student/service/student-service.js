@@ -78,6 +78,49 @@ export class StudentService {
   }
 
   /**
+   * Log in an existing student via their Kiosk login code.
+   * @param {{ loginCode: string, ipAddress?: string, userAgent?: string }} input
+   * @returns {Promise<{ token: string, expiresAt: number, loginCode: string, student: object }>}
+   */
+  async loginByKioskCode({ loginCode, ipAddress = null, userAgent = null }) {
+    if (!loginCode || typeof loginCode !== 'string') {
+      throw studentError.invalidInput('A valid kiosk code is required.')
+    }
+    const cleanCode = loginCode.trim().toUpperCase()
+    const withPrefix = cleanCode.startsWith('SQ-') ? cleanCode : `SQ-${cleanCode}`
+    const bareCode = cleanCode.replace(/^SQ-/, '')
+
+    let student = await this.repos.studentRepository.findByLoginCode(withPrefix)
+    if (!student) {
+      student = await this.repos.studentRepository.findByLoginCode(bareCode)
+    }
+    if (!student || student.status !== 'active') {
+      throw studentError.invalidInput('Invalid or expired Kiosk Code.')
+    }
+
+    const school = await this.repos.schoolRepository.findById(student.schoolId)
+    const ttlSeconds = await this.#sessionTtlSeconds()
+    const now = this.now()
+    const token = generateSessionToken()
+    await this.repos.sessionRepository.create({
+      studentId: student.id,
+      tokenHash: hashSessionToken(token),
+      expiresAt: now + ttlSeconds * 1000,
+      ipAddress,
+      userAgent,
+    })
+
+    const avatarUrl = await this.#avatarUrl(student.profilePhotoPath)
+    const publicStudent = await this.#toPublicStudent(student, school?.name ?? 'Unknown school', avatarUrl)
+    return {
+      token,
+      expiresAt: now + ttlSeconds * 1000,
+      loginCode: student.loginCode,
+      student: publicStudent,
+    }
+  }
+
+  /**
    * Verifies a session token and returns the safe public student profile.
    * @param {{ token: string }} auth
    * @returns {Promise<{ student: object }>}

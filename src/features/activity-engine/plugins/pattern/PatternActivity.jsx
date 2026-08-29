@@ -47,7 +47,7 @@ const SHAPE_GLYPHS = {
 
 function ShapeGlyph({ shape }) {
   return (
-    <svg className="pattern-shape" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg className={`pattern-shape pattern-shape--${shape}`} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       {SHAPE_GLYPHS[shape] ?? null}
     </svg>
   )
@@ -310,6 +310,9 @@ export function PatternActivity({
           const selected = state.selected.includes(candidate.id)
           const classes = ['pattern-candidate']
           if (selected) classes.push('is-selected')
+          const primaryVal = elementValueLabel(candidate)
+          const ariaLab = candidate.ariaLabel
+          const showName = ariaLab && ariaLab !== primaryVal
           return (
             <button
               key={candidate.id}
@@ -320,7 +323,7 @@ export function PatternActivity({
               onClick={() => handleCandidatePress(candidate.id)}
             >
               <ElementValue element={candidate} />
-              <span className="pattern-candidate-name">{candidate.ariaLabel || elementValueLabel(candidate)}</span>
+              {showName ? <span className="pattern-candidate-name">{ariaLab}</span> : null}
             </button>
           )
         })}

@@ -34,7 +34,6 @@ const ACTIVITY_TYPE_SEED = [
   ['ordering', 'Ordering'],
   ['sorting', 'Sorting'],
   ['fill-complete', 'Fill / Complete'],
-  ['image-interaction', 'Image Interaction'],
   ['pattern', 'Pattern'],
   ['memory', 'Memory'],
   ['scenario-challenge', 'Scenario Challenge'],

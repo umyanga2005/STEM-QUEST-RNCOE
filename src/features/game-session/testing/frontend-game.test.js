@@ -31,7 +31,6 @@ import { demoMatchingQuestions } from '../demo/matching-demo-questions.js'
 import { demoOrderingQuestions } from '../demo/ordering-demo-questions.js'
 import { demoSortingQuestions } from '../demo/sorting-demo-questions.js'
 import { demoFillCompleteQuestions } from '../demo/fill-complete-demo-questions.js'
-import { demoImageInteractionQuestions } from '../demo/image-interaction-demo-questions.js'
 import { demoPatternQuestions } from '../demo/pattern-demo-questions.js'
 import { demoMemoryQuestions } from '../demo/memory-demo-questions.js'
 import { demoScenarioQuestions } from '../demo/scenario-demo-questions.js'
@@ -133,7 +132,7 @@ test('registry covers exactly the ten approved activity types', async () => {
   try {
     assert.deepEqual(
       [...registry.ACTIVITY_TYPES].sort(),
-      ['drag-drop', 'fill-complete', 'image-interaction', 'matching', 'memory', 'number-logic', 'ordering', 'pattern', 'scenario-challenge', 'sorting'].sort()
+      ['drag-drop', 'fill-complete', 'find-word', 'matching', 'memory', 'number-logic', 'ordering', 'pattern', 'scenario-challenge', 'sorting'].sort()
     )
     for (const type of registry.ACTIVITY_TYPES) {
       assert.equal(typeof registry.ACTIVITY_RENDERERS[type], 'function', `${type} has a renderer`)
@@ -153,7 +152,6 @@ function demoStoreWithAllTen() {
     ...demoOrderingQuestions(),
     ...demoSortingQuestions(),
     ...demoFillCompleteQuestions(),
-    ...demoImageInteractionQuestions(),
     ...demoPatternQuestions(),
     ...demoMemoryQuestions(),
     ...demoScenarioQuestions(),

@@ -112,17 +112,6 @@ function OfficialCorrectAnswerView({ question }) {
         }
       }
 
-      if (activityType === 'image-interaction') {
-        const targetId = correctAnswer.targetHotspotId || correctAnswer.correctHotspotId || correctAnswer.targetId
-        const hotspots = payload.hotspots || []
-        const target = hotspots.find((h) => h.id === targetId)
-        return (
-          <div className="adm-answer-simple">
-            Target Region: <strong>{target ? `${target.label || target.id} (ID: ${target.id})` : targetId || 'Specified hotspot'}</strong>
-          </div>
-        )
-      }
-
       if (activityType === 'pattern') {
         const nextVal = correctAnswer.nextValue ?? correctAnswer.targetValue ?? correctAnswer.answer
         const rule = correctAnswer.rule || payload.rule

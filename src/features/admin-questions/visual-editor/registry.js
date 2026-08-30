@@ -17,7 +17,7 @@ import MatchingForm from './matching-form.jsx'
 import OrderingForm from './ordering-form.jsx'
 import SortingForm from './sorting-form.jsx'
 import FillCompleteForm from './fill-complete-form.jsx'
-import ImageInteractionForm from './image-interaction-form.jsx'
+import FindWordForm from './find-word-form.jsx'
 import PatternForm from './pattern-form.jsx'
 import MemoryForm from './memory-form.jsx'
 import ScenarioChallengeForm from './scenario-challenge-form.jsx'
@@ -28,7 +28,7 @@ import { validatePairs } from '../../activity-engine/plugins/matching/plugin.js'
 import { validateSequence } from '../../activity-engine/plugins/ordering/plugin.js'
 import { validateAssignments } from '../../activity-engine/plugins/sorting/plugin.js'
 import { validateBlankAnswers } from '../../activity-engine/plugins/fill-complete/plugin.js'
-import { validateImageInteractionAnswer } from '../../activity-engine/plugins/image-interaction/plugin.js'
+import { validateFindWordAnswer } from '../../activity-engine/plugins/find-word/find-word-controller.js'
 import { validatePatternAnswer } from '../../activity-engine/plugins/pattern/plugin.js'
 import { validateMemoryAnswer } from '../../activity-engine/plugins/memory/plugin.js'
 import { validateScenarioAnswer } from '../../activity-engine/plugins/scenario-challenge/plugin.js'
@@ -41,7 +41,7 @@ export const VISUAL_FORMS = Object.freeze({
   ordering: OrderingForm,
   sorting: SortingForm,
   'fill-complete': FillCompleteForm,
-  'image-interaction': ImageInteractionForm,
+  'find-word': FindWordForm,
   pattern: PatternForm,
   memory: MemoryForm,
   'scenario-challenge': ScenarioChallengeForm,
@@ -55,7 +55,7 @@ const INTEGRITY_RULES = Object.freeze({
   ordering: validateSequence,
   sorting: validateAssignments,
   'fill-complete': validateBlankAnswers,
-  'image-interaction': validateImageInteractionAnswer,
+  'find-word': validateFindWordAnswer,
   pattern: validatePatternAnswer,
   memory: validateMemoryAnswer,
   'scenario-challenge': validateScenarioAnswer,

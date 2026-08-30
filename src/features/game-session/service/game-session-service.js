@@ -30,7 +30,7 @@ import { registerMatching } from '../../activity-engine/plugins/matching/plugin.
 import { registerOrdering } from '../../activity-engine/plugins/ordering/plugin.js'
 import { registerSorting } from '../../activity-engine/plugins/sorting/plugin.js'
 import { registerFillComplete } from '../../activity-engine/plugins/fill-complete/plugin.js'
-import { registerImageInteraction } from '../../activity-engine/plugins/image-interaction/plugin.js'
+import { registerFindWord } from '../../activity-engine/plugins/find-word/plugin.js'
 import { registerPattern } from '../../activity-engine/plugins/pattern/plugin.js'
 import { registerMemory } from '../../activity-engine/plugins/memory/plugin.js'
 import { registerScenarioChallenge } from '../../activity-engine/plugins/scenario-challenge/plugin.js'
@@ -61,7 +61,7 @@ export function createDefaultServerActivityEngine() {
   registerOrdering(engine)
   registerSorting(engine)
   registerFillComplete(engine)
-  registerImageInteraction(engine)
+  registerFindWord(engine)
   registerPattern(engine)
   registerMemory(engine)
   registerScenarioChallenge(engine)
@@ -508,6 +508,27 @@ export class GameSessionService {
       result,
       roundBreakdown,
     }
+  }
+
+  // ------------------------------------------------------------------
+  // abandonSession()
+  // ------------------------------------------------------------------
+
+  /**
+   * Marks an in-progress session as abandoned when the student leaves the
+   * mission mid-play (back navigation guard). Idempotent no-op once the
+   * session is already completed or abandoned — never throws on a stale
+   * client retry.
+   * @param {object} input - { sessionId, studentId }
+   */
+  async abandonSession({ sessionId, studentId }) {
+    const session = await this.gameSessionRepository.findById(Number(sessionId))
+    guardSessionForStudent(normalizeSessionForGuard(session), String(studentId))
+    if (session.status !== 'active') {
+      return { sessionId: session.id, status: session.status }
+    }
+    const updated = await this.gameSessionRepository.update(session.id, { status: 'abandoned' })
+    return { sessionId: updated.id, status: updated.status }
   }
 
   // ------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, NavLink, Outlet, useLocation } from 'react-router'
 import { useAdminAuth } from '../features/admin-auth/auth/admin-auth-context.js'
+import { StemLoader } from '../components/StemLoader/StemLoader.jsx'
 import './admin.css'
 
 const NAV_ITEMS = [
@@ -20,12 +21,7 @@ export default function AdminShell() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   if (status === 'loading') {
-    return (
-      <div className="adm-loading-screen">
-        <div className="adm-loading-spinner" />
-        <p>Verifying administrator session…</p>
-      </div>
-    )
+    return <StemLoader overlay label="Verifying administrator session…" />
   }
 
   if (status === 'unavailable' || status === 'unauthenticated') {

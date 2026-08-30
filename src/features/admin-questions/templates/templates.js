@@ -14,7 +14,7 @@ export const QUESTION_ACTIVITY_LABELS = {
   ordering: 'Ordering',
   sorting: 'Sorting',
   'fill-complete': 'Fill the Blanks',
-  'image-interaction': 'Image Interaction',
+  'find-word': 'Find the Word',
   pattern: 'Pattern',
   memory: 'Memory',
   'scenario-challenge': 'Scenario Challenge',
@@ -111,19 +111,23 @@ const templates = {
     keypad: 'default',
   },
 
-  'image-interaction': {
+  'find-word': {
     schemaVersion: '1.0',
-    image: {
-      ref: 'question-media/pending/pending/pending.png',
-      alt: 'Question image',
-    },
-    imageWidth: 800,
-    imageHeight: 600,
-    mode: 'tap',
-    hotspots: [
-      { id: 'hotspot_1', x: 50, y: 50, shape: 'circle', radius: 5 },
+    grid: [
+      ['A', 'T', 'O', 'M', 'Q', 'W', 'E', 'R'],
+      ['B', 'X', 'Y', 'Z', 'C', 'E', 'L', 'L'],
+      ['D', 'F', 'G', 'H', 'I', 'J', 'K', 'L'],
+      ['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T'],
+      ['U', 'V', 'W', 'X', 'Y', 'Z', 'A', 'B'],
+      ['C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'],
+      ['K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R'],
+      ['S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
     ],
-    labels: [],
+    words: [
+      { id: 'word_1', label: 'ATOM' },
+      { id: 'word_2', label: 'CELL' },
+    ],
+    allowRetry: true,
   },
 
   pattern: {

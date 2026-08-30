@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/find-word/payload.schema.json",
+  "$comment": "STEM QUEST Find the Word payload (Task 9). Letter-grid word search — student taps the first and last letter of each hidden word. Correct-answer placements never appear here.",
+  "type": "object",
+  "required": ["schemaVersion", "grid", "words"],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "grid": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 20,
+      "description": "Rows of single-letter cells. Every row must be the same length (enforced by the plugin's semantic rules).",
+      "items": {
+        "type": "array",
+        "minItems": 4,
+        "maxItems": 20,
+        "items": { "type": "string", "pattern": "^[A-Za-z]$" }
+      }
+    },
+    "words": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": ["id", "label"],
+        "properties": {
+          "id": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "label": { "type": "string", "minLength": 2, "maxLength": 40 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "allowRetry": { "type": "boolean", "default": true }
+  },
+  "additionalProperties": false
+}

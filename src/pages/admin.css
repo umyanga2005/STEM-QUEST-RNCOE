@@ -1115,6 +1115,15 @@
   margin: 0;
 }
 
+.aq-ve__grid-editor {
+  width: 100%;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  resize: vertical;
+}
+
 .aq-editor__hints {
   display: flex;
   flex-direction: column;

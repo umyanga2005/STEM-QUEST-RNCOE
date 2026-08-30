@@ -13,7 +13,7 @@ import { registerMatching } from './plugins/matching/plugin.js'
 import { registerOrdering } from './plugins/ordering/plugin.js'
 import { registerSorting } from './plugins/sorting/plugin.js'
 import { registerFillComplete } from './plugins/fill-complete/plugin.js'
-import { registerImageInteraction } from './plugins/image-interaction/plugin.js'
+import { registerFindWord } from './plugins/find-word/plugin.js'
 import { registerPattern } from './plugins/pattern/plugin.js'
 import { registerMemory } from './plugins/memory/plugin.js'
 import { registerScenarioChallenge } from './plugins/scenario-challenge/plugin.js'
@@ -45,7 +45,7 @@ export function createDefaultClientActivityEngine() {
   registerOrdering(engine)
   registerSorting(engine)
   registerFillComplete(engine)
-  registerImageInteraction(engine)
+  registerFindWord(engine)
   registerPattern(engine)
   registerMemory(engine)
   registerScenarioChallenge(engine)

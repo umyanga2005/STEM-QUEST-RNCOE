@@ -21,7 +21,6 @@ export const DEMO_ACTIVITY_TYPES = [
   { id: 3, slug: 'ordering', name: 'Ordering', isActive: true },
   { id: 4, slug: 'sorting', name: 'Sorting', isActive: true },
   { id: 5, slug: 'fill-complete', name: 'Fill / Complete', isActive: true },
-  { id: 6, slug: 'image-interaction', name: 'Image Interaction', isActive: true },
   { id: 7, slug: 'pattern', name: 'Pattern', isActive: true },
   { id: 8, slug: 'memory', name: 'Memory', isActive: true },
   { id: 9, slug: 'scenario-challenge', name: 'Scenario Challenge', isActive: true },

@@ -220,47 +220,6 @@ export function buildBlankAnswers(blanks, specByBlankId = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// Image Interaction (Task 5.11B)
-// ---------------------------------------------------------------------------
-
-/** New image-interaction hotspot (normalized % center, circle default). */
-export function makeHotspot(existingIds) {
-  return { id: nextId('hotspot', existingIds), x: 50, y: 50, shape: 'circle', radius: 5 }
-}
-
-/** New image-interaction draggable label (label mode). */
-export function makeImageLabel(existingIds) {
-  return { id: nextId('label', existingIds), text: '' }
-}
-
-/**
- * Builds the image-interaction correct-answer document.
- *   - tap:   requiredHotspots = the required hotspot ids (default: every hotspot)
- *   - label: placements = one { labelId, hotspotId } per payload label; existing
- *            placements preserved while valid, otherwise the first hotspot.
- */
-export function buildImageAnswer(payload, { requiredHotspots, placements } = {}) {
-  const hotspots = Array.isArray(payload.hotspots) ? payload.hotspots : []
-  const labels = Array.isArray(payload.labels) ? payload.labels : []
-  const hotspotIds = hotspots.map((h) => h.id)
-  if (payload.mode === 'tap') {
-    const required = Array.isArray(requiredHotspots)
-      ? requiredHotspots.filter((id) => hotspotIds.includes(id))
-      : hotspotIds
-    return { mode: 'tap', requiredHotspots: required }
-  }
-  const firstHotspot = hotspotIds[0] ?? null
-  const current = new Map((placements ?? []).map((p) => [p.labelId, p.hotspotId]))
-  const result = labels
-    .map((label) => ({
-      labelId: label.id,
-      hotspotId: current.has(label.id) && hotspotIds.includes(current.get(label.id)) ? current.get(label.id) : firstHotspot,
-    }))
-    .filter((p) => p.hotspotId != null)
-  return { mode: 'label', placements: result }
-}
-
-// ---------------------------------------------------------------------------
 // Pattern (Task 5.11B)
 // ---------------------------------------------------------------------------
 
@@ -476,9 +435,6 @@ export default {
   moveInList,
   makeBlank,
   buildBlankAnswers,
-  makeHotspot,
-  makeImageLabel,
-  buildImageAnswer,
   makePatternElement,
   PATTERN_SHAPES,
   withPatternKind,

@@ -107,6 +107,15 @@ export function createStudentGameApi({ studentService, gameService }) {
     return c.json(result)
   })
 
+  app.post('/api/student/game/session/:sessionId/abandon', async (c) => {
+    await authenticate(c)
+    const result = await gameService.abandonSession({
+      sessionId: c.req.param('sessionId'),
+      studentId: currentStudentId(c),
+    })
+    return c.json(result)
+  })
+
   app.notFound((c) =>
     c.json(
       { error: { code: 'GAME_NOT_FOUND', category: 'AVAILABILITY', message: 'Endpoint not found.' } },

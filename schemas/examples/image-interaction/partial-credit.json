@@ -1,8 +1,0 @@
-{
-  "mode": "label",
-  "placements": [
-    { "labelId": "l1", "hotspotId": "h1" },
-    { "labelId": "l2", "hotspotId": "h2" },
-    { "labelId": "l3", "hotspotId": "h3" }
-  ]
-}

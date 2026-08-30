@@ -9,7 +9,7 @@
 
 import dragDrop from '../../../../../schemas/activities/drag-drop/payload.schema.json' with { type: 'json' }
 import fillComplete from '../../../../../schemas/activities/fill-complete/payload.schema.json' with { type: 'json' }
-import imageInteraction from '../../../../../schemas/activities/image-interaction/payload.schema.json' with { type: 'json' }
+import findWord from '../../../../../schemas/activities/find-word/payload.schema.json' with { type: 'json' }
 import matching from '../../../../../schemas/activities/matching/payload.schema.json' with { type: 'json' }
 import memory from '../../../../../schemas/activities/memory/payload.schema.json' with { type: 'json' }
 import numberLogic from '../../../../../schemas/activities/number-logic/payload.schema.json' with { type: 'json' }
@@ -28,7 +28,7 @@ import media from '../../../../../schemas/common/media.schema.json' with { type:
 export const PAYLOAD_SCHEMAS = Object.freeze({
   'drag-drop': dragDrop,
   'fill-complete': fillComplete,
-  'image-interaction': imageInteraction,
+  'find-word': findWord,
   matching,
   memory,
   'number-logic': numberLogic,

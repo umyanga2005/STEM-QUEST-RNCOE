@@ -55,15 +55,17 @@ function buildPath(pts) {
 function LevelMap({ levels, onChooseLevel, streamColor }) {
   const accentColor = streamColor || '#2dd4bf'
 
-  // Compute node centres. Levels alternate right → left (start at right so
-  // Level 1 is on the right, drawing the eye to the "first step" naturally).
-  const nodePositions = levels.map((_, i) => ({
-    x: i % 2 === 0 ? X_RIGHT : X_LEFT,
-    y: TOP_PAD + i * VERT_STEP,
-  }))
-
   const svgH = TOP_PAD + Math.max(0, levels.length - 1) * VERT_STEP + BOT_PAD
   const containerH = svgH + 20 // a little extra for the label of the bottom node
+
+  // Compute node centres. Levels alternate right → left (start at right so
+  // Level 1 is on the right, drawing the eye to the "first step" naturally).
+  // Level 1 (i=0) sits at the BOTTOM of the map, ascending toward the final
+  // level at the top — matches the "climb the mission" visual metaphor.
+  const nodePositions = levels.map((_, i) => ({
+    x: i % 2 === 0 ? X_RIGHT : X_LEFT,
+    y: svgH - BOT_PAD - i * VERT_STEP,
+  }))
 
   // Full path (all nodes) — rendered in muted colour for locked sections
   const fullPath = buildPath(nodePositions)
@@ -502,7 +504,13 @@ export function StreamPicker({ reduceMotion, selection, onSelectStream }) {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div className="sm-stream__icon">
                     <div className="sm-stream__icon-glow" />
-                    {assets.bg ? (
+                    {assets.logo ? (
+                      <img
+                        src={assets.logo}
+                        alt={stream.name}
+                        className="sm-stream__icon-img"
+                      />
+                    ) : assets.bg ? (
                       <img
                         src={assets.bg}
                         alt={stream.name}
@@ -628,7 +636,11 @@ export function ReadyPanel({ reduceMotion, selection, onBegin }) {
       <ProgressStrip active={3} />
       <h2 className="sm-title">Ready for Launch?</h2>
       <div className="sm-ready">
-        {streamAssets.bg ? (
+        {streamAssets.logo ? (
+          <div className="sm-ready__icon">
+            <img src={streamAssets.logo} alt="" className="sm-ready__icon-img" />
+          </div>
+        ) : streamAssets.bg ? (
           <div className="sm-ready__icon">
             <img src={streamAssets.bg} alt="" className="sm-ready__icon-img" />
           </div>

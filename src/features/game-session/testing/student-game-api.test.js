@@ -22,7 +22,6 @@ import { demoMatchingQuestions } from '../demo/matching-demo-questions.js'
 import { demoOrderingQuestions } from '../demo/ordering-demo-questions.js'
 import { demoSortingQuestions } from '../demo/sorting-demo-questions.js'
 import { demoFillCompleteQuestions } from '../demo/fill-complete-demo-questions.js'
-import { demoImageInteractionQuestions } from '../demo/image-interaction-demo-questions.js'
 import { demoPatternQuestions } from '../demo/pattern-demo-questions.js'
 import { demoMemoryQuestions } from '../demo/memory-demo-questions.js'
 import { demoScenarioQuestions } from '../demo/scenario-demo-questions.js'
@@ -32,12 +31,11 @@ import { createStudentApi } from '../../student/api/server.js'
 import { createStudentMemoryRepositories } from '../../student/repositories/memory.js'
 import { StudentService } from '../../student/service/student-service.js'
 
-const ALL_TEN_DEMO_QUESTIONS = () => [
+const ALL_NINE_DEMO_QUESTIONS = () => [
   ...demoMatchingQuestions(),
   ...demoOrderingQuestions(),
   ...demoSortingQuestions(),
   ...demoFillCompleteQuestions(),
-  ...demoImageInteractionQuestions(),
   ...demoPatternQuestions(),
   ...demoMemoryQuestions(),
   ...demoScenarioQuestions(),
@@ -45,7 +43,7 @@ const ALL_TEN_DEMO_QUESTIONS = () => [
 ]
 
 /** Mirrors the production composition (dev-server createStackedApp). */
-function buildStack({ allTenTypes = false } = {}) {
+function buildStack({ allNineTypes = false } = {}) {
   const gameStore = createMemoryStore()
   seedStoreFromBaseData(gameStore, demoBaseData())
   if (gameStore.questions.length === 0) {
@@ -65,8 +63,8 @@ function buildStack({ allTenTypes = false } = {}) {
       })
     }
   }
-  if (allTenTypes) {
-    gameStore.questions.push(...ALL_TEN_DEMO_QUESTIONS())
+  if (allNineTypes) {
+    gameStore.questions.push(...ALL_NINE_DEMO_QUESTIONS())
   }
   const gameRepos = createMemoryRepositories(gameStore)
 
@@ -194,8 +192,8 @@ test('start resumes the student’s active session for the stream (deterministic
   assert.equal(secondBody.currentRound.roundId, firstBody.currentRound.roundId)
 })
 
-test('mixed ten-type pool: start returns a safe descriptor for one of the ten types', async () => {
-  const { app } = buildStack({ allTenTypes: true })
+test('mixed nine-type pool: start returns a safe descriptor for one of the nine types', async () => {
+  const { app } = buildStack({ allNineTypes: true })
   const { token } = await register(app)
 
   const start = await app.request(

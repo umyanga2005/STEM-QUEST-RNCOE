@@ -100,11 +100,12 @@ export function QuadrantBoard({ stream, entries }) {
     >
       <header className="lb-quadrant__head">
         <div className="lb-quadrant__icon">
-          {streamAsset.bg ? (
+          {/* BUG-024 fix: use round logo badge, not rectangular bg image */}
+          {streamAsset.logo ? (
             <img
-              src={streamAsset.bg}
+              src={streamAsset.logo}
               alt=""
-              style={{ width: 38, height: 38, objectFit: 'contain', borderRadius: 8 }}
+              style={{ width: 38, height: 38, objectFit: 'contain', borderRadius: '50%' }}
             />
           ) : (
             <StreamIcon slug={stream.slug} />

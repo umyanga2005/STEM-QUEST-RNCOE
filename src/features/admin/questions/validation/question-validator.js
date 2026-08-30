@@ -12,7 +12,7 @@
  *   Layer C  cross-document — the plugin's exported cross-doc integrity rule
  *                            (validateMappings / validatePairs / validateSequence
  *                            / validateAssignments / validateBlankAnswers /
- *                            validateImageInteractionAnswer / validatePatternAnswer
+ *                            validatePatternAnswer
  *                            / validateMemoryAnswer / validateScenarioAnswer /
  *                            validateNumberLogicAnswer), which needs BOTH the
  *                            payload and the server-only correctAnswer.
@@ -37,7 +37,8 @@ import { registerMatching, validatePairs } from '../../../activity-engine/plugin
 import { registerOrdering, validateSequence } from '../../../activity-engine/plugins/ordering/plugin.js'
 import { registerSorting, validateAssignments } from '../../../activity-engine/plugins/sorting/plugin.js'
 import { registerFillComplete, validateBlankAnswers } from '../../../activity-engine/plugins/fill-complete/plugin.js'
-import { registerImageInteraction, validateImageInteractionAnswer } from '../../../activity-engine/plugins/image-interaction/plugin.js'
+import { registerFindWord } from '../../../activity-engine/plugins/find-word/plugin.js'
+import { validateFindWordAnswer } from '../../../activity-engine/plugins/find-word/find-word-controller.js'
 import { registerPattern, validatePatternAnswer } from '../../../activity-engine/plugins/pattern/plugin.js'
 import { registerMemory, validateMemoryAnswer } from '../../../activity-engine/plugins/memory/plugin.js'
 import { registerScenarioChallenge, validateScenarioAnswer } from '../../../activity-engine/plugins/scenario-challenge/plugin.js'
@@ -59,7 +60,7 @@ const CROSS_DOC_RULES = Object.freeze({
   ordering: validateSequence,
   sorting: validateAssignments,
   'fill-complete': validateBlankAnswers,
-  'image-interaction': validateImageInteractionAnswer,
+  'find-word': validateFindWordAnswer,
   pattern: validatePatternAnswer,
   memory: validateMemoryAnswer,
   'scenario-challenge': validateScenarioAnswer,
@@ -115,7 +116,7 @@ export function createQuestionValidator() {
   registerOrdering(engine)
   registerSorting(engine)
   registerFillComplete(engine)
-  registerImageInteraction(engine)
+  registerFindWord(engine)
   registerPattern(engine)
   registerMemory(engine)
   registerScenarioChallenge(engine)

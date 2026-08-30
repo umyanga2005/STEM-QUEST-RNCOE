@@ -19,7 +19,6 @@ import { demoMatchingQuestions } from '../demo/matching-demo-questions.js'
 import { demoOrderingQuestions } from '../demo/ordering-demo-questions.js'
 import { demoSortingQuestions } from '../demo/sorting-demo-questions.js'
 import { demoFillCompleteQuestions } from '../demo/fill-complete-demo-questions.js'
-import { demoImageInteractionQuestions } from '../demo/image-interaction-demo-questions.js'
 import { demoPatternQuestions } from '../demo/pattern-demo-questions.js'
 import { demoMemoryQuestions } from '../demo/memory-demo-questions.js'
 import { demoScenarioQuestions } from '../demo/scenario-demo-questions.js'
@@ -58,7 +57,6 @@ export function createDemoApi() {
     ...demoOrderingQuestions(),
     ...demoSortingQuestions(),
     ...demoFillCompleteQuestions(),
-    ...demoImageInteractionQuestions(),
     ...demoPatternQuestions(),
     ...demoMemoryQuestions(),
     ...demoScenarioQuestions(),

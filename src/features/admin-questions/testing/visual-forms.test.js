@@ -42,9 +42,6 @@ import {
   isValidId,
   makeBlank,
   buildBlankAnswers,
-  makeHotspot,
-  makeImageLabel,
-  buildImageAnswer,
   makePatternElement,
   withPatternKind,
   buildPatternAnswer,
@@ -375,37 +372,6 @@ test('fill-complete: editing existing preserves authored accepted values', () =>
 })
 
 // ---------------------------------------------------------------------------
-// Model — Image Interaction (Task 5.11B)
-// ---------------------------------------------------------------------------
-
-test('image-interaction: tap mode derives requiredHotspots from the authored hotspots', () => {
-  const tpl = authorable(buildQuestionTemplate('image-interaction'))
-  const hotspots = [...tpl.payload.hotspots, makeHotspot(tpl.payload.hotspots.map((h) => h.id))]
-  const draft = {
-    ...tpl,
-    payload: { ...tpl.payload, mode: 'tap', hotspots },
-    correctAnswer: buildImageAnswer({ ...tpl.payload, mode: 'tap', hotspots }, { requiredHotspots: ['hotspot_1'] }),
-  }
-  assert.equal(hotspots[1].id, 'hotspot_2')
-  assert.deepEqual(draft.correctAnswer.requiredHotspots, ['hotspot_1'])
-  assertValid(draft, 'image-interaction tap')
-})
-
-test('image-interaction: label mode derives placements, one per label', () => {
-  const tpl = authorable(buildQuestionTemplate('image-interaction'))
-  const labels = [{ ...makeImageLabel([]), text: 'Nucleus' }, { ...makeImageLabel(['label_1']), text: 'Membrane' }]
-  const draft = {
-    ...tpl,
-    payload: { ...tpl.payload, mode: 'label', labels },
-    correctAnswer: buildImageAnswer({ ...tpl.payload, mode: 'label', labels }, {
-      placements: [{ labelId: 'label_1', hotspotId: 'hotspot_1' }, { labelId: 'label_2', hotspotId: 'hotspot_1' }],
-    }),
-  }
-  assert.equal(draft.correctAnswer.placements.length, 2)
-  assertValid(draft, 'image-interaction label')
-})
-
-// ---------------------------------------------------------------------------
 // Model — Pattern (Task 5.11B)
 // ---------------------------------------------------------------------------
 
@@ -619,21 +585,6 @@ test('fill-complete form renders template, blanks and per-blank answer editors',
   }
 })
 
-test('image-interaction form renders image surface, hotspots and mode switch', async () => {
-  const { vite, mod } = await loadComponent('/src/features/admin-questions/visual-editor/image-interaction-form.jsx')
-  try {
-    const tpl = buildQuestionTemplate('image-interaction')
-    const html = renderForm(mod.default, tpl.payload, tpl.correctAnswer)
-    assert.ok(html.includes('Image'))
-    assert.ok(html.includes('Hotspots'))
-    assert.ok(html.includes('hotspot_1'))
-    assert.ok(html.includes('Image width (px)'))
-    assert.ok(html.includes('Mode'))
-  } finally {
-    await vite.close()
-  }
-})
-
 test('pattern form renders interaction, sequence, candidates and answer rule', async () => {
   const { vite, mod } = await loadComponent('/src/features/admin-questions/visual-editor/pattern-form.jsx')
   try {
@@ -744,7 +695,7 @@ test('registry exposes visual forms for all ten production activity types', asyn
   const { vite, mod } = await loadComponent('/src/features/admin-questions/visual-editor/registry.js')
   try {
     const { hasVisualForm } = mod
-    const slugs = ['drag-drop', 'matching', 'ordering', 'sorting', 'fill-complete', 'image-interaction', 'pattern', 'memory', 'scenario-challenge', 'number-logic']
+    const slugs = ['drag-drop', 'matching', 'ordering', 'sorting', 'fill-complete', 'find-word', 'pattern', 'memory', 'scenario-challenge', 'number-logic']
     for (const slug of slugs) {
       assert.equal(hasVisualForm(slug), true, `${slug} has a visual form`)
     }
@@ -798,7 +749,7 @@ test('editor keeps raw JSON only for unknown activity types, never for the ten p
 test('editor renders the visual form (no raw JSON) for every production type', async () => {
   const { vite, mod } = await loadComponent('/src/features/admin-questions/components/QuestionEditor.jsx')
   try {
-    const slugs = ['drag-drop', 'matching', 'ordering', 'sorting', 'fill-complete', 'image-interaction', 'pattern', 'memory', 'scenario-challenge', 'number-logic']
+    const slugs = ['drag-drop', 'matching', 'ordering', 'sorting', 'fill-complete', 'find-word', 'pattern', 'memory', 'scenario-challenge', 'number-logic']
     for (const slug of slugs) {
       const tpl = buildQuestionTemplate(slug)
       const html = renderEditor(mod, {

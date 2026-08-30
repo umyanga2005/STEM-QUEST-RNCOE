@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://stem-quest.dev/schemas/activities/find-word/correct-answer.schema.json",
+  "$comment": "STEM QUEST Find the Word correct answer (Task 9). Server-only. One straight-line placement per authored word; the plugin's cross-document rule (find-word.placements-match-grid) enforces that each placement actually spells its word in the payload grid.",
+  "type": "object",
+  "required": ["placements"],
+  "properties": {
+    "placements": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": ["wordId", "startRow", "startCol", "endRow", "endCol"],
+        "properties": {
+          "wordId": { "$ref": "https://stem-quest.dev/schemas/common/ids.schema.json" },
+          "startRow": { "type": "integer", "minimum": 0 },
+          "startCol": { "type": "integer", "minimum": 0 },
+          "endRow": { "type": "integer", "minimum": 0 },
+          "endCol": { "type": "integer", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

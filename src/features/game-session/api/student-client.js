@@ -50,6 +50,9 @@ export const gameStudentClient = Object.freeze({
   finishSession({ token, sessionId }) {
     return request(`/session/${encodeURIComponent(sessionId)}/finish`, { method: 'POST', token })
   },
+  abandonSession({ token, sessionId }) {
+    return request(`/session/${encodeURIComponent(sessionId)}/abandon`, { method: 'POST', token })
+  },
 })
 
 export default gameStudentClient

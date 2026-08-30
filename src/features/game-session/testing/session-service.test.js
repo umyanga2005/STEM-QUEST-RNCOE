@@ -30,10 +30,6 @@ import fillGradePayload from '../../../../schemas/examples/fill-complete/valid-p
 import fillGradeAnswer from '../../../../schemas/examples/fill-complete/valid-correct-answer.json' with { type: 'json' }
 import fillPhysicsPayload from '../../../../schemas/examples/fill-complete/valid-payload-grade9-11.json' with { type: 'json' }
 import fillMinimalPayload from '../../../../schemas/examples/fill-complete/minimal-valid-payload.json' with { type: 'json' }
-import imageTapPayload from '../../../../schemas/examples/image-interaction/valid-payload-grade6-7.json' with { type: 'json' }
-import imageTapAnswer from '../../../../schemas/examples/image-interaction/valid-correct-answer.json' with { type: 'json' }
-import imageLabelPayload from '../../../../schemas/examples/image-interaction/valid-payload-grade9-11.json' with { type: 'json' }
-import imageLabelAnswer from '../../../../schemas/examples/image-interaction/partial-credit.json' with { type: 'json' }
 import patternMinimalPayload from '../../../../schemas/examples/pattern/minimal-valid-payload.json' with { type: 'json' }
 import patternMinimalAnswer from '../../../../schemas/examples/pattern/valid-correct-answer.json' with { type: 'json' }
 import patternShapesPayload from '../../../../schemas/examples/pattern/valid-payload-grade6-7.json' with { type: 'json' }
@@ -1466,242 +1462,6 @@ test('FC10: a mixed drag-drop + fill-complete session runs to completion (0–30
 })
 
 // ---------------------------------------------------------------------------
-// IC. IMAGE INTERACTION INTEGRATION (Task 4.9 — sixth production activity plugin)
-// ---------------------------------------------------------------------------
-
-function imageQuestion(id, payload, correctAnswer) {
-  return {
-    id,
-    streamId: 1,
-    levelId: 1,
-    activityTypeId: 6,
-    activityType: 'image-interaction',
-    prompt: 'Interact with the image.',
-    instructions: 'Press the hotspots (tap) or place each label (label mode).',
-    payload,
-    correctAnswer,
-    hints: [{ level: 1, text: 'Study the diagram before you tap or place a label.' }],
-    basePoints: 100,
-    timerOverrideSeconds: null,
-    difficulty: 1,
-    gradeMin: 6,
-    gradeMax: 11,
-    status: 'published',
-  }
-}
-
-/** A store whose question pool is purely image-interaction questions. */
-function poolAllImage(store) {
-  store.questions = [
-    imageQuestion(501, imageTapPayload, imageTapAnswer),
-    imageQuestion(502, imageLabelPayload, imageLabelAnswer),
-    imageQuestion(503, imageTapPayload, imageTapAnswer),
-  ]
-}
-
-/** Correct (or overridden) image-interaction responses for tap and label modes. */
-function imageAnswers(question, overrides = {}) {
-  const hotspotCenter = (id) => {
-    const spot = question.payload.hotspots.find((h) => h.id === id)
-    return { x: spot.x, y: spot.y }
-  }
-  if (question.correctAnswer.mode === 'tap') {
-    const ids = new Set(overrides.skip ?? [])
-    return {
-      taps: question.correctAnswer.requiredHotspots
-        .filter((id) => !ids.has(id))
-        .map(hotspotCenter),
-    }
-  }
-  const options = () => question.payload.hotspots.map((h) => h.id)
-  return {
-    placements: question.correctAnswer.placements.map((p) => {
-      const override = overrides[p.labelId] ?? overrides.any
-      return {
-        labelId: p.labelId,
-        hotspotId: override
-          ? options().find((id) => id !== p.hotspotId && id !== override)
-          : p.hotspotId,
-      }
-    }),
-  }
-}
-
-test('IC1: an image-interaction round produces a safe client descriptor end-to-end', async () => {
-  const { service, store } = makeService()
-  store.questions = [
-    imageQuestion(510, imageTapPayload, imageTapAnswer),
-    imageQuestion(511, imageTapPayload, imageTapAnswer),
-    imageQuestion(512, imageTapPayload, imageTapAnswer),
-  ]
-  const { currentRound } = await startDemoSession(service)
-  assert.equal(currentRound.activityType, 'image-interaction')
-  assert.equal(currentRound.activity.kind, 'image-interaction')
-  assert.equal(currentRound.activity.mode, 'tap')
-  assert.equal(typeof currentRound.activity.image, 'object')
-  assert.equal(typeof currentRound.activity.image.ref, 'string')
-  assert.equal(typeof currentRound.activity.image.alt, 'string')
-  assert.ok(currentRound.activity.hotspots.length > 0)
-  for (const spot of currentRound.activity.hotspots) {
-    assert.equal(typeof spot.id, 'string')
-    assert.equal(typeof spot.x, 'number')
-    assert.equal(typeof spot.y, 'number')
-    assert.equal(typeof spot.radius, 'number')
-  }
-  assert.ok(!('requiredHotspots' in currentRound.activity))
-  assert.ok(currentRound.timer.allowedSeconds > 0)
-  assert.ok(currentRound.hints.length > 0)
-})
-
-test('IC2/IC3: no correctAnswer or required-hotspot set reaches the client', async () => {
-  const { service, store } = makeService()
-  poolAllImage(store)
-  const { currentRound } = await startDemoSession(service)
-  const raw = JSON.stringify(currentRound)
-  assert.ok(!raw.includes('correctAnswer'))
-  assert.ok(!raw.includes('requiredHotspots'))
-})
-
-test('IC4: label-mode descriptors carry no placements in the raw JSON', async () => {
-  const { service, store } = makeService()
-  store.questions = [
-    imageQuestion(520, imageLabelPayload, imageLabelAnswer),
-    imageQuestion(521, imageLabelPayload, { ...imageLabelAnswer }),
-    imageQuestion(522, imageLabelPayload, { ...imageLabelAnswer }),
-  ]
-  const { currentRound } = await startDemoSession(service)
-  assert.equal(currentRound.activity.mode, 'label')
-  assert.ok(Array.isArray(currentRound.activity.labels))
-  const raw = JSON.stringify(currentRound)
-  assert.ok(!raw.includes('placements'))
-  assert.ok(!raw.includes('correctAnswer'))
-})
-
-test('IC5: a fully-correct image-interaction submission scores the full 100', async () => {
-  const { service, repos, store } = makeService()
-  poolAllImage(store)
-  const { session, currentRound } = await startDemoSession(service)
-  const question = await repos.questionRepository.getById(currentRound.questionId)
-  const res = await submit(service, session.id, currentRound.roundId, 1, imageAnswers(question))
-  assert.equal(res.roundResult.correct, true)
-  assert.equal(res.roundResult.correctnessFraction, 1)
-  assert.equal(res.roundResult.pointsEarned, 100)
-  assert.equal(res.score.roundScore, 100)
-})
-
-test('IC6: a partially-correct image-interaction answer earns proportional partial credit', async () => {
-  const { service, repos, store } = makeService()
-  store.questions = [
-    imageQuestion(530, imageLabelPayload, imageLabelAnswer),
-    imageQuestion(531, imageLabelPayload, { ...imageLabelAnswer }),
-    imageQuestion(532, imageLabelPayload, { ...imageLabelAnswer }),
-  ]
-  const { session, currentRound } = await startDemoSession(service)
-  const question = await repos.questionRepository.getById(currentRound.questionId)
-  const res = await submit(
-    service,
-    session.id,
-    currentRound.roundId,
-    1,
-    imageAnswers(question, { l3: 'WRONG' })
-  )
-  assert.equal(res.roundResult.correct, false)
-  assert.equal(res.roundResult.correctnessFraction, 2 / 3)
-  assert.equal(res.roundResult.pointsEarned, 67) // round(100 × 2/3)
-})
-
-test('IC7/IC8: forged correctnessFraction and score are ignored by the server', async () => {
-  const { service, repos, store } = makeService()
-  store.questions = [
-    imageQuestion(540, imageTapPayload, imageTapAnswer),
-    imageQuestion(541, imageTapPayload, imageTapAnswer),
-    imageQuestion(542, imageTapPayload, imageTapAnswer),
-  ]
-  const { session, currentRound } = await startDemoSession(service)
-  const question = await repos.questionRepository.getById(currentRound.questionId)
-  const res = await service.submitRound({
-    sessionId: session.id,
-    roundId: currentRound.roundId,
-    studentId: 1,
-    submission: {
-      // Only the first tap of the three required hotspots.
-      response: imageAnswers(question, { skip: question.correctAnswer.requiredHotspots.slice(1) }),
-      interactionMetrics: { attemptsUsed: 1, hintsUsed: 0 },
-      correctnessFraction: 1,
-      score: 999,
-    },
-  })
-  assert.equal(res.roundResult.correct, false)
-  assert.equal(res.roundResult.correctnessFraction, 1 / 3)
-  assert.equal(res.roundResult.pointsEarned, 33)
-})
-
-test('IC9: a malformed image-interaction answer is rejected by the engine through the service', async () => {
-  const { service, repos, store } = makeService()
-  poolAllImage(store)
-  const { session, currentRound } = await startDemoSession(service)
-  const question = await repos.questionRepository.getById(currentRound.questionId)
-  const response =
-    question.correctAnswer.mode === 'tap'
-      ? { taps: 'not-an-array' }
-      : { placements: [{ labelId: 'l1', hotspotId: 'missing-9' }] }
-  await assert.rejects(
-    submit(service, session.id, currentRound.roundId, 1, response),
-    (err) => err.code === ACTIVITY_ERROR_CODES.ACTIVITY_ANSWER_INVALID
-  )
-})
-
-test('IC10: a mixed drag-drop + image-interaction session runs to completion (0–300)', async () => {
-  const { service, repos, store } = makeService()
-  store.questions = store.questions.filter((q) => q.basePoints === 100)
-  store.questions.push(
-    imageQuestion(551, imageTapPayload, imageTapAnswer),
-    imageQuestion(552, imageLabelPayload, imageLabelAnswer)
-  )
-  const { session } = await startDemoSession(service)
-  const types = new Set()
-  let current = (await service.getCurrentRound({ sessionId: session.id, studentId: 1 })).currentRound
-  while (current) {
-    types.add(current.activityType)
-    const question = await repos.questionRepository.getById(current.questionId)
-    const response =
-      question.activityType === 'image-interaction'
-        ? imageAnswers(question)
-        : correctFor(question)
-    const res = await submit(service, session.id, current.roundId, 1, response)
-    assert.equal(res.roundResult.correct, true)
-    current = res.nextRound
-  }
-  assert.ok(types.has('drag-drop') && types.has('image-interaction'))
-  const finished = await service.finishSession({ sessionId: session.id, studentId: 1 })
-  assert.equal(finished.sessionScore, 300)
-  assert.equal(finished.roundBreakdown.length, 3)
-})
-
-test('IC11: an all-image pool runs to completion with per-round safe descriptors', async () => {
-  const { service, repos, store } = makeService()
-  poolAllImage(store)
-  const { session } = await startDemoSession(service)
-  let current = (await service.getCurrentRound({ sessionId: session.id, studentId: 1 })).currentRound
-  let rounds = 0
-  while (current) {
-    rounds += 1
-    const raw = JSON.stringify(current)
-    assert.ok(!raw.includes('correctAnswer'))
-    assert.ok(!raw.includes('requiredHotspots'))
-    assert.ok(!raw.includes('placements'))
-    const question = await repos.questionRepository.getById(current.questionId)
-    const res = await submit(service, session.id, current.roundId, 1, imageAnswers(question))
-    assert.equal(res.roundResult.correct, true)
-    assert.equal(res.roundResult.pointsEarned, 100)
-    current = res.nextRound
-  }
-  assert.equal(rounds, 3)
-  const finished = await service.finishSession({ sessionId: session.id, studentId: 1 })
-  assert.equal(finished.sessionScore, 300)
-})
-
-// ---------------------------------------------------------------------------
 // PA. PATTERN INTEGRATION (Task 4.10 — seventh production activity plugin)
 // ---------------------------------------------------------------------------
 
@@ -2427,6 +2187,56 @@ function orderingQuestion(id, payload, correctAnswer) {
   }
 }
 
+// Self-consistent inline fixture for SC13's find-word slot (same pattern NL
+// uses below — no schemas/examples fixture file for this newer plugin yet).
+const findWordGrid = [
+  ['A', 'T', 'O', 'M', 'X'],
+  ['X', 'C', 'E', 'L', 'L'],
+  ['X', 'X', 'X', 'X', 'X'],
+  ['X', 'X', 'X', 'X', 'X'],
+]
+const findWordPayload = {
+  schemaVersion: '1.0',
+  grid: findWordGrid,
+  words: [
+    { id: 'w1', label: 'ATOM' },
+    { id: 'w2', label: 'CELL' },
+  ],
+  allowRetry: true,
+}
+const findWordAnswer = {
+  placements: [
+    { wordId: 'w1', startRow: 0, startCol: 0, endRow: 0, endCol: 3 },
+    { wordId: 'w2', startRow: 1, startCol: 1, endRow: 1, endCol: 4 },
+  ],
+}
+
+function findWordQuestion(id, payload, correctAnswer) {
+  return {
+    id,
+    streamId: 1,
+    levelId: 1,
+    activityTypeId: 11,
+    activityType: 'find-word',
+    prompt: 'Find the hidden words in the grid.',
+    instructions: 'Tap the first letter, then the last letter of each word.',
+    payload,
+    correctAnswer,
+    hints: [{ level: 1, text: 'Scan each row, then each column, then the diagonals.' }],
+    basePoints: 100,
+    timerOverrideSeconds: null,
+    difficulty: 1,
+    gradeMin: 6,
+    gradeMax: 11,
+    status: 'published',
+  }
+}
+
+/** A fully-correct find-word response built straight from the correct-answer document. */
+function findWordAnswers(question) {
+  return { selections: question.correctAnswer.placements.map((p) => ({ ...p })) }
+}
+
 test('SC13: all ten production activity plugins run across sessions to 300 each (10-type coverage)', async () => {
   // A session holds 3 rounds, so split the ten production plugins into three
   // deterministic triples plus a fourth session that guarantees number-logic
@@ -2434,7 +2244,7 @@ test('SC13: all ten production activity plugins run across sessions to 300 each 
   // and a 3-round session cannot hold ten unique types).
   const TRIPLES = [
     ['drag-drop', 'matching', 'ordering'],
-    ['sorting', 'fill-complete', 'image-interaction'],
+    ['sorting', 'fill-complete', 'find-word'],
     ['pattern', 'memory', 'scenario-challenge'],
     ['number-logic', 'number-logic', 'drag-drop'],
   ]
@@ -2453,8 +2263,8 @@ test('SC13: all ten production activity plugins run across sessions to 300 each 
         return sortingQuestion(base, sortingGradePayload, sortingGradeAnswer)
       case 'fill-complete':
         return fillCompleteQuestion(base, fillGradePayload, fillGradeAnswer)
-      case 'image-interaction':
-        return imageQuestion(base, imageTapPayload, imageTapAnswer)
+      case 'find-word':
+        return findWordQuestion(base, findWordPayload, findWordAnswer)
       case 'pattern':
         return patternQuestion(base, patternMinimalPayload, patternMinimalAnswer)
       case 'memory':
@@ -2480,8 +2290,8 @@ test('SC13: all ten production activity plugins run across sessions to 300 each 
         return sortingAssignments(question)
       case 'fill-complete':
         return fillAnswers(question)
-      case 'image-interaction':
-        return imageAnswers(question)
+      case 'find-word':
+        return findWordAnswers(question)
       case 'pattern':
         return patternAnswers(question)
       case 'memory':
@@ -2529,7 +2339,7 @@ test('SC13: all ten production activity plugins run across sessions to 300 each 
     'ordering',
     'sorting',
     'fill-complete',
-    'image-interaction',
+    'find-word',
     'pattern',
     'memory',
     'scenario-challenge',

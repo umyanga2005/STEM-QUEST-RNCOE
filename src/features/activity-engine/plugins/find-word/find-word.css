@@ -1,0 +1,160 @@
+.find-word-activity {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.find-word-prompt {
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.5;
+  text-wrap: balance;
+}
+
+.find-word-instructions {
+  font-size: 0.88rem;
+  opacity: 0.7;
+}
+
+.find-word-word-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.find-word-chip {
+  padding: 0.3rem 0.8rem;
+  border-radius: 100px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: inherit;
+  transition: background 0.15s;
+  letter-spacing: 0.02em;
+}
+
+.find-word-chip.found {
+  background: rgba(34, 197, 94, 0.2);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #4ade80;
+  text-decoration: line-through;
+  text-decoration-color: #4ade80;
+}
+
+.find-word-grid-wrap {
+  overflow-x: auto;
+}
+
+.find-word-grid {
+  display: inline-grid;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.find-word-cell {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  transition: background 0.1s;
+  position: relative;
+}
+
+.find-word-cell:hover:not(.disabled) {
+  background: rgba(56, 189, 248, 0.15);
+}
+
+.find-word-cell.selected {
+  background: rgba(56, 189, 248, 0.3);
+  color: #38bdf8;
+}
+
+.find-word-cell.found-highlight {
+  background: rgba(34, 197, 94, 0.2);
+  color: #4ade80;
+}
+
+.find-word-cell.wrong {
+  animation: fw-shake 0.35s ease;
+  background: rgba(244, 63, 94, 0.25);
+}
+
+@keyframes fw-shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60%  { transform: translateX(-4px); }
+  40%, 80%  { transform: translateX(4px); }
+}
+
+.find-word-controls {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.find-word-submit {
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  border: none;
+  background: #38bdf8;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.find-word-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.find-word-submit:not(:disabled):hover { background: #0ea5e9; }
+
+.find-word-reset {
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.find-word-hint-button {
+  padding: 0.65rem 1.2rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.find-word-hint-button:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.find-word-sr-live {
+  position: absolute;
+  width: 1px; height: 1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+}

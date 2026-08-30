@@ -191,31 +191,28 @@ export class SupabaseQuestionRepository {
 
   Q = () => this.client.from('questions')
 
+  /**
+   * Strict single-stage pool: (stream, level, published) only — no
+   * cross-stream or cross-level fallback (Task 2 fix; the old 3-stage
+   * fallback could hand a student another stream's questions).
+   *
+   * Returns whatever it finds, including fewer than 3 rows — this method's
+   * only job is the (stream, level, published, minDifficulty) filter.
+   * Enforcing the minimum pool size is `selectRoundQuestions`' job
+   * (game-engine/core/selection.js already throws the typed
+   * GAME_INSUFFICIENT_POOL error the frontend handles); duplicating that
+   * check here would just throw an untyped error earlier for the same case.
+   */
   async getEligibleQuestions({ streamId, levelId, minDifficulty = null }) {
     let query = this.Q()
       .select('*, activity_types(slug)')
+      .eq('status', 'published')
       .eq('stream_id', streamId)
       .eq('level_id', levelId)
-      .eq('status', 'published')
     if (minDifficulty !== null) query = query.gte('difficulty', minDifficulty)
     const { data, error } = await query
     if (error) throw this.#err(error, 'getEligibleQuestions')
-    const exact = (data ?? []).map(rowToQuestion)
-    if (exact.length >= 3) return exact
-
-    let streamQuery = this.Q()
-      .select('*, activity_types(slug)')
-      .eq('stream_id', streamId)
-      .eq('status', 'published')
-    if (minDifficulty !== null) streamQuery = streamQuery.gte('difficulty', minDifficulty)
-    const { data: streamData, error: streamError } = await streamQuery
-    if (!streamError && (streamData ?? []).length >= 3) {
-      return streamData.map(rowToQuestion)
-    }
-
-    let allQuery = this.Q().select('*, activity_types(slug)').eq('status', 'published')
-    const { data: allData } = await allQuery
-    return (allData ?? []).map(rowToQuestion)
+    return (data ?? []).map(rowToQuestion)
   }
 
   async getById(id) {

@@ -14,7 +14,7 @@ import { MatchingActivity } from '../../activity-engine/plugins/matching/index.j
 import { OrderingActivity } from '../../activity-engine/plugins/ordering/index.js'
 import { SortingActivity } from '../../activity-engine/plugins/sorting/index.js'
 import { FillCompleteActivity } from '../../activity-engine/plugins/fill-complete/index.js'
-import { ImageInteractionActivity } from '../../activity-engine/plugins/image-interaction/index.js'
+import { FindWordActivity } from '../../activity-engine/plugins/find-word/index.js'
 import { PatternActivity } from '../../activity-engine/plugins/pattern/index.js'
 import { MemoryActivity } from '../../activity-engine/plugins/memory/index.js'
 import { ScenarioChallengeActivity } from '../../activity-engine/plugins/scenario-challenge/index.js'
@@ -26,7 +26,7 @@ export const ACTIVITY_RENDERERS = Object.freeze({
   ordering: OrderingActivity,
   sorting: SortingActivity,
   'fill-complete': FillCompleteActivity,
-  'image-interaction': ImageInteractionActivity,
+  'find-word': FindWordActivity,
   pattern: PatternActivity,
   memory: MemoryActivity,
   'scenario-challenge': ScenarioChallengeActivity,

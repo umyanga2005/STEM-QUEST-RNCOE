@@ -53,14 +53,6 @@ export const SEMANTIC_RULES_CATALOG = Object.freeze({
     stage: 'schema-independent',
     implementedIn: 'validate.py only — engine plugin TBD',
   },
-  // image-interaction
-  'image-interaction.hotspots-exist': {
-    activityType: 'image-interaction',
-    source: 'validate.py:_check_pair (image-interaction)',
-    description: 'requiredHotspots/placements must reference known hotspot/label ids.',
-    stage: 'schema-independent',
-    implementedIn: 'validate.py only — engine plugin TBD',
-  },
   // memory
   'memory.groups-cover-cards': {
     activityType: 'memory',

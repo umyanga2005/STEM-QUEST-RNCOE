@@ -9,7 +9,7 @@
 
 import dragDrop from '../../../../../schemas/activities/drag-drop/correct-answer.schema.json' with { type: 'json' }
 import fillComplete from '../../../../../schemas/activities/fill-complete/correct-answer.schema.json' with { type: 'json' }
-import imageInteraction from '../../../../../schemas/activities/image-interaction/correct-answer.schema.json' with { type: 'json' }
+import findWord from '../../../../../schemas/activities/find-word/correct-answer.schema.json' with { type: 'json' }
 import matching from '../../../../../schemas/activities/matching/correct-answer.schema.json' with { type: 'json' }
 import memory from '../../../../../schemas/activities/memory/correct-answer.schema.json' with { type: 'json' }
 import numberLogic from '../../../../../schemas/activities/number-logic/correct-answer.schema.json' with { type: 'json' }
@@ -25,7 +25,7 @@ import sorting from '../../../../../schemas/activities/sorting/correct-answer.sc
 export const CORRECT_ANSWER_SCHEMAS = Object.freeze({
   'drag-drop': dragDrop,
   'fill-complete': fillComplete,
-  'image-interaction': imageInteraction,
+  'find-word': findWord,
   matching,
   memory,
   'number-logic': numberLogic,

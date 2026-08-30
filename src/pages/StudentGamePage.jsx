@@ -9,6 +9,7 @@ import {
   useStartSession,
   useSubmitRound,
   useFinishSession,
+  useAbandonSession,
 } from '../features/game-session/api/queries.js'
 import { useStudentMe } from '../features/student/api/queries.js'
 import { useMissionStreams, useMissionLevels } from '../features/mission/api/queries.js'
@@ -80,11 +81,22 @@ export default function StudentGamePage() {
     if (choice) choiceStorage.write(choice)
   }, [choice])
 
+  // BUG-023 fix: clear the persisted choice as soon as the session is
+  // complete so that a page reload cannot silently resume the finished
+  // level. handleBackToMission already calls clear() on explicit nav, but
+  // this covers the case where the student refreshes on the results screen.
+  useEffect(() => {
+    if (round.phase === ROUND_PHASE.SESSION_COMPLETE) {
+      choiceStorage.clear()
+    }
+  }, [round.phase])
+
   const streamsQuery = useMissionStreams(token)
   const levelsQuery = useMissionLevels(token, choice?.streamId)
   const startSession = useStartSession(token)
   const submitRound = useSubmitRound(token)
   const finishSession = useFinishSession(token)
+  const abandonSession = useAbandonSession(token)
 
   const stream = useMemo(
     () => streamsQuery.data?.streams.find((s) => Number(s.id) === Number(choice?.streamId)) ?? null,
@@ -213,6 +225,18 @@ export default function StudentGamePage() {
 
   const blocker = useBlocker(() => hasActiveSession(round))
 
+  // Best-effort: mark the session abandoned server-side before leaving.
+  // Never blocks navigation on the network round-trip either way.
+  // BUG-022 fix: guard proceed() — if the blocker state has already moved
+  // on (e.g. component re-rendered between user click and this callback),
+  // calling proceed() on a resolved/stale blocker would throw or silently
+  // no-op and leave the guard modal permanently on screen.
+  const handleLeaveMission = useCallback(() => {
+    const sessionId = useRoundStore.getState().sessionId
+    if (sessionId) abandonSession.mutate({ sessionId })
+    if (blocker.state === 'blocked') blocker.proceed()
+  }, [abandonSession, blocker])
+
   if (!token) {
     return <Navigate to="/student/register" replace />
   }
@@ -253,7 +277,9 @@ export default function StudentGamePage() {
           </div>
           <div className="game-header__mission">
             <span className="game-stream-icon" aria-hidden="true">
-              {streamAsset.bg ? (
+              {streamAsset.logo ? (
+                <img src={streamAsset.logo} alt="" style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: '50%' }} />
+              ) : streamAsset.bg ? (
                 <img src={streamAsset.bg} alt="" style={{ width: 36, height: 36, objectFit: 'contain' }} />
               ) : stream ? (
                 <StreamIcon slug={stream.slug} />
@@ -397,7 +423,7 @@ export default function StudentGamePage() {
               <button type="button" className="game-button game-button--primary" onClick={() => blocker.reset()}>
                 Stay
               </button>
-              <button type="button" className="game-button game-button--ghost" onClick={() => blocker.proceed()}>
+              <button type="button" className="game-button game-button--ghost" onClick={handleLeaveMission}>
                 Leave mission
               </button>
             </div>

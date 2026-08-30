@@ -7,6 +7,12 @@ import engineeringLoop from '../assets/streams/engineering-loop.mp4'
 import mathsBg from '../assets/streams/maths-bg.png'
 import mathsLoop from '../assets/streams/maths-loop.mp4'
 
+// Round themed logo badges — used as stream card icons
+import scienceLogo from '../assets/streams/Science-Rectangular-Stream-Images-with-Round-Themed-Logos.png'
+import techLogo from '../assets/streams/Technology-Rectangular-Stream-Images-with-Round-Themed-Logos.png'
+import engineeringLogo from '../assets/streams/Engineer-Rectangular-Stream-Images-with-Round-Themed-Logos.png'
+import mathsLogo from '../assets/streams/Mathematics-Rectangular-Stream-Images-with-Round-Themed-Logos.png'
+
 import levelLockedImg from '../assets/game/level-locked.png'
 import levelAvailableImg from '../assets/game/level-available.png'
 import levelCompleteImg from '../assets/game/level-complete.png'
@@ -15,10 +21,10 @@ import gameOverBg from '../assets/game/gameover-bg.png'
 import gameHudLoop from '../assets/game/game-hud-bg.mp4'
 
 export const STREAM_ASSETS = {
-  science: { bg: scienceBg, loop: scienceLoop, color: '#38bdf8' },
-  technology: { bg: techBg, loop: techLoop, color: '#a855f7' },
-  engineering: { bg: engineeringBg, loop: engineeringLoop, color: '#f59e0b' },
-  mathematics: { bg: mathsBg, loop: mathsLoop, color: '#fbbf24' },
+  science: { bg: scienceBg, loop: scienceLoop, logo: scienceLogo, color: '#38bdf8' },
+  technology: { bg: techBg, loop: techLoop, logo: techLogo, color: '#a855f7' },
+  engineering: { bg: engineeringBg, loop: engineeringLoop, logo: engineeringLogo, color: '#f59e0b' },
+  mathematics: { bg: mathsBg, loop: mathsLoop, logo: mathsLogo, color: '#fbbf24' },
 }
 
 export const GAME_ASSETS = {

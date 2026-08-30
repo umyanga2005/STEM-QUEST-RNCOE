@@ -363,21 +363,6 @@ test('QuestionPreview renders only student-visible payload fields', async () => 
   }
 })
 
-test('QuestionPreview image interaction shows the ref placeholder during SSR (no fetch, no secrets)', async () => {
-  const { vite, mod } = await loadComponent('/src/features/admin-questions/components/QuestionPreview.jsx')
-  try {
-    const draft = buildQuestionTemplate('image-interaction')
-    draft.prompt = 'A sufficiently long prompt for the template.'
-    draft.payload.image = { ref: 'question-media/pending/pending/pending.png', alt: 'An example diagram' }
-    const html = renderToStaticMarkup(React.createElement(mod.default, { draft }))
-    assert.ok(html.includes('question-media/pending/pending/pending.png'), 'ref placeholder renders')
-    assert.ok(html.includes('An example diagram'), 'alt renders as the label')
-    assert.ok(!html.includes('signed'), 'no signed URL is ever rendered server-side')
-  } finally {
-    await vite.close()
-  }
-})
-
 test('MediaReferenceEditor renders upload/replace/remove controls via SSR without sessionStorage', async () => {
   const { vite, mod } = await loadComponent('/src/features/admin-questions/visual-editor/primitives.jsx')
   try {

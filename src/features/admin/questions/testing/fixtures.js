@@ -103,7 +103,7 @@ export function seedQuestionCatalogue(_store) {
   }
   const activityTypes = [
     'drag-drop', 'matching', 'ordering', 'sorting', 'fill-complete',
-    'image-interaction', 'pattern', 'memory', 'scenario-challenge', 'number-logic',
+    'find-word', 'pattern', 'memory', 'scenario-challenge', 'number-logic',
   ].map((slug, i) => ({ id: i + 1, slug, name: slug }))
   return { streams, levels, activityTypes }
 }

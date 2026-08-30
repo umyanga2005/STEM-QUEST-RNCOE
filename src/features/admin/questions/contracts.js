@@ -21,7 +21,7 @@ export const QUESTION_ACTIVITY_TYPES = Object.freeze([
   'ordering',
   'sorting',
   'fill-complete',
-  'image-interaction',
+  'find-word',
   'pattern',
   'memory',
   'scenario-challenge',

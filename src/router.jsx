@@ -27,16 +27,17 @@ const AdminSettingsPage = lazy(() => import('./pages/AdminSettingsPage.jsx'))
 const AdminAuthProvider = lazy(() => import('./features/admin-auth/auth/admin-auth-provider.jsx'))
 
 import StudentNav from './components/StudentNav.jsx'
+import { StemLoader } from './components/StemLoader/StemLoader.jsx'
 
 const withFallback = (element) => (
-  <Suspense fallback={<div className="sm-status">Loading…</div>}>
+  <Suspense fallback={<StemLoader overlay label="Loading…" />}>
     {element}
     <StudentNav />
   </Suspense>
 )
 
 const withAdminFallback = (element) => (
-  <Suspense fallback={<div className="adm-loading">Loading…</div>}>
+  <Suspense fallback={<StemLoader overlay label="Loading…" />}>
     {element}
   </Suspense>
 )

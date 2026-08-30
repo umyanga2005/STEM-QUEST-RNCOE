@@ -33,6 +33,13 @@ export function useFinishSession(token) {
   })
 }
 
+export function useAbandonSession(token) {
+  return useMutation({
+    mutationKey: ['game', 'abandon', token ?? 'none'],
+    mutationFn: ({ sessionId }) => gameStudentClient.abandonSession({ token, sessionId }),
+  })
+}
+
 export function useCurrentRound(token, sessionId) {
   return useQuery({
     queryKey: ['game', 'current', token ?? 'none', sessionId ?? 'none'],
@@ -47,5 +54,6 @@ export default {
   useStartSession,
   useSubmitRound,
   useFinishSession,
+  useAbandonSession,
   useCurrentRound,
 }
